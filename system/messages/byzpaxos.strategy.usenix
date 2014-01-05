@@ -1,0 +1,48 @@
+BaseMessage NONE 0
+#BaseMessage NONE 0
+#BaseMessage DROP 100
+#BaseMessage DUP 2
+#BaseMessage DELAY 1.0
+#BaseMessage DIVERT 0
+#BaseMessage REPLAY 0 BaseMessage DIVERT 0
+#BaseMessage LIE r 0
+#BaseMessage LIE =0 0
+#BaseMessage LIE =-2147483647 0
+#BaseMessage LIE =2147483647 0
+#BaseMessage LIE =-4096 0
+#BaseMessage LIE =4096 0
+#PaxosMessage DROP 100
+#PaxosMessage DUP 2
+#PaxosMessage DELAY 1.0
+#PaxosMessage DIVERT 0
+#PaxosMessage REPLAY 0 PaxosMessage DIVERT 0
+#PaxosMessage LIE r 0
+#PaxosMessage LIE =0 0
+#PaxosMessage LIE =-2147483647 0
+#PaxosMessage LIE =2147483647 0
+#PaxosMessage LIE =-4096 0
+#PaxosMessage LIE =4096 0
+#PaxosMessage LIE r 1
+#PaxosMessage LIE =0 1
+#PaxosMessage LIE =-2147483647 1
+#PaxosMessage LIE =2147483647 1
+#PaxosMessage LIE =-4096 1
+#PaxosMessage LIE =4096 1
+#PaxosMessage LIE r 2
+#PaxosMessage LIE =0 2
+#PaxosMessage LIE =-2147483647 2
+#PaxosMessage LIE =2147483647 2
+#PaxosMessage LIE =-4096 2
+#PaxosMessage LIE =4096 2
+#PaxosMessage LIE r 3
+#PaxosMessage LIE =0 3
+#PaxosMessage LIE =-2147483647 3
+#PaxosMessage LIE =2147483647 3
+#PaxosMessage LIE =-4096 3
+#PaxosMessage LIE =4096 3
+#PaxosMessage LIE r 4
+#PaxosMessage LIE =0 4
+#PaxosMessage LIE =-2147483647 4
+#PaxosMessage LIE =2147483647 4
+#PaxosMessage LIE =-4096 4
+#PaxosMessage LIE =4096 4

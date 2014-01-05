@@ -1,0 +1,272 @@
+BaseMessage {
+  int size;
+  short type = 0;
+  int payload_size;
+  //char payload[payload_size];
+  //int repeat_size;
+}
+
+// there is a MacArrayMessage which is a base class for some messages
+// MacArrayMessage {
+//   int size;
+//   int type = ...;
+//   int payload_size;
+//   char payload[payload_size];
+//   uint32_t sender;
+//   char mac[size-payload_size]; 
+// }
+
+//don't bother filling it out since only client sends it...
+//extends MacArrayMessage
+ClientRequest {
+  int size;
+  short type = 1;
+  int payload_size;
+}
+
+//extends MacArrayMessage
+ReleaseCP {
+  int size;
+  short type = 3;
+  int payload_size;
+  int32_t seqNo;
+  int32_t tokenSize;
+  char token[tokenSize];
+  uint32_t sender;
+  //char mac[size-payload_size];
+  //int repeat_size;
+}
+
+//extends MacArrayMessage
+Retransmit {
+  int size;
+  short type = 4;
+  int payload_size;
+  int32_t client_id;
+  int32_t seqNo;
+  uint32_t sender;
+  //char mac[size-payload_size];
+  //int repeat_size;
+}
+
+// MacMessage {
+// int size;
+// int type
+// int payload_size;
+// char payload[payload_size];
+// uint32_t sender;
+// 
+//}
+
+//extends MacMessage
+LoadCPMessage {
+  int size;
+  short type = 5;
+  int payload_size;
+  int32_t seqNo;
+  int32_t tokenSize;
+  char token[tokenSize];
+  uint32_t sender;
+}
+
+LastExecuted {
+  int size;
+  short type = 6;
+  int payload_size;
+  int32_t seqNo;
+  uint32_t sender;
+}
+
+CPLoaded {
+  int size;
+  short type = 14;
+  int payload_size;
+  int32_t seqNo;
+  uint32_t sender;
+}
+
+CPTokenMessage { 
+  int size;
+  short type = 7;
+  int payload_size;
+  int32_t seqNo;
+  int32_t tokenSize;
+  char token[tokenSize];
+  uint32_t sender;
+}
+
+Reply {
+  int size;
+  short type = 8;
+  int payload_size;
+  int32_t seqNo;
+  int32_t commandSize;
+  char command[commandSize];
+  uint32_t sender;
+}
+
+WatchReply {
+  int size;
+  short type = 15;
+  int payload_size;
+  int32_t seqNo;
+  int32_t commandSize;
+  char command[commandSize];
+  uint32_t sender;
+}
+
+SignedRequestCore {
+  int size;
+  short type = 9;
+  int payload_size;
+}
+
+RequestCP {
+  int size;
+  short type = 10;
+  int payload_size;
+  int32_t seqNo;
+  uint32_t sender;
+}
+
+//NextBatch {
+// int size;
+// short type;
+// int payload_size;
+// int32_t viewNo;
+// int32_t seqNo;
+// char history[];
+// char cphash[];
+// int16_t cp_flag;
+// int16_t non_det_size;
+// char non_det[non_det_size];
+// int32_t batch_size;
+// int16_t batch_entries;
+// char batch[batch_size];
+// uint32_t sender;
+// char mac[size-payload_size]; 
+//}
+
+
+CommittedNextBatch {
+  int size;
+  short type = 13;
+  int payload_size;
+  int32_t viewNo;
+  int32_t seqNo;
+  char history[16];
+  char cphash[16];
+  int16_t cp_flag;
+  int16_t non_det_size;
+  char non_det[non_det_size];
+  int32_t batch_size;
+  int16_t batch_entries;
+  //char batch[batch_size];
+  //uint32_t sender;
+}
+
+TentativeNextBatch {
+  int size;
+  short type = 12;
+  int payload_size;
+  int32_t viewNo;
+  int32_t seqNo;
+  char history[16];
+  char cphash[16];
+  int16_t cp_flag;
+  int16_t non_det_size;
+  char non_det[non_det_size];
+  int32_t batch_size;
+  int16_t batch_entries;
+  //char batch[batch_size];
+  //uint32_t sender;
+}
+
+SpeculativeNextBatch {
+  int size;
+  short type = 11;
+  int payload_size;
+  int32_t viewNo;
+  int32_t seqNo;
+  char history[16];
+  char cphash[16];
+  int16_t cp_flag;
+  int16_t non_det_size;
+  char non_det[non_det_size];
+  int32_t batch_size;
+  int16_t batch_entries;
+  //char batch[batch_size];
+  //uint32_t sender;
+}
+
+ReadOnlyRequest {
+  int size;
+  short type = 16;
+  int payload_size;
+}
+
+ReadOnlyReply {
+  int size;
+  short type = 17;
+  int payload_size;
+  int32_t seqNo;
+  int32_t commandSize;
+  char command[commandSize];
+  uint32_t sender;
+}
+
+//message sent from client
+FilteredRequestCore { 
+  int size;
+  short type = 18;
+  int payload_size;
+}
+
+FilteredRequest {
+  int size;
+  short type = 19;
+  int payload_size;
+}
+                    
+BatchCompleted {
+  int size;
+  short type = 20;
+  int payload_size;
+  int32_t view;
+  int32_t seqNo;
+  int32_t batchSize;
+  int16_t count;
+}
+
+FetchCommand {
+  int size;
+  short type = 21;
+  int payload_size;
+  int32_t seqNo;
+  //other stuff
+}
+
+ForwardCommand {
+  int size;
+  short type = 22;
+  int payload_size;
+  int32_t seqNo;
+  //other stuff
+}
+
+FetchDenied {
+  int size;
+  short type = 23;
+  int payload_size;
+  int32_t seqNo;
+  //other stuff
+}
+
+CPUpdate {
+  int size;
+  short type = 24;
+  int payload_size;
+  int32_t seqNo;
+  int32_t commands;
+}
+

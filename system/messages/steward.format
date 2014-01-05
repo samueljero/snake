@@ -1,0 +1,316 @@
+//#define DIGEST_SIZE        20
+//#define SIGNATURE_SIZE     128
+//#define SIG_SHARE_PROOF_SIZE   128
+
+BaseMessage {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 0;
+}
+
+Prepare {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 1;
+    uint32_t seq_num;
+    uint32_t local_view;
+    uint32_t global_view;
+    char update_digest[20];
+}
+
+PrePrepare {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 2;
+    uint32_t seq_num;
+    uint32_t local_view;
+    uint32_t global_view;
+    //the update follows...
+}
+
+//#define SIG_SHARE_TYPE              3
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:3:BYTE:128:
+
+SigShare {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    ////size of rest of message
+    uint32_t size;
+    uint32_t type = 3;
+    char sig_share_proof[128];
+		BaseMessage enc;
+}
+
+//#define PROPOSAL_TYPE               4
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:4:UINT32:1:UINT32:1:UINT32:1:
+
+Proposal {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 4;
+    uint32_t seq_num;
+    uint32_t local_view;
+    uint32_t global_view;
+    //an update_message follows
+}
+
+//#define ACCEPT_TYPE                 5
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:5:UINT32:1:UINT32:1:BYTE:20:
+
+Accept {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 5;
+    uint32_t seq_num;
+    uint32_t global_view;
+    char update_digest[20];
+}
+
+//#define UPDATE_TYPE	            6			#CONTENT FOLLOWS...
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:6:INT32:1:UINT32:1:
+
+Update {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 6;
+    int32_t address;
+    uint32_t time_stamp;
+    //update content follows...
+}
+
+//#define L_NEW_REP_TYPE	            7
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:7:UINT32:1:
+
+LNewRep {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 7;
+    uint32_t view;
+}
+
+
+//#define CLIENT_RESPONSE_TYPE        8
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:8:UINT32:1:UINT32:1:
+
+ClientResponse {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 8;
+    uint32_t seq_num;
+    uint32_t time_stamp;
+
+}
+
+
+//#define ORDERED_PROOF_TYPE          9
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:9:UINT32:1:
+
+OrderedProof {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 9;
+    uint32_t time_stamp;
+    //a complete proposal message follows
+}
+
+//#define LOCAL_RECONCILIATION_TYPE   10
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:10:UINT32:1:UINT32:1:UINT32:1
+
+LocalReconciliation {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 10;
+    uint32_t global_seq_num;
+    uint32_t local_seq_num;
+    uint32_t time_stamp;
+}
+
+//#define QUERY_TYPE                  11
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:11:INT32:1:UINT32:1:
+
+QueryType {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 11;
+    int32_t address;
+    uint32_t time_stamp;
+    //query content follows...
+}
+
+
+//#define CLIENT_QUERY_RESPONSE_TYPE  12
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:12:
+
+ClientQueryResponse {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 12;
+}
+
+//# NO 13!!!!
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:13:
+
+Dummy13 {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 13;
+}
+
+//#define SITE_GLOBAL_VIEW_CHANGE_TYPE 14 
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:14:UINT32:1:
+
+SiteGlobalViewChange {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 14;
+    uint32_t global_view;
+}
+
+
+//#define SITE_LOCAL_VIEW_PROOF_TYPE   15
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:15:UINT32:1:
+
+SiteLocalViewProof {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 15;
+    uint32_t local_view;
+}
+
+//#define GLOBAL_RECONCILIATION_TYPE  16
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:16:UINT32:1:
+
+GlobalReconciliation {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 16;
+    uint32_t seq_num;
+}
+
+//#define COMPLETE_ORDERED_PROOF_TYPE 17
+//BYTE:128:UINT32:1:UINT36:1:UINT32:1:UNIQUE:UINT32:17:UINT32:1:
+
+CompleteOrderedProof {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 17;
+    //a complete proposal message follows
+		BaseMessage enc;
+}
+
+CCSInvocation {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 18;
+	  uint32_t local_view;
+		uint32_t global_view;
+		uint32_t context;
+		uint32_t aru;
+}
+
+CCSReport {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 19;
+		uint32_t context;
+	  uint32_t local_view;
+		uint32_t global_view;
+		uint32_t aru;
+		uint32_t num_entries;
+		// Report_List follows...
+}
+
+struct description_entry {
+	uint32_t machine_id;
+	char digest[20];
+}
+
+
+CCSDescription {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 20;
+		uint32_t context;
+	  uint32_t local_view;
+		uint32_t global_view;
+		uint32_t num_entries;
+		// Report_Description_List follows...
+		struct description_entry list[num_entries]; 
+}
+
+CCSUnion {
+    char sig[128];
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of rest of message
+    uint32_t size;
+    uint32_t type = 21;
+		uint32_t context;
+	  uint32_t local_view;
+		uint32_t global_view;
+		uint32_t aru;
+		//Description of what appears in the union follows... 
+}
+
+

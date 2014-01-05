@@ -1,0 +1,421 @@
+
+BaseMessage {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 0;
+}
+
+//PO_REQUEST
+
+PO_Request {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 1;
+    uint32_t seq_num_msg;
+    uint32_t num_events;
+}
+
+//PO_ACK 
+
+struct po_ack_part {
+    uint32_t originator;
+    uint32_t seq_num_msg;
+    char digest[20];
+};
+
+PO_Ack {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 2;
+    uint32_t num_ack_parts;
+    struct po_ack_part parts[num_ack_parts];
+}
+//PO_ARU
+PO_Aru {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 3;
+    uint32_t num;
+    uint32_t ack_for_server[4];
+}
+
+//PROOF_MATRIX (END OF PACKET IS UNDEFINED)
+
+struct po_aru_signed_message {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type_msg;
+    uint32_t num
+    uint32_t ack_for_server[4];
+};
+
+Proof_Matrix {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 4;
+    uint32_t num_acks;
+    struct po_aru_signed_message acks[num_acks];
+}
+
+//PRE_PREPARE (END OF PACKET IS UNDEFINED)
+
+Pre_Prepare {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 5;
+    uint32_t seq_num_msg;
+    uint32_t view;
+    uint16_t part_num;
+    uint16_t total_parts;
+    uint32_t num_acks_in_this_message;
+    //I think there is more after this, but not sure what
+}
+
+//PREPARE
+Prepare {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 6;
+    uint32_t seq_num_msg;
+    uint32_t view;
+    char digest[20];
+}
+//COMMIT
+
+Commit {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 7;
+    uint32_t seq_num_msg;
+    uint32_t view;
+    char digest[20];
+}
+
+
+//RECON (END OF PACKET IS UNDEFINED)
+
+
+
+Recon {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 8;
+    uint32_t num_parts;
+    //stuff that follows seems rather complicated...
+}
+
+
+//UPDATE (SENT BY THE CLIENT SO WE DON'T BOTHER WITH IT)
+
+Update {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 9;
+}
+
+
+//CLIENT_RESPONSE
+
+Client_Response {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 10;
+    uint32_t machine_id_msg;
+    uint32_t seq_num_msg;
+}
+
+
+RTT_Ping {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 11;
+    uint32_t ping_seq_num;
+    uint32_t view;
+}
+
+
+RTT_Pong {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 12;
+    uint32_t ping_seq_num;
+    uint32_t view;
+}
+
+
+RTT_Measure {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 13;
+    uint32_t view;
+    double rtt;
+}
+
+
+TAT_Upper_Bound {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 14;
+    uint32_t view;
+    double alpha;
+}
+
+
+TAT_Measure {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 15;
+    uint32_t view;
+    double max_tat;
+}
+
+
+New_Leader {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 16;
+    uint32_t new_view;
+}
+
+
+New_Leader_Proof {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 17;
+    uint32_t new_view;
+    //New_Leader msg [5]
+}
+
+
+RB_Init {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 18;
+}
+
+RB_Echo {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 19;
+}
+
+RB_Ready {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 20;
+}
+
+
+Report {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 21;
+}
+
+PC_Set {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 22;
+}
+
+
+VC_List {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 23;
+		uint32_t view;
+		uint32_t complete_state;
+}
+
+VC_Partial_Sig {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 24;
+		uint32_t view;
+		uint32_t ids;
+		uint32_t startSeq;
+		char sig_msg[128];
+}
+
+VC_Proof {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 25;
+		uint32_t view;
+		uint32_t ids;
+		uint32_t startSeq;
+		char sig_msg[128];
+}
+
+Replay {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 26;
+		uint32_t view;
+		uint32_t ids;
+		uint32_t startSeq;
+		char sig_msg[128];
+}
+
+Replay_Prepare {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 27;
+}
+
+Replay_Commit {
+    char sig[128];
+    uint16_t mt_num;
+    uint16_t mt_index;
+    uint32_t site_id;
+    uint32_t machine_id;
+    //size of everything past the base message
+    uint32_t size; 
+    uint32_t type = 28;
+}
+

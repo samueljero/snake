@@ -1,0 +1,11 @@
+CREATING A MASTER VM:
+
+qemu-img create -f qcow2 ubuntu-master.qcow2 2G
+
+qemu-system-x86_64 -hda ubuntu-master.qcow2 -m 256 -boot d -cdrom /iso/ubuntu-11.10-server-amd64.iso -net nic -net user
+
+CREATING CLONE VMS:
+
+qemu-img create -b ubuntu-master.qcow2 -f qcow2 ubuntu-cloneXXX.qcow2
+
+At this point never run the master vm as it is a base for all of the clones. Only run it if you also want to recreate the clones.

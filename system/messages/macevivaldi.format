@@ -1,0 +1,11 @@
+# format is:
+#   [type]:[# of type]:
+
+#PeerSeqReq
+BYTE:33:UNIQUE:UINT8:1:
+#PeerSetReply
+BYTE:33:UNIQUE:UINT8:2:UINT32:-1:
+#PongMsg
+BYTE:33:UNIQUE:UINT8:4:UINT64:1:DOUBLE:-1:DOUBLE:1:
+#PingMsg
+BYTE:33:UNIQUE:UINT8:3:UINT64:1:
