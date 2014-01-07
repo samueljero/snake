@@ -1,6 +1,6 @@
 #!/bin/sh
-lxc-destroy -n left
-lxc-destroy -n right
+#lxc-destroy -n left
+#lxc-destroy -n right
 ifconfig br-left down
 ifconfig br-right down
 brctl delif br-left tap-left

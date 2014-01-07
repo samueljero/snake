@@ -27,6 +27,7 @@
 #include "object.h"
 #include "object-factory.h"
 #include "ptr.h"
+#include "ns3/applications-module.h"
 
 namespace ns3 {
 
@@ -156,6 +157,20 @@ public:
    *     is greater than or equal to the stop time.
    */
   virtual void Run (void) = 0;
+
+
+	virtual int ToggleFreeze(bool) {
+		return -1;
+	}
+
+	virtual void* Save(void *ptr) {
+		return NULL;
+	}
+
+	virtual int Load(void *ptr) {
+		return -1;
+	}
+
   /**
    * Process only the next simulation event, then return immediately.
    */
@@ -195,6 +210,10 @@ public:
    * \return the current simulation context
    */
   virtual uint32_t GetContext (void) const = 0;
+  // 
+  virtual int GetUnscheduledEvents(void) {
+    return -1;
+  }
 };
 
 } // namespace ns3

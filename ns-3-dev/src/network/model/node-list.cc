@@ -22,6 +22,7 @@
 #include "ns3/simulator.h"
 #include "ns3/object-vector.h"
 #include "ns3/config.h"
+#include "ns3/integer.h"
 #include "ns3/log.h"
 #include "ns3/assert.h"
 #include "node-list.h"
@@ -49,11 +50,15 @@ public:
 
   static Ptr<NodeListPriv> Get (void);
 
+	/* MALICIOUS */
+	Ptr<Node> GetMalProxy(void);
+	void SetMalProxy(int n);
 private:
   virtual void DoDispose (void);
   static Ptr<NodeListPriv> *DoGet (void);
   static void Delete (void);
   std::vector<Ptr<Node> > m_nodes;
+	int m_malProxy;
 };
 
 NS_OBJECT_ENSURE_REGISTERED (NodeListPriv);
@@ -67,6 +72,10 @@ NodeListPriv::GetTypeId (void)
                    ObjectVectorValue (),
                    MakeObjectVectorAccessor (&NodeListPriv::m_nodes),
                    MakeObjectVectorChecker<Node> ())
+		.AddAttribute("MalProxy", "Malicious Proxy Node",
+									IntegerValue(0),
+									MakeIntegerAccessor (&NodeListPriv::m_malProxy),
+									MakeIntegerChecker<int> ())
   ;
   return tid;
 }
@@ -143,6 +152,18 @@ uint32_t
 NodeListPriv::GetNNodes (void)
 {
   return m_nodes.size ();
+}
+
+Ptr<Node>
+NodeListPriv::GetMalProxy (void)
+{
+	return m_nodes[m_malProxy];
+}
+
+void
+NodeListPriv::SetMalProxy(int n) 
+{
+	m_malProxy = n;
 }
 
 Ptr<Node>

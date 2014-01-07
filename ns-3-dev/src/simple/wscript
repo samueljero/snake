@@ -1,0 +1,17 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    obj = bld.create_ns3_module('simple', ['network', 'applications'])
+    obj.source = [
+        'model/simple-net-device.cc',
+        'model/simple-channel.cc',
+        ]
+    headers = bld.new_task_gen(features=['ns3header'])
+    headers.module = 'simple'
+    headers.source = [
+        'model/simple-net-device.h',
+        'model/simple-channel.h',
+        ]
+
+
+    bld.ns3_python_bindings()

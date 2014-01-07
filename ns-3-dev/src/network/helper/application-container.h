@@ -175,6 +175,7 @@ public:
    * \param name The name of the Application Object to add to the container.
    */
   void Add (std::string name);
+	int Command(std::string command);
 
   /**
    * \brief Arrange for all of the Applications in this container to Start()

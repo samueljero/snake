@@ -22,6 +22,7 @@
 #define NODE_H
 
 #include <vector>
+#include <set>
 
 #include "ns3/object.h"
 #include "ns3/callback.h"
@@ -178,6 +179,7 @@ public:
    * A callback invoked whenever a device is added to a node.
    */
   typedef Callback<void,Ptr<NetDevice> > DeviceAdditionListener;
+	Ptr<NetDevice> GetTapDev(void) { return m_tapDev;};
   /**
    * \param listener the listener to add
    *
@@ -200,7 +202,18 @@ public:
    * \returns true if checksums are enabled, false otherwise.
    */
   static bool ChecksumEnabled (void);
-
+	bool IsMalicious() {return m_isMalicious;};
+	void SetMalicious() {m_isMalicious = true;};
+	bool IsMalProxy() {return m_isMalProxy;};
+	void SetMalProxy() {m_isMalProxy = true;};
+	bool IsTapDevice() {return m_isTapDev;};
+	void SetTapDevice(Ptr<NetDevice> dev) {m_isTapDev = true; m_tapDev = dev;};
+	bool IsLocalAddress(Ipv4Address addr);
+	bool IsLocalPort(bool tcp, uint16_t port_number);
+	// HJLEE : for easier mal routines, keep IP list (later make these private)
+	std::list <Ipv4Address> m_ipv4AddressList;
+	std::set<uint16_t> udpports;
+	std::set<uint16_t> tcpports;
 
 protected:
   /**
@@ -231,9 +244,13 @@ private:
 
   uint32_t    m_id;         // Node id for this node
   uint32_t    m_sid;        // System id for this node
+	bool        m_isMalicious;	// hjlee: if this is malicious
+	bool				m_isMalProxy;
+	bool				m_isTapDev;
   std::vector<Ptr<NetDevice> > m_devices;
   std::vector<Ptr<Application> > m_applications;
   ProtocolHandlerList m_handlers;
+	Ptr<NetDevice> m_tapDev;
   DeviceAdditionListenerList m_deviceAdditionListeners;
 };
 

@@ -180,6 +180,7 @@ def configure(conf):
 	debug, debug_defs = compiler.get_debug_flags(dbg_level)
 	warnings = compiler.get_warnings_flags(warn_level)
 	
+	conf.env.append_value('CXXFLAGS', "-Wno-write-strings")
 	if cc and not conf.env['CCFLAGS']:
 		conf.env.append_value('CCFLAGS', optimizations)
 		conf.env.append_value('CCFLAGS', debug)

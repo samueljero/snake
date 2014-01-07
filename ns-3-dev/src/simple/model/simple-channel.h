@@ -21,7 +21,8 @@
 #define SIMPLE_CHANNEL_H
 
 #include "ns3/channel.h"
-#include "mac48-address.h"
+#include "ns3/mac48-address.h"
+#include "ns3/nstime.h"
 #include <vector>
 
 namespace ns3 {
@@ -43,6 +44,7 @@ public:
              Ptr<SimpleNetDevice> sender);
 
   void Add (Ptr<SimpleNetDevice> device);
+	void SetDelay(uint32_t delayMicro);
 
   // inherited from ns3::Channel
   virtual uint32_t GetNDevices (void) const;
@@ -50,6 +52,7 @@ public:
 
 private:
   std::vector<Ptr<SimpleNetDevice> > m_devices;
+  Time          m_delay;
 };
 
 } // namespace ns3

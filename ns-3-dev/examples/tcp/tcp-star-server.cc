@@ -65,10 +65,10 @@ main (int argc, char *argv[])
   // Users may find it convenient to turn on explicit debugging
   // for selected modules; the below lines suggest how to do this
 
-  //LogComponentEnable ("TcpServer", LOG_LEVEL_INFO);
-  //LogComponentEnable ("TcpL4Protocol", LOG_LEVEL_ALL);
-  //LogComponentEnable ("TcpSocketImpl", LOG_LEVEL_ALL);
-  //LogComponentEnable ("PacketSink", LOG_LEVEL_ALL);
+  LogComponentEnable ("TcpServer", LOG_LEVEL_INFO);
+  LogComponentEnable ("TcpL4Protocol", LOG_LEVEL_ALL);
+  LogComponentEnable ("TcpSocketImpl", LOG_LEVEL_ALL);
+  LogComponentEnable ("PacketSink", LOG_LEVEL_ALL);
 
   // Set up some default values for the simulation.
   Config::SetDefault ("ns3::OnOffApplication::PacketSize", UintegerValue (250));

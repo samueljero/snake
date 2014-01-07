@@ -18,7 +18,9 @@
 
 #include "simulator.h"
 #include "realtime-simulator-impl.h"
-#include "wall-clock-synchronizer.h"
+//#include "wall-clock-synchronizer.h"
+#include "freeze-time-synchronizer.h"
+
 #include "scheduler.h"
 #include "event-impl.h"
 #include "synchronizer.h"
@@ -82,7 +84,10 @@ RealtimeSimulatorImpl::RealtimeSimulatorImpl ()
 
   // Be very careful not to do anything that would cause a change or assignment
   // of the underlying reference counts of m_synchronizer or you will be sorry.
-  m_synchronizer = CreateObject<WallClockSynchronizer> ();
+  
+  //m_synchronizer = CreateObject<WallClockSynchronizer> ();
+
+  m_synchronizer = CreateObject<FreezeTimeSynchronizer> ();
 }
 
 RealtimeSimulatorImpl::~RealtimeSimulatorImpl ()
@@ -323,6 +328,12 @@ RealtimeSimulatorImpl::ProcessOneEvent (void)
     // for.  We can only assume that only that it must be due and cannot cause time 
     // to move backward.
     //
+		// TODO make a clear solution about this. Now we should allow time to move backward
+		/*
+		if (next.key.m_ts < m_currentTs) {
+			m_currentTs = next.key.m_ts;
+		}
+		*/
     NS_ASSERT_MSG (next.key.m_ts >= m_currentTs,
                    "RealtimeSimulatorImpl::ProcessOneEvent(): "
                    "next.GetTs() earlier than m_currentTs (list order error)");
@@ -416,6 +427,11 @@ RealtimeSimulatorImpl::Next (void) const
   return TimeStep (NextTs ());
 }
 
+
+#ifndef CMD_PORT
+#define CMD_PORT 8000
+#endif
+
 void
 RealtimeSimulatorImpl::Run (void)
 {
@@ -424,6 +440,8 @@ RealtimeSimulatorImpl::Run (void)
   NS_ASSERT_MSG (m_running == false, 
                  "RealtimeSimulatorImpl::Run(): Simulator already running");
 
+
+
   m_stop = false;
   m_running = true;
   m_synchronizer->SetOrigin (m_currentTs);
@@ -431,6 +449,9 @@ RealtimeSimulatorImpl::Run (void)
   for (;;) 
     {
       bool done = false;
+
+
+
 
       {
         CriticalSection cs (m_mutex);
@@ -460,12 +481,13 @@ RealtimeSimulatorImpl::Run (void)
   //
   {
     CriticalSection cs (m_mutex);
-
-    NS_ASSERT_MSG (m_events->IsEmpty () == false || m_unscheduledEvents == 0,
-                   "RealtimeSimulatorImpl::Run(): Empty queue and unprocessed events");
+   NS_ASSERT_MSG (m_events->IsEmpty () == false || m_unscheduledEvents == 0,
+                  "RealtimeSimulatorImpl::Run(): Empty queue and unprocessed events " << m_unscheduledEvents);
   }
 
   m_running = false;
+
+
 }
 
 bool
@@ -665,8 +687,9 @@ RealtimeSimulatorImpl::ScheduleRealtimeNowWithContext (uint32_t context, EventIm
     // realtime clock.  If we're not, then m_currentTs is were we stopped.
     // 
     uint64_t ts = m_running ? m_synchronizer->GetCurrentRealtime () : m_currentTs;
+    if (ts < m_currentTs) ts = m_currentTs;
     NS_ASSERT_MSG (ts >= m_currentTs, 
-                   "RealtimeSimulatorImpl::ScheduleRealtimeNowWithContext(): schedule for time < m_currentTs");
+                   "RealtimeSimulatorImpl::ScheduleRealtimeNowWithContext(): schedule for time < m_currentTs" << ts << " rt " << m_synchronizer->GetCurrentRealtime() << " " << m_currentTs);
     Scheduler::Event ev;
     ev.impl = impl;
     ev.key.m_ts = ts;
@@ -841,6 +864,38 @@ RealtimeSimulatorImpl::GetContext (void) const
   return m_currentContext;
 }
 
+int
+RealtimeSimulatorImpl::ToggleFreeze (bool freeze) 
+{
+	return m_synchronizer->ToggleFreeze(freeze);
+}
+
+void *
+RealtimeSimulatorImpl::Save (void *ptr) 
+{
+  void * ret = NULL;
+	m_savedTs = m_currentTs;
+  {
+    CriticalSection cs (m_mutex);
+    ret = m_events->Save(ptr, &m_savedUnscheduledEvents);
+    //m_savedUnscheduledEvents = m_unscheduledEvents;
+  }
+  return ret;
+}
+int
+RealtimeSimulatorImpl::Load (void *ptr) 
+{
+  int res;
+	m_currentTs = m_savedTs;
+	// implement save event queue
+  {
+    CriticalSection cs (m_mutex);
+    res = m_events->Load(ptr);
+    m_unscheduledEvents = m_savedUnscheduledEvents;
+  }
+	return res;
+}
+
 void 
 RealtimeSimulatorImpl::SetSynchronizationMode (enum SynchronizationMode mode)
 {
@@ -869,4 +924,8 @@ RealtimeSimulatorImpl::GetHardLimit (void) const
   return m_hardLimit;
 }
 
+int RealtimeSimulatorImpl::GetUnscheduledEvents(void) 
+{
+  return m_unscheduledEvents;
+}
 } // namespace ns3

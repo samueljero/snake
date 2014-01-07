@@ -203,14 +203,24 @@ Ipv4EndPointDemux::Lookup (Ipv4Address daddr, uint16_t dport,
   EndPoints retval4; // Exact match on all 4
 
   NS_LOG_FUNCTION (this << daddr << dport << saddr << sport << incomingInterface);
+	NS_LOG_INFO(" DADDR : " << daddr << " dport: " << dport << " saddr: " << saddr << " sport: " << sport);
   NS_LOG_DEBUG ("Looking up endpoint for destination address " << daddr);
   for (EndPointsI i = m_endPoints.begin (); i != m_endPoints.end (); i++) 
     {
       Ipv4EndPoint* endP = *i;
-      NS_LOG_DEBUG ("Looking at endpoint dport=" << endP->GetLocalPort ()
+      NS_LOG_DEBUG ("Looking at endpoint " << endP << " dport=" << endP->GetLocalPort ()
                                                  << " daddr=" << endP->GetLocalAddress ()
+                                                 << " odport=" << endP->GetOrgLocalPort ()
+																								 << " numIP " << endP->GetOrgLocalAddress ().Get()
+                                                 << " odaddr=" << endP->GetOrgLocalAddress ()
+                                                 << " osport=" << endP->GetOrgPeerPort ()
+                                                 << " osaddr=" << endP->GetOrgPeerAddress ()
                                                  << " sport=" << endP->GetPeerPort ()
                                                  << " saddr=" << endP->GetPeerAddress ());
+			if (endP->m_spoof) {
+				NS_LOG_DEBUG("spoof");
+			}
+			else NS_LOG_DEBUG("intercept");
       if (endP->GetLocalPort () != dport) 
         {
           NS_LOG_LOGIC ("Skipping endpoint " << &endP
@@ -258,45 +268,66 @@ Ipv4EndPointDemux::Lookup (Ipv4Address daddr, uint16_t dport,
           localAddressMatchesExact = (endP->GetLocalAddress () ==
                                       incomingInterfaceAddr);
         }
+
+			// what's the condition we should check
+			if (!endP->m_spoof && !localAddressMatchesExact) {
+				NS_LOG_DEBUG(" match check with orgLocal ");
+				localAddressMatchesExact = (endP->GetOrgLocalAddress() == daddr); // XXX daddr?
+			}
       // if no match here, keep looking
       if (!(localAddressMatchesExact || localAddressMatchesWildCard))
         continue; 
+			NS_LOG_DEBUG(" localAddressMatches HERE TCPLOG ");
       bool remotePeerMatchesExact = endP->GetPeerPort () == sport;
       bool remotePeerMatchesWildCard = endP->GetPeerPort () == 0;
       bool remoteAddressMatchesExact = endP->GetPeerAddress () == saddr;
       bool remoteAddressMatchesWildCard = endP->GetPeerAddress () ==
         Ipv4Address::GetAny ();
+			// HJLEE: for spoof 
+			if (endP->m_spoof && (!remoteAddressMatchesExact && !remotePeerMatchesExact && !remotePeerMatchesWildCard && !remoteAddressMatchesWildCard)) {
+					// SPOOF AND DADDR IS me..
+				NS_LOG_DEBUG(" SPOOF CHANGE ");
+				remotePeerMatchesExact = endP->GetOrgPeerPort() == sport;
+				remoteAddressMatchesExact = endP->GetOrgPeerAddress() == saddr;
+			}
       // If remote does not match either with exact or wildcard,
       // skip this one
       if (!(remotePeerMatchesExact || remotePeerMatchesWildCard))
         continue;
       if (!(remoteAddressMatchesExact || remoteAddressMatchesWildCard))
         continue;
-
+			NS_LOG_DEBUG(" match ");
       // Now figure out which return list to add this one to
       if (localAddressMatchesWildCard &&
           remotePeerMatchesWildCard &&
           remoteAddressMatchesWildCard)
         { // Only local port matches exactly
           retval1.push_back (endP);
+					NS_LOG_DEBUG("DEMUX local port exactly");
         }
       if ((localAddressMatchesExact || (isBroadcast && localAddressMatchesWildCard))&&
           remotePeerMatchesWildCard &&
           remoteAddressMatchesWildCard)
         { // Only local port and local address matches exactly
           retval2.push_back (endP);
+					NS_LOG_DEBUG("DEMUX local port / address exactly");
         }
       if (localAddressMatchesWildCard &&
           remotePeerMatchesExact &&
           remoteAddressMatchesExact)
         { // All but local address
-          retval3.push_back (endP);
+					// NEW - remote should be empty to use this
+					if (sport == 0) {
+						retval3.push_back (endP);
+						NS_LOG_DEBUG("DEMUX local address exactly");
+					}
         }
       if (localAddressMatchesExact &&
           remotePeerMatchesExact &&
           remoteAddressMatchesExact)
         { // All 4 match
           retval4.push_back (endP);
+					NS_LOG_DEBUG("DEMUX all 4 exactly");
         }
     }
 

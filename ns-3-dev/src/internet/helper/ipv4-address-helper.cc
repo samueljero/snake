@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <set>
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/ptr.h"
@@ -152,10 +153,11 @@ Ipv4AddressHelper::Assign (const NetDeviceContainer &c)
       NS_ASSERT_MSG (interface >= 0, "Ipv4AddressHelper::Assign(): "
                      "Interface index not found");
 
-      Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (NewAddress (), m_mask);
+			Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (NewAddress (), m_mask);
       ipv4->AddAddress (interface, ipv4Addr);
       ipv4->SetMetric (interface, 1);
       ipv4->SetUp (interface);
+			node->m_ipv4AddressList.push_back(ipv4Addr.GetLocal()); // hjlee for refer
       retval.Add (ipv4, interface);
     }
   return retval;

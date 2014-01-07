@@ -13,7 +13,7 @@ def build(bld):
     obj = bld.create_ns3_program('radvd-two-prefix', ['csma', 'internet', 'applications'])
     obj.source = 'radvd-two-prefix.cc'
 
-    obj = bld.create_ns3_program('test-ipv6', ['point-to-point', 'internet'])
+    obj = bld.create_ns3_program('test-ipv6', ['point-to-point', 'internet', 'csma'])
     obj.source = 'test-ipv6.cc'
     
     obj = bld.create_ns3_program('fragmentation-ipv6', ['csma', 'internet'])

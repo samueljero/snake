@@ -20,6 +20,10 @@
 #include "log.h"
 
 #include <list>
+
+#include <sys/time.h>
+#include <ext/hash_map>
+
 #include <utility>
 #include <iostream>
 #include <string.h>
@@ -48,6 +52,7 @@ static class PrintList
 public:
   PrintList ();
 } g_printList;
+
 
 static 
 ComponentList *GetComponentList (void)
@@ -255,6 +260,53 @@ LogComponent::Name (void) const
 {
   return m_name;
 }
+
+#ifdef PROFILE
+void 
+ProfileFunction(char const *name, bool start) {
+	static __gnu_cxx::hash_map<char const*, uint64_t> total_usage;
+	static __gnu_cxx::hash_map<char const*, uint64_t> times_called;
+	static __gnu_cxx::hash_map<char const*, struct timeval> start_time;
+
+
+	if (strcmp(name, "DUMP") == 0) {
+		__gnu_cxx::hash_map<char const*, uint64_t>::iterator iter = total_usage.begin();
+		std::cout << "================" << std::endl;
+		for ( ; iter != total_usage.end(); ++iter) {
+			std::cout << iter->second / 1000000 << "." << iter->second - ((iter->second / 1000000) * 1000000) << " (sec) Function " << iter->first << " times called " << times_called[iter->first] << std::endl;
+		}
+		return;
+	}
+
+
+	struct timeval tv2;
+	struct timezone tz;
+	gettimeofday(&tv2, &tz);
+
+	if (start) {
+		start_time[name] = tv2;
+	} else {
+			struct timeval diff, tv1;
+			tv1 = start_time[name];
+			diff.tv_sec  = tv2.tv_sec  - tv1.tv_sec;
+			diff.tv_usec = tv2.tv_usec - tv1.tv_usec;
+			if ( diff.tv_usec < 0 )
+			{
+				diff.tv_usec = diff.tv_usec + 1000000;
+				diff.tv_sec--;
+			} 
+			uint64_t time = diff.tv_sec * 1000000 + diff.tv_usec;
+			total_usage[name] += time;
+			times_called[name] += 1;
+
+	}
+
+}
+#else
+void 
+ProfileFunction(char const *name, bool start) {
+}
+#endif
 
 
 void 

@@ -43,6 +43,7 @@ class Ipv4PacketInfoTag : public Tag
 {
 public:
   Ipv4PacketInfoTag ();
+  Ipv4PacketInfoTag (Ipv4Address addr1, Ipv4Address addr2);
   // Implemented, but not used in the stack yet
   void SetAddress (Ipv4Address addr);
   // Implemented, but not used in the stack yet

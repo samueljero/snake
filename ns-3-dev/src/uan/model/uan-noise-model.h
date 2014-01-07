@@ -28,6 +28,8 @@ namespace ns3 {
 class UanNoiseModel : public Object
 {
 public:
+  static TypeId GetTypeId (void);
+
   /**
    * \param fKhz Frequency in kHz
    * \returns Noise power in dB re 1uPa/Hz

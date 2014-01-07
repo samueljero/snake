@@ -48,6 +48,8 @@ public:
   virtual Event PeekNext (void) const;
   virtual Event RemoveNext (void);
   virtual void Remove (const Event &ev);
+	virtual void* Save(void *ptr, int* eventCount);
+	virtual int Load(void *ptr) ;
 private:
   typedef std::map<Scheduler::EventKey, EventImpl*> EventMap;
   typedef std::map<Scheduler::EventKey, EventImpl*>::iterator EventMapI;

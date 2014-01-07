@@ -1,6 +1,10 @@
 #ifndef MAKE_EVENT_H
 #define MAKE_EVENT_H
 
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
+
 namespace ns3 {
 
 class EventImpl;
@@ -15,6 +19,9 @@ EventImpl * MakeEvent (MEM mem_ptr, OBJ obj, T1 a1);
 template <typename MEM, typename OBJ,
           typename T1, typename T2>
 EventImpl * MakeEvent (MEM mem_ptr, OBJ obj, T1 a1, T2 a2);
+
+template <typename MEM, typename OBJ>
+EventImpl * MakeSpecialEvent (MEM mem_ptr, OBJ obj, uint8_t* buf, ssize_t len);
 
 template <typename MEM, typename OBJ,
           typename T1, typename T2, typename T3>
@@ -37,6 +44,9 @@ EventImpl * MakeEvent (void (*f)(U1), T1 a1);
 template <typename U1, typename U2,
           typename T1, typename T2>
 EventImpl * MakeEvent (void (*f)(U1,U2), T1 a1, T2 a2);
+
+template <typename U1, typename U2>
+EventImpl * MakeSpecialEvent (void (*f)(U1,U2), uint8_t *buf, ssize_t len);
 
 template <typename U1, typename U2, typename U3,
           typename T1, typename T2, typename T3>
@@ -88,6 +98,8 @@ public:
     virtual ~EventMemberImpl0 ()
     {
     }
+		EventMemberImpl0* clone() { return new EventMemberImpl0(*this);}
+
 private:
     virtual void Notify (void)
     {
@@ -114,6 +126,7 @@ public:
         m_a1 (a1)
     {
     }
+    EventMemberImpl1* clone() {  return new EventMemberImpl1(*this);}
 protected:
     virtual ~EventMemberImpl1 ()
     {
@@ -145,6 +158,11 @@ public:
         m_a2 (a2)
     {
     }
+    EventMemberImpl2* clone() {
+	std::cout << "clone for EventMemberImpl2" << std::endl;
+	//EventMemberImpl2 newEvent;
+	    return new EventMemberImpl2(m_obj, m_function, m_a1, m_a2);
+    }
 protected:
     virtual ~EventMemberImpl2 ()
     {
@@ -159,6 +177,45 @@ private:
     typename TypeTraits<T1>::ReferencedType m_a1;
     typename TypeTraits<T2>::ReferencedType m_a2;
   } *ev = new EventMemberImpl2 (obj, mem_ptr, a1, a2);
+  return ev;
+}
+
+template <typename MEM, typename OBJ>
+EventImpl * MakeSpecialEvent (MEM mem_ptr, OBJ obj, uint8_t* buf, ssize_t len)
+{
+  // two argument version
+  class EventMemberSpecial : public EventImpl
+  {
+public:
+    EventMemberSpecial (OBJ obj, MEM function, uint8_t* buf, ssize_t len)
+      : m_obj (obj),
+        m_function (function),
+        m_a1 (buf),
+        m_a2 (len)
+    {
+	    m_a1 = new uint8_t[m_a2];
+	    memcpy(m_a1, buf, m_a2);
+    }
+    EventMemberSpecial* clone() {
+	    return new EventMemberSpecial(m_obj, m_function, m_a1, m_a2);
+    }
+protected:
+    virtual ~EventMemberSpecial ()
+    {
+	if (m_a1 != NULL) free(m_a1);
+	m_a1 = NULL;
+    }
+private:
+    virtual void Notify (void)
+    {
+      (EventMemberImplObjTraits<OBJ>::GetReference (m_obj).*m_function)(m_a1, m_a2);
+    }
+    OBJ m_obj;
+    MEM m_function;
+    uint8_t* m_a1;
+    uint8_t* new_buf;
+    ssize_t m_a2;
+  } *ev = new EventMemberSpecial (obj, mem_ptr, buf, len);
   return ev;
 }
 
@@ -178,6 +235,7 @@ public:
         m_a3 (a3)
     {
     }
+		EventMemberImpl3* clone() { return new EventMemberImpl3(*this);}
 protected:
     virtual ~EventMemberImpl3 ()
     {
@@ -213,6 +271,7 @@ public:
         m_a4 (a4)
     {
     }
+		EventMemberImpl4* clone() { return new EventMemberImpl4(*this);}
 protected:
     virtual ~EventMemberImpl4 ()
     {
@@ -251,6 +310,7 @@ public:
         m_a5 (a5)
     {
     }
+		EventMemberImpl5* clone() { return new EventMemberImpl5(*this);}
 protected:
     virtual ~EventMemberImpl5 ()
     {
@@ -285,6 +345,7 @@ public:
         m_a1 (a1)
     {
     }
+		EventFunctionImpl1* clone() { return new EventFunctionImpl1(*this);}
 protected:
     virtual ~EventFunctionImpl1 ()
     {
@@ -315,6 +376,7 @@ public:
         m_a2 (a2)
     {
     }
+		EventFunctionImpl2* clone() { return new EventFunctionImpl2(*this);}
 protected:
     virtual ~EventFunctionImpl2 ()
     {
@@ -348,6 +410,7 @@ public:
         m_a3 (a3)
     {
     }
+		EventFunctionImpl3* clone() { return new EventFunctionImpl3(*this);}
 protected:
     virtual ~EventFunctionImpl3 ()
     {
@@ -383,6 +446,7 @@ public:
         m_a4 (a4)
     {
     }
+		EventFunctionImpl4* clone() { return new EventFunctionImpl4(*this);}
 protected:
     virtual ~EventFunctionImpl4 ()
     {
@@ -420,6 +484,7 @@ public:
         m_a5 (a5)
     {
     }
+		EventFunctionImpl5* clone() { return new EventFunctionImpl5(*this);}
 protected:
     virtual ~EventFunctionImpl5 ()
     {

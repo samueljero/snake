@@ -106,6 +106,11 @@ Application::SetNode (Ptr<Node> node)
 }
 
 // Protected methods
+int Application::Command (std::string command)
+{
+	return 0;
+}
+
 // StartApp and StopApp will likely be overridden by application subclasses
 void Application::StartApplication ()
 { // Provide null functionality in case subclass is not interested

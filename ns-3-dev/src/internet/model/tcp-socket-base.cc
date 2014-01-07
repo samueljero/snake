@@ -34,6 +34,7 @@
 #include "ns3/packet.h"
 #include "ns3/uinteger.h"
 #include "ns3/trace-source-accessor.h"
+#include "ns3/malicious-tag.h"
 #include "tcp-socket-base.h"
 #include "tcp-l4-protocol.h"
 #include "ipv4-end-point.h"
@@ -133,6 +134,7 @@ TcpSocketBase::TcpSocketBase (const TcpSocketBase& sock)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_LOGIC ("Invoked the copy constructor");
+	m_spoof = false;
   // Copy the rtt estimator if it is set
   if (sock.m_rtt)
     {
@@ -234,6 +236,7 @@ TcpSocketBase::Bind (const Address &address)
   NS_LOG_FUNCTION (this << address);
   if (!InetSocketAddress::IsMatchingType (address))
     {
+			NS_LOG_INFO(" ADDRESS MISMATCH");
       m_errno = ERROR_INVAL;
       return -1;
     }
@@ -245,6 +248,7 @@ TcpSocketBase::Bind (const Address &address)
       m_endPoint = m_tcp->Allocate ();
       if (0 == m_endPoint)
         {
+			NS_LOG_INFO(" ADDRESS MISMATCH 2");
 	  m_errno = ERROR_ADDRNOTAVAIL;
           return -1;
 	}
@@ -264,6 +268,7 @@ TcpSocketBase::Bind (const Address &address)
       if (0 == m_endPoint)
         {
 	  m_errno = ERROR_ADDRNOTAVAIL;
+			NS_LOG_INFO(" ADDRESS MISMATCH 3");
 	  return -1;
         }
     }
@@ -306,9 +311,13 @@ TcpSocketBase::Connect (const Address & address)
     { // Route to destination does not exist
       return -1;
     }
-
+	NS_LOG_INFO(" CONNECT TO PEER: " << transport.GetIpv4 () << ":" << transport.GetPort() << " end local - " << m_endPoint->GetLocalAddress());
+	if (transport.GetIpv4() == m_endPoint->GetLocalAddress()) {
+		NS_LOG_INFO(" THIS IS LOCAL CONNECTION TO TAP DEV");
+		return DoConnect (true);
+	}
   // DoConnect() will do state-checking and send a SYN packet
-  return DoConnect ();
+  return DoConnect (false);
 }
 
 /** Inherit from Socket class: Listen on the endpoint for an incoming connection */
@@ -421,9 +430,34 @@ TcpSocketBase::Recv (uint32_t maxSize, uint32_t flags)
   Ptr<Packet> outPacket = m_rxBuffer.Extract (maxSize);
   if (outPacket != 0 && outPacket->GetSize () != 0)
     {
+			// SHOULD DISTINGUISH DIFF
       SocketAddressTag tag;
       tag.SetAddress (InetSocketAddress (m_endPoint->GetPeerAddress (), m_endPoint->GetPeerPort ()));
       outPacket->AddPacketTag (tag);
+			MaliciousTag mtag;
+			mtag.SetSpoof(m_endPoint->m_spoof);
+		
+		
+			if (m_endPoint->m_spoof) {
+			mtag.SetSrcPort(m_endPoint->GetPeerPort());
+			mtag.SetIPSource(m_endPoint->GetPeerAddress().Get()); // HjlEE
+			mtag.SetDestPort(m_endPoint->GetLocalPort());
+			mtag.SetIPDest(m_endPoint->GetLocalAddress().Get());
+			} else
+			{
+			mtag.SetDestPort(m_endPoint->GetLocalPort());
+			mtag.SetIPDest(m_endPoint->GetLocalAddress().Get());
+			mtag.SetSrcPort(m_endPoint->GetPeerPort());
+			mtag.SetIPSource(m_endPoint->GetPeerAddress().Get()); // HjlEE
+			}
+			
+			// hjlee: from the endpoint, we should figure out if it's from out or in
+			mtag.SetSrcNode(m_endPoint->GetSrcNode());
+			// how shoud we know...? - another information?
+			//mtag.SetMalStatus(MaliciousTag::SOCKET);
+			NS_LOG_INFO("ADD NEW MTAG" << m_endPoint->GetPeerPort() << " : " << m_endPoint->GetPeerAddress());
+			mtag.Print(std::cerr);
+			outPacket->AddPacketTag (mtag);
     }
   return outPacket;
 }
@@ -517,14 +551,15 @@ TcpSocketBase::SetupCallback (void)
 
 /** Perform the real connection tasks: Send SYN if allowed, RST if invalid */
 int
-TcpSocketBase::DoConnect (void)
+TcpSocketBase::DoConnect (bool toTap)
 {
   NS_LOG_FUNCTION (this);
 
   // A new connection is allowed only if this socket does not have a connection
   if (m_state == CLOSED || m_state == LISTEN || m_state == SYN_SENT || m_state == LAST_ACK || m_state == CLOSE_WAIT)
     { // send a SYN packet and change state into SYN_SENT
-      SendEmptyPacket (TcpHeader::SYN);
+			if (toTap) m_spoof = true;
+			SendEmptyPacket(TcpHeader::SYN);
       NS_LOG_INFO (TcpStateName[m_state] << " -> SYN_SENT");
       m_state = SYN_SENT;
     }
@@ -620,16 +655,32 @@ void
 TcpSocketBase::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
                           Ptr<Ipv4Interface> incomingInterface)
 {
-  NS_LOG_LOGIC ("Socket " << this << " forward up " <<
+  NS_LOG_LOGIC ("Socket " << this << " forward up from " <<
                 m_endPoint->GetPeerAddress () <<
                 ":" << m_endPoint->GetPeerPort () <<
+                " org " << m_endPoint->GetOrgPeerAddress () <<
+                ":" << m_endPoint->GetOrgPeerPort () <<
                 " to " << m_endPoint->GetLocalAddress () <<
                 ":" << m_endPoint->GetLocalPort ());
   Address fromAddress = InetSocketAddress (header.GetSource (), port);
   Address toAddress = InetSocketAddress (header.GetDestination (), m_endPoint->GetLocalPort ());
+	
 
   // Peel off TCP header and do validity checking
   TcpHeader tcpHeader;
+	MaliciousTag mtag;
+	packet->RemovePacketTag(mtag);
+	mtag.SetIPSource(m_endPoint->GetPeerAddress().Get());
+	//m_orgDestIP = m_endPoint->GetOrgPeerAddress(); // check if this is valid in every case - XXX HJLEE
+	m_orgDestIP = m_endPoint->GetLocalAddress();
+	NS_LOG_LOGIC(" socket ordDestIP: " << m_orgDestIP);
+
+	if (port == 0) {
+		NS_LOG_INFO("FROM ADDRESS CHANGE TCPLOG " << m_endPoint->GetOrgPeerAddress() <<":"<< m_endPoint->GetOrgPeerPort());
+		fromAddress = InetSocketAddress( m_endPoint->GetOrgPeerAddress() , m_endPoint->GetOrgPeerPort());
+		//toAddress = InetSocketAddress (mtag.GetIPSource (), mtag.GetSrcPort ());
+	}
+	packet->AddPacketTag(mtag);
   packet->RemoveHeader (tcpHeader);
   if (tcpHeader.GetFlags () & TcpHeader::ACK)
     { 
@@ -751,32 +802,46 @@ TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   // Received ACK. Compare the ACK number against highest unacked seqno
   if (0 == (tcpHeader.GetFlags () & TcpHeader::ACK))
     { // Ignore if no ACK flag
+		NS_LOG_INFO("TCPLOG ACK IGNORE NO ACK FLAG");
     }
   else if (tcpHeader.GetAckNumber () < m_txBuffer.HeadSequence ())
     { // Case 1: Old ACK, ignored.
       NS_LOG_LOGIC ("Ignored ack of " << tcpHeader.GetAckNumber ());
+		NS_LOG_INFO("TCPLOG ACK IGNORE OLD ACK FLAG");
+          DupAck (tcpHeader, ++m_dupAckCount);
     }
   else if (tcpHeader.GetAckNumber () == m_txBuffer.HeadSequence ())
     { // Case 2: Potentially a duplicated ACK
       if (tcpHeader.GetAckNumber () < m_nextTxSequence)
         {
           NS_LOG_LOGIC ("Dupack of " << tcpHeader.GetAckNumber ());
+					NS_LOG_INFO("TCPLOG ACK DUP OLD ACK FLAG");
           DupAck (tcpHeader, ++m_dupAckCount);
-        }
+        } 
+			else {
+					NS_LOG_INFO("TCPLOG ACK PRECISELY EQ");
+			}
       // otherwise, the ACK is precisely equal to the nextTxSequence
       NS_ASSERT (tcpHeader.GetAckNumber () <= m_nextTxSequence);
     }
   else if (tcpHeader.GetAckNumber () > m_txBuffer.HeadSequence ())
     { // Case 3: New ACK, reset m_dupAckCount and update m_txBuffer
       NS_LOG_LOGIC ("New ack of " << tcpHeader.GetAckNumber ());
+			NS_LOG_INFO("TCPLOG ACK NEW ACK FLAG");
       NewAck (tcpHeader.GetAckNumber ());
       m_dupAckCount = 0;
     }
+		 else {
+			NS_LOG_INFO("TCPLOG ACK HMM??");
+		 }
+		 
+  
   // If there is any data piggybacked, store it into m_rxBuffer
   if (packet->GetSize () > 0)
     {
       ReceivedData (packet, tcpHeader);
     }
+	//SendEmptyPacket (TcpHeader::ACK);
 }
 
 /** Received a packet upon LISTEN state. */
@@ -818,11 +883,19 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
       m_state = ESTABLISHED;
       m_connected = true;
       m_retxEvent.Cancel ();
+
+			MaliciousTag mtag;
+			packet->PeekPacketTag(mtag);
+			m_srcNode = mtag.GetSrcNode();
+			m_endPoint->SetSrcNode(m_srcNode);
+			packet->AddPacketTag(mtag);
+
       ReceivedData (packet, tcpHeader);
       Simulator::ScheduleNow (&TcpSocketBase::ConnectionSucceeded, this);
     }
   else if (tcpflags == TcpHeader::ACK)
     { // Ignore ACK in SYN_SENT
+		NS_LOG_INFO(" IGNORE ACK IN SYN_SENT ");
     }
   else if (tcpflags == TcpHeader::SYN)
     { // Received SYN, move to SYN_RCVD state and respond with SYN+ACK
@@ -866,6 +939,9 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
                                const Address& fromAddress, const Address& toAddress)
 {
   NS_LOG_FUNCTION (this << tcpHeader);
+	MaliciousTag mtag;
+	packet->PeekPacketTag(mtag);
+	mtag.Print(std::cerr);
 
   // Extract the flags. PSH and URG are not honoured.
   uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG);
@@ -887,10 +963,23 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_delAckMaxCount;
       ReceivedAck (packet, tcpHeader);
+			m_srcNode = mtag.GetSrcNode();
+			m_endPoint->SetSrcNode(m_srcNode);
+
+			// XXX HJLEE - check 2. this is almost identical to 
+			//m_orgDestIP = m_endPoint->GetOrgPeerAddress();
+			/*
+			if (m_srcNode == m_node->GetId()) {
+				m_orgDestIP = m_endPoint->GetPeerAddress();
+			} else {
+				m_orgDestIP = m_endPoint->GetLocalAddress();
+			}
+			*/
       NotifyNewConnectionCreated (this, fromAddress);
     }
   else if (tcpflags == TcpHeader::SYN)
     { // Probably the peer lost my SYN+ACK
+			NS_LOG_INFO("THE PEER LOST MY SYN+ACK");
       m_rxBuffer.SetNextRxSequence (tcpHeader.GetSequenceNumber () + SequenceNumber32 (1));
       SendEmptyPacket (TcpHeader::SYN | TcpHeader::ACK);
     }
@@ -908,6 +997,7 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
     }
   else
     { // Other in-sequence input
+			NS_LOG_INFO("OTHER IN_SEQUENCE INPUT");
       CloseAndNotify ();
       if (tcpflags != TcpHeader::RST)
         { // When (1) rx of SYN+ACK; (2) rx of FIN; (3) rx of bad flags
@@ -1152,7 +1242,43 @@ TcpSocketBase::Destroy (void)
   CancelAllTimers ();
 }
 
-/** Send an empty packet with specified TCP flags */
+void TcpSocketBase::SendPacketWrapper(Ptr<Packet> p, const TcpHeader *header, 
+                           Ipv4Address saddr, Ipv4Address daddr, Ptr<NetDevice> oif)
+{
+	MaliciousTag mtag;
+	p->RemovePacketTag(mtag);
+	if (m_endPoint->m_spoof) m_spoof = true;
+	if (m_spoof) {
+		m_endPoint->m_spoof = true;
+		mtag.SetMalStatus(MaliciousTag::FROMPROXY);
+
+		if (m_orgSrcIP.Get() == 0) {
+			m_orgSrcIP = m_endPoint->GetOrgPeerAddress();
+		}
+
+		m_endPoint->SetLocalAddress(m_orgSrcIP);
+		mtag.SetSpoof(m_spoof);
+		mtag.SetIPSource(m_orgSrcIP.Get());
+		mtag.SetSrcPort(m_endPoint->GetLocalPort());
+		mtag.SetIPDest(m_endPoint->GetPeerAddress().Get());
+		mtag.SetDestPort(m_endPoint->GetPeerPort ());
+		NS_LOG_INFO(" SPOOF: " << m_orgSrcIP);
+	} else {
+	  mtag.SetIPSource(m_endPoint->GetLocalAddress().Get());
+	  mtag.SetSrcPort(m_endPoint->GetLocalPort());
+	  mtag.SetIPDest(m_endPoint->GetPeerAddress().Get());
+	  mtag.SetDestPort(m_endPoint->GetPeerPort());
+	}
+	mtag.SetSrcNode(m_node->GetId());
+	p->AddPacketTag(mtag);
+	NS_LOG_INFO(" SEND PACKET " << p->GetUid()
+		<< " from " << m_endPoint->GetLocalAddress() << " : " << m_endPoint->GetLocalPort()
+		<< " to " <<  m_endPoint->GetPeerAddress () << " : " << m_endPoint->GetPeerPort()
+		<< " dev: " << m_boundnetdevice);
+  m_tcp->SendPacket (p, *header, m_endPoint->GetLocalAddress(), m_endPoint->GetPeerAddress (), m_boundnetdevice);
+	return;
+}
+
 void
 TcpSocketBase::SendEmptyPacket (uint8_t flags)
 {
@@ -1181,7 +1307,40 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
   header.SetSourcePort (m_endPoint->GetLocalPort ());
   header.SetDestinationPort (m_endPoint->GetPeerPort ());
   header.SetWindowSize (AdvertisedWindowSize ());
-  m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress (), m_endPoint->GetPeerAddress (), m_boundnetdevice);
+	if (m_endPoint->m_spoof) m_spoof = true;
+	MaliciousTag mtag;
+	if (flags == TcpHeader::SYN) 
+		mtag.SetMalStatus(MaliciousTag::FROMPROXY);
+	if (m_spoof) {
+		m_endPoint->m_spoof = true;
+		mtag.SetMalStatus(MaliciousTag::FROMPROXY);
+
+		if (m_orgSrcIP.Get() == 0) {
+			m_orgSrcIP = m_endPoint->GetOrgPeerAddress();
+		}
+
+		m_endPoint->SetLocalAddress(m_orgSrcIP);
+		mtag.SetSpoof(m_spoof);
+		mtag.SetIPSource(m_orgSrcIP.Get());
+		mtag.SetSrcPort(m_endPoint->GetLocalPort());
+		mtag.SetIPDest(m_endPoint->GetPeerAddress().Get());
+		mtag.SetDestPort(m_endPoint->GetPeerPort ());
+		NS_LOG_INFO(" SPOOF: " << m_orgSrcIP);
+	} else {
+	  mtag.SetIPSource(m_endPoint->GetLocalAddress().Get());
+	  mtag.SetSrcPort(m_endPoint->GetLocalPort());
+	  mtag.SetIPDest(m_endPoint->GetPeerAddress().Get());
+	  mtag.SetDestPort(m_endPoint->GetPeerPort());
+	}
+	mtag.SetSrcNode(m_node->GetId());
+	p->AddPacketTag(mtag);
+	NS_LOG_INFO(" SEND PACKET " << p->GetUid()
+		<< " from " << m_endPoint->GetLocalAddress() << " : " << m_endPoint->GetLocalPort()
+		<< " to " <<  m_endPoint->GetPeerAddress () << " : " << m_endPoint->GetPeerPort()
+		<< " dev: " << m_boundnetdevice);
+  //m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress(), m_endPoint->GetPeerAddress (), m_boundnetdevice);
+  SendPacketWrapper (p, &header, m_endPoint->GetLocalAddress(), m_endPoint->GetPeerAddress (), m_boundnetdevice);
+	
   m_rto = m_rtt->RetransmitTimeout ();
   bool hasSyn = flags & TcpHeader::SYN;
   bool hasFin = flags & TcpHeader::FIN;
@@ -1274,7 +1433,22 @@ TcpSocketBase::CompleteFork (Ptr<Packet> p, const TcpHeader& h,
                                 InetSocketAddress::ConvertFrom (fromAddress).GetPort ());
 
   // Change the cloned socket from LISTEN state to SYN_RCVD
+  // 
   NS_LOG_INFO ("LISTEN -> SYN_RCVD");
+
+	MaliciousTag mtag;
+	p->PeekPacketTag(mtag);
+	NS_LOG_INFO(" TCPLOG : TAG AT FORK with address ");
+	m_endPoint->SetOrgLocal(mtag.GetIPDestination(), mtag.GetDestPort());
+	//m_endPoint->SetOrgLocal(InetSocketAddress::ConvertFrom (toAddress).GetIpv4 (), InetSocketAddress::ConvertFrom (toAddress).GetPort ());
+	m_endPoint->SetOrgPeer(InetSocketAddress::ConvertFrom (fromAddress).GetIpv4 (), InetSocketAddress::ConvertFrom (fromAddress).GetPort ());
+	m_endPoint->SetPeer(InetSocketAddress::ConvertFrom (fromAddress).GetIpv4 (), InetSocketAddress::ConvertFrom (fromAddress).GetPort ());
+	m_endPoint->SetLocalAddress(mtag.GetIPDestination());
+	m_orgDestIP = m_endPoint->GetOrgLocalAddress(); 
+	NS_LOG_INFO(" TCPLOG : set ORG DEST IP : TAG AT FORK with address " << m_orgDestIP);
+	//m_spoof = true;
+	mtag.Print(std::cerr);
+
   m_state = SYN_RCVD;
   SetupCallback ();
   // Set the sequence number and send SYN+ACK
@@ -1357,6 +1531,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       header.SetSourcePort (m_endPoint->GetLocalPort ());
       header.SetDestinationPort (m_endPoint->GetPeerPort ());
       header.SetWindowSize (AdvertisedWindowSize ());
+
       if (m_retxEvent.IsExpired () )
         { // Schedule retransmit
           m_rto = m_rtt->RetransmitTimeout ();
@@ -1366,7 +1541,8 @@ TcpSocketBase::SendPendingData (bool withAck)
           m_retxEvent = Simulator::Schedule (m_rto, &TcpSocketBase::ReTxTimeout, this);
         }
       NS_LOG_LOGIC ("Send packet via TcpL4Protocol with flags 0x" << std::hex << static_cast<uint32_t> (flags) << std::dec);
-      m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress (),
+      //m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress(),
+      SendPacketWrapper( p, &header, m_endPoint->GetLocalAddress(),
                          m_endPoint->GetPeerAddress (), m_boundnetdevice);
       m_rtt->SentSeq (m_nextTxSequence, sz);       // notify the RTT
       // Notify the application of the data being sent
@@ -1441,7 +1617,7 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     }
   else
     { // In-sequence packet: ACK if delayed ack count allows
-      if (++m_delAckCount >= m_delAckMaxCount)
+      if (++m_delAckCount >= m_delAckMaxCount || true) // FORCE ACK
         {
           m_delAckEvent.Cancel ();
           m_delAckCount = 0;
@@ -1588,7 +1764,8 @@ TcpSocketBase::PersistTimeout ()
   tcpHeader.SetDestinationPort (m_endPoint->GetPeerPort ());
   tcpHeader.SetWindowSize (AdvertisedWindowSize ());
 
-  m_tcp->SendPacket (p, tcpHeader, m_endPoint->GetLocalAddress (),
+  //m_tcp->SendPacket (p, tcpHeader, m_endPoint->GetLocalAddress (),
+  SendPacketWrapper (p, &tcpHeader, m_endPoint->GetLocalAddress (),
                      m_endPoint->GetPeerAddress (), m_boundnetdevice);
   NS_LOG_LOGIC ("Schedule persist timeout at time "
                 << Simulator::Now ().GetSeconds () << " to expire at time "
@@ -1659,7 +1836,8 @@ TcpSocketBase::DoRetransmit ()
   tcpHeader.SetFlags (flags);
   tcpHeader.SetWindowSize (AdvertisedWindowSize ());
 
-  m_tcp->SendPacket (p, tcpHeader, m_endPoint->GetLocalAddress (),
+  //m_tcp->SendPacket (p, tcpHeader, m_endPoint->GetLocalAddress (),
+  SendPacketWrapper (p, &tcpHeader, m_endPoint->GetLocalAddress (),
                      m_endPoint->GetPeerAddress (), m_boundnetdevice);
 }
 

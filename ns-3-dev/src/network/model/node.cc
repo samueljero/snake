@@ -84,6 +84,9 @@ void
 Node::Construct (void)
 {
   m_id = NodeList::Add (this);
+	m_isMalicious = false;
+	m_isMalProxy = false;
+	m_isTapDev = false;
 }
 
 Node::~Node ()
@@ -138,6 +141,7 @@ Node::AddApplication (Ptr<Application> application)
                                   &Application::Start, application);
   return index;
 }
+
 Ptr<Application> 
 Node::GetApplication (uint32_t index) const
 {
@@ -204,6 +208,9 @@ Node::RegisterProtocolHandler (ProtocolHandler handler,
   entry.protocol = protocolType;
   entry.device = device;
   entry.promiscuous = promiscuous;
+	// hjlee: do not allow to install ARP handler for tap devices, otherwise dup happens
+	if ((m_isTapDev || m_isMalicious) && protocolType == 2054) return;
+	if ((m_isTapDev || m_isMalicious) && protocolType == 1) return;
 
   // On demand enable promiscuous mode in netdevices
   if (promiscuous)
@@ -261,7 +268,10 @@ Node::NonPromiscReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> pack
                                    const Address &from)
 {
   NS_LOG_FUNCTION (this);
-  return ReceiveFromDevice (device, packet, protocol, from, device->GetAddress (), NetDevice::PacketType (0), false);
+	NS_LOG_INFO("NONPROMISC protocol: " << protocol << " packet: " << packet->GetUid());
+	bool res = ReceiveFromDevice (device, packet, protocol, from, device->GetAddress (), NetDevice::PacketType (0), false);
+	NS_LOG_INFO("HJLEE: " << device->GetAddress());
+	return res;
 }
 
 bool
@@ -329,6 +339,29 @@ Node::NotifyDeviceAdded (Ptr<NetDevice> device)
       (*i) (device);
     }  
 }
- 
 
+bool
+Node::IsLocalAddress(Ipv4Address addr)
+{
+	std::list<Ipv4Address>::iterator it;
+	for (it = m_ipv4AddressList.begin(); it != m_ipv4AddressList.end(); it++) {
+		if (*it == addr) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool
+Node::IsLocalPort(bool tcp, uint16_t port_number)
+{
+	if (!tcp) {
+		if (udpports.find(port_number) != udpports.end()) return true;
+	} 
+	if (tcp) {
+		if (tcpports.find(port_number) != tcpports.end()) return true;
+	} 
+	
+	return false;
+}
 } // namespace ns3

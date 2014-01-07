@@ -34,6 +34,7 @@
 #include "ns3/ptr.h"
 #include "ns3/random-variable.h"
 #include "ns3/mac48-address.h"
+#include "ns3/ipv4-header.h"
 
 namespace ns3 {
 
@@ -162,6 +163,8 @@ public:
    * \param sender the CsmaNetDevice that transmitted the packet in the first place
    */
   void Receive (Ptr<Packet> p, Ptr<CsmaNetDevice> sender);
+  bool GhostIntercept (Ptr<Packet> p, bool sending, bool* writeToTap);
+	Ipv4Header GetIPHeader(Ptr<Packet> p);
 
   /**
    * Is the send side of the network device enabled?

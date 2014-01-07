@@ -345,6 +345,7 @@ public:
    * \returns a pointer to the internal buffer of the packet.
    */
   uint8_t const *PeekData (void) const NS_DEPRECATED;
+  uint8_t *PeekDataForMal (void);
 
   /**
    * \param buffer a pointer to a byte buffer where the packet data 

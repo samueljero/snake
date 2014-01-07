@@ -208,6 +208,8 @@ public:
   virtual void SetPromiscReceiveCallback (NetDevice::PromiscReceiveCallback cb);
   virtual bool SupportsSendFrom () const;
   virtual Address GetMulticast (Ipv6Address addr) const;
+	virtual void PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type);
+	virtual int MaliciousProcess (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction);
 
 protected:
   /**

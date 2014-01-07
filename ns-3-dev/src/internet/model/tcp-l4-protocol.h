@@ -29,6 +29,7 @@
 #include "ns3/object-factory.h"
 #include "ipv4-l4-protocol.h"
 #include "ns3/net-device.h"
+#include "ns3/malicious-tag.h"
 
 namespace ns3 {
 
@@ -128,6 +129,7 @@ private:
 
   std::vector<Ptr<TcpSocketBase> > m_sockets;
   Ipv4L4Protocol::DownTargetCallback m_downTarget;
+  MaliciousTag mtag_old;
 };
 
 } // namespace ns3

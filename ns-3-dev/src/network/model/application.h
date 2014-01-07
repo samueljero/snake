@@ -100,6 +100,7 @@ public:
    * \param node the node to which this Application object is attached.
    */
   void SetNode (Ptr<Node> node);
+	virtual int Command(std::string command);
 
 private:
   /**

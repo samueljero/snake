@@ -19,10 +19,12 @@
 #ifndef UDP_ECHO_SERVER_H
 #define UDP_ECHO_SERVER_H
 
+#include <map>
 #include "ns3/application.h"
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
 #include "ns3/address.h"
+#include "ns3/ipv4-address.h"
 
 namespace ns3 {
 
@@ -47,6 +49,7 @@ public:
   UdpEchoServer ();
   virtual ~UdpEchoServer ();
 
+
 protected:
   virtual void DoDispose (void);
 
@@ -59,7 +62,9 @@ private:
 
   uint16_t m_port;
   Ptr<Socket> m_socket;
-  Address m_local;
+  Ipv4Address m_local;
+	std::map<Ipv4Address, Ptr<Socket> > m_conn;
+	std::map<Ipv4Address, Ptr<Socket> > m_back;
 };
 
 } // namespace ns3

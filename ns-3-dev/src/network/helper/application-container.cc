@@ -80,6 +80,18 @@ ApplicationContainer::Add (std::string name)
   m_applications.push_back (application);
 }
 
+int
+ApplicationContainer::Command (std::string command)
+{
+	int res = 0;
+  for (Iterator i = Begin (); i != End (); ++i)
+    {
+      Ptr<Application> app = *i;
+      res =app->Command (command);
+    }
+	return res;
+}
+
 void 
 ApplicationContainer::Start (Time start)
 {

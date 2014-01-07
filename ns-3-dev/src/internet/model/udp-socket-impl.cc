@@ -28,6 +28,7 @@
 #include "ns3/udp-socket-factory.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/ipv4-packet-info-tag.h"
+#include "ns3/malicious-tag.h"
 #include "udp-socket-impl.h"
 #include "udp-l4-protocol.h"
 #include "ipv4-end-point.h"
@@ -252,6 +253,7 @@ UdpSocketImpl::Send (Ptr<Packet> p, uint32_t flags)
   if (!m_connected)
     {
       m_errno = ERROR_NOTCONN;
+			NS_LOG_INFO(" ERROR NOT CONN ");
       return -1;
     }
   return DoSend (p);
@@ -304,6 +306,26 @@ int
 UdpSocketImpl::DoSendTo (Ptr<Packet> p, Ipv4Address dest, uint16_t port)
 {
   NS_LOG_FUNCTION (this << p << dest << port);
+	MaliciousTag mtag;
+	p->PeekPacketTag(mtag);
+	mtag.StopTimer("udp socket send");
+	if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY) {
+		Ipv4Header header;
+		header.SetProtocol (UdpL4Protocol::PROT_NUMBER);
+		header.SetDestination(dest);
+		header.SetSource(mtag.GetIPSource());
+		Ptr<Packet> pCopy = p->Copy();
+		NS_LOG_INFO("PACKET RELAY - mal proxy intercepted, modified and now sending packet UID " << pCopy->GetUid());
+
+		// GET LOCAL PORT. WE SHOULD DO SOMETHING WITH THIS
+		m_udp->Send (pCopy, header.GetSource(), header.GetDestination (), 
+				m_endPoint->GetLocalPort (), port) ;
+		NotifyDataSent (p->GetSize ());
+		return p->GetSize ();
+	} else {
+		NS_LOG_INFO("DO SEND TO : AND TAG: " << (int)(mtag.GetMalStatus()));
+	}
+
   if (m_boundnetdevice)
     {
       NS_LOG_LOGIC ("Bound interface number " << m_boundnetdevice->GetIfIndex ());
@@ -376,7 +398,23 @@ UdpSocketImpl::DoSendTo (Ptr<Packet> p, Ipv4Address dest, uint16_t port)
   // Note also that some systems will only send limited broadcast packets
   // out of the "default" interface; here we send it out all interfaces
   //
-  if (dest.IsBroadcast ())
+	// this is socket
+	if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY) { // XXX - urgent check is this required?
+		NS_ASSERT_MSG(1, "HOW REACH");
+		Ipv4Header header;
+		//Ptr<Ipv4Route> route;
+		header.SetDestination (mtag.GetIPDestination());
+		header.SetProtocol (UdpL4Protocol::PROT_NUMBER);
+		header.SetSource (mtag.GetIPSource());
+		NS_LOG_INFO("MALICIOUS PACKET - SEND TO THE ORIGINAL DESTINATION");
+		// GET LOCAL PORT. WE SHOULD DO SOMETHING WITH THIS
+		m_udp->Send (p->Copy (), header.GetSource (), dest,
+				//port, port);
+				m_endPoint->GetLocalPort (), port) ;
+		NotifyDataSent (p->GetSize ());
+		return p->GetSize ();
+	}
+  else if (dest.IsBroadcast ())
     {
       if (!m_allowBroadcast)
         {
@@ -543,6 +581,11 @@ UdpSocketImpl::RecvFrom (uint32_t maxSize, uint32_t flags,
   Ptr<Packet> packet = Recv (maxSize, flags);
   if (packet != 0)
     {
+
+	MaliciousTag mtag;
+	packet->PeekPacketTag(mtag);
+	mtag.StopTimer("udp socket recv");
+
       SocketAddressTag tag;
       bool found;
       found = packet->PeekPacketTag (tag);
@@ -622,10 +665,13 @@ void
 UdpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
                           Ptr<Ipv4Interface> incomingInterface)
 {
+	ProfileFunction("UDPlSocketForward", true);
   NS_LOG_FUNCTION (this << packet << header << port);
 
   if (m_shutdownRecv)
     {
+			NS_LOG_INFO("shutdown");
+			ProfileFunction("UDPlSocketForward", false);
       return;
     }
 
@@ -646,7 +692,9 @@ UdpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
       packet->AddPacketTag (tag);
       m_deliveryQueue.push (packet);
       m_rxAvailable += packet->GetSize ();
+			ProfileFunction("UDPlSocketForward", false);
       NotifyDataRecv ();
+			NS_LOG_INFO("notified!");
     }
   else
     {
@@ -655,8 +703,10 @@ UdpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
       // in comparison to the arrival rate
       //
       // drop and trace packet
+			NS_LOG_INFO("buffer!");
       NS_LOG_WARN ("No receive buffer space available.  Drop.");
       m_dropTrace (packet);
+			ProfileFunction("UDPlSocketForward", false);
     }
 }
 

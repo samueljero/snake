@@ -82,7 +82,7 @@ int main ()
 
     conf.check_nonfatal(header_name='sys/inttypes.h', define_name='HAVE_SYS_INT_TYPES_H')
 
-    if not conf.check_nonfatal(lib='rt', uselib='RT', define_name='HAVE_RT'):
+    if not conf.check_nonfatal(lib='rt', uselib_store='RT', define_name='HAVE_RT'):
         conf.report_optional_feature("RealTime", "Real Time Simulator",
                                      False, "librt is not available")
     else:
@@ -238,6 +238,7 @@ def build(bld):
         'model/vector.h',
         'model/default-deleter.h',
         'model/fatal-impl.h',
+        'model/system-path.h'
         ]
 
     if sys.platform == 'win32':
@@ -268,17 +269,16 @@ def build(bld):
     if env['ENABLE_REAL_TIME']:
         headers.source.extend([
                 'model/realtime-simulator-impl.h',
-                'model/wall-clock-synchronizer.h',
+                #'model/wall-clock-synchronizer.h',
+		'model/freeze-time-synchronizer.h',
                 ])
         core.source.extend([
                 'model/realtime-simulator-impl.cc',
-                'model/wall-clock-synchronizer.cc',
+                #'model/wall-clock-synchronizer.cc',
+		'model/freeze-time-synchronizer.cc',
                 ])
-        core.uselib      = 'RT'
-        core_test.uselib = 'RT'
-    else:
-        core.uselib      = ''
-        core_test.uselib = ''
+        core.use.append('RT')
+        core_test.use.append('RT')
 
     if env['ENABLE_THREADING']:
         core.source.extend([
@@ -287,8 +287,8 @@ def build(bld):
             'model/unix-system-mutex.cc',
             'model/unix-system-condition.cc',
             ])
-        core.uselib      = core.uselib      + ' PTHREAD'
-        core_test.uselib = core_test.uselib + ' PTHREAD'
+        core.use.append('PTHREAD')
+        core_test.use.append('PTHREAD')
         headers.source.extend([
                 'model/unix-fd-reader.h',
                 'model/system-mutex.h',
@@ -297,12 +297,12 @@ def build(bld):
                 ])
 
     if env['ENABLE_GSL']:
-        core.uselib      = core.uselib      + ' GSL GSLCBLAS M'
-        core_test.uselib = core_test.uselib + ' GSL GSLCBLAS M'
+        core.use.extend(['GSL', 'GSLCBLAS', 'M'])
+        core_test.use.extend(['GSL', 'GSLCBLAS', 'M'])
         core_test.source.extend(['test/rng-test-suite.cc'])
 
-    if (bld.env['ENABLE_EXAMPLES']):
-        bld.add_subdirs('examples')
+    #if (bld.env['ENABLE_EXAMPLES']):
+        #bld.add_subdirs('examples')
 
     pymod = bld.ns3_python_bindings()
     if pymod is not None:

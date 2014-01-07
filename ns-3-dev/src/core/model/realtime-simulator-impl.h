@@ -22,7 +22,8 @@
 #include "simulator-impl.h"
 
 #include "scheduler.h"
-#include "synchronizer.h"
+//#include "synchronizer.h"
+#include "freeze-time-synchronizer.h"
 #include "event-impl.h"
 
 #include "ptr.h"
@@ -31,6 +32,7 @@
 #include "system-mutex.h"
 
 #include <list>
+
 
 namespace ns3 {
 
@@ -64,6 +66,9 @@ public:
   virtual void Cancel (const EventId &ev);
   virtual bool IsExpired (const EventId &ev) const;
   virtual void Run (void);
+	virtual int ToggleFreeze(bool) ;
+	virtual void* Save(void *) ;
+	virtual int Load(void *) ;
   virtual void RunOneEvent (void);
   virtual Time Now (void) const;
   virtual Time GetDelayLeft (const EventId &id) const;
@@ -72,6 +77,7 @@ public:
   virtual uint32_t GetSystemId (void) const; 
   virtual uint32_t GetContext (void) const;
 
+  int GetUnscheduledEvents(void);
   void ScheduleRealtimeWithContext (uint32_t context, Time const &time, EventImpl *event);
   void ScheduleRealtime (Time const &time, EventImpl *event);
   void ScheduleRealtimeNowWithContext (uint32_t context, EventImpl *event);
@@ -103,11 +109,14 @@ private:
   uint32_t m_uid;
   uint32_t m_currentUid;
   uint64_t m_currentTs;
+	uint64_t m_savedTs;
+	int m_savedUnscheduledEvents;
   uint32_t m_currentContext;
 
   mutable SystemMutex m_mutex;
 
-  Ptr<Synchronizer> m_synchronizer;
+  //Ptr<Synchronizer> m_synchronizer;
+  Ptr<FreezeTimeSynchronizer> m_synchronizer;
 
   /**
    * The policy to use if the simulation cannot keep synchronized to real-time.
@@ -118,6 +127,7 @@ private:
    * The maximum allowable drift from real-time in SYNC_HARD_LIMIT mode.
    */
   Time m_hardLimit;
+
 };
 
 } // namespace ns3

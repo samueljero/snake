@@ -1,0 +1,179 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/applications-module.h"
+#include "ns3/bridge-module.h"
+#include "ns3/csma-module.h"
+#include "ns3/internet-module.h"
+#include "ns3/tap-bridge-module.h"
+#include "ns3/csma-layout-module.h"
+
+// Network topology (default)
+//
+//     n1--- n0---n2            .
+//
+
+
+using namespace ns3;
+
+NS_LOG_COMPONENT_DEFINE ("TwoNode");
+
+int 
+main (int argc, char *argv[])
+{
+
+  //
+  // Set up some default values for the simulation.
+  //
+  GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
+  GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
+
+  CommandLine cmd;
+  cmd.Parse (argc, argv);
+
+  NS_LOG_INFO ("Build TwoNode topology.");
+
+  NodeContainer terminals;
+  terminals.Create (4);
+
+  NodeContainer csmaSwitch;
+  csmaSwitch.Create (1);
+  CsmaHelper csma;
+  csma.SetChannelAttribute ("DataRate", StringValue ("100Mbps"));
+  csma.SetChannelAttribute ("Delay", StringValue ("1ms"));
+
+  NetDeviceContainer terminalDevices;
+	csma.Install(terminals);
+  NetDeviceContainer switchDevices;
+
+  for (int i = 0; i < 4; i++) {
+      NetDeviceContainer link = csma.Install (NodeContainer (terminals.Get (i), csmaSwitch));
+      terminalDevices.Add (link.Get (0));
+      switchDevices.Add (link.Get (1));
+    }
+
+  // Create the bridge netdevice, which will do the packet switching
+  Ptr<Node> switchNode = csmaSwitch.Get (0);
+  BridgeHelper bridge;
+  bridge.Install (switchNode, switchDevices);
+
+  // Add internet stack to the terminals
+  InternetStackHelper internet;
+  internet.Install (terminals);
+
+	// Node 0 becomes tcp echo server
+
+	TapBridgeHelper tapBridge;tapBridge.SetAttribute ("Mode", StringValue ("UseBridge"));
+  tapBridge.SetAttribute ("DeviceName", StringValue ("tap-left"));
+  tapBridge.Install (terminals.Get (0), terminalDevices.Get (0));
+  tapBridge.SetAttribute ("DeviceName", StringValue ("tap-right"));
+  tapBridge.Install (terminals.Get (1), terminalDevices.Get (1));
+	
+	/*
+  Ipv4AddressHelper ipv4;
+  ipv4.SetBase ("10.1.1.0", "255.255.255.0");
+  ipv4.Assign (terminalDevices);
+
+  uint16_t port = 50000;
+
+  OnOffHelper onoff ("ns3::UdpSocketFactory", 
+                     Address (InetSocketAddress (Ipv4Address ("10.1.1.2"), port)));
+  onoff.SetAttribute ("OnTime", RandomVariableValue (ConstantVariable (1)));
+  onoff.SetAttribute ("OffTime", RandomVariableValue (ConstantVariable (0)));
+
+  ApplicationContainer app = onoff.Install (terminals.Get (0));
+  // Start the application
+  app.Start (Seconds (1.0));
+  app.Stop (Seconds (10.0));
+	
+  // Create an optional packet sink to receive these packets
+  PacketSinkHelper sink ("ns3::UdpSocketFactory",
+                         Address (InetSocketAddress (Ipv4Address::GetAny (), port)));
+  app = sink.Install (terminals.Get (1));
+  app.Start (Seconds (0.0));
+  //csma.SetDeviceAttribute ("Mtu", UintegerValue(1400));
+	*/
+	
+	/*
+  CsmaStarHelper star (nSpokes, csma);
+
+	
+  NS_LOG_INFO ("Install internet stack on all nodes.");
+  InternetStackHelper internet;
+  star.InstallStack (internet);
+
+  NS_LOG_INFO ("Assign IP Addresses.");
+  star.AssignIpv4Addresses (Ipv4AddressHelper ("10.1.1.0", "255.255.255.0"));
+	ns3::PacketMetadata::Enable () ;
+
+  NS_LOG_INFO ("Create applications.");
+  //
+  // Create a proxt sink on the star "hub" to receive packets.
+  // 
+  uint16_t port = 50000;
+	Ipv4Address any = Ipv4Address::GetAny();
+  Address hubLocalAddress (InetSocketAddress (any, port));
+  ProxyHelper proxyHelper ("ns3::TcpSocketFactory", hubLocalAddress);
+	NS_LOG_INFO("hubAddress " << any);
+  ApplicationContainer hubApp = proxyHelper.Install (star.GetHub ());
+  hubApp.Start (Seconds (1.0));
+  hubApp.Stop (Seconds (10.0));
+
+	// Node 0 becomes tcp echo server
+	TcpEchoServerHelper server (star.GetSpokeIpv4Address(0), port);
+	ApplicationContainer serverapps;
+	serverapps.Add( server.Install(star.GetSpokeNode(0)));
+	serverapps.Start(Seconds(1.0));
+	serverapps.Stop(Seconds(10.0));
+
+	// Node 1 becomes dup echo client
+  //
+	TcpEchoClientHelper client (star.GetSpokeIpv4Address(0), port);
+	ApplicationContainer clientapps;
+	clientapps.Add( client.Install(star.GetSpokeNode(1)));
+	clientapps.Start(Seconds(1.0));
+	clientapps.Stop(Seconds(10.0));
+
+
+  for (uint32_t i = 0; i < star.SpokeCount (); ++i)
+    {
+			NS_LOG_INFO("remoteAddress of " << i << " " << star.GetHubIpv4Address(i));
+			NS_LOG_INFO("Address of " << i << " " << star.GetSpokeIpv4Address(i));
+    }
+	*/
+  NS_LOG_INFO ("Enable static global routing.");
+  //
+  // Turn on global static routing so we can actually be routed across the star.
+  //
+  Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+
+  NS_LOG_INFO ("Enable pcap tracing.");
+  csma.EnablePcapAll ("twonodes");
+	AsciiTraceHelper ascii;
+	csma.EnableAsciiAll(ascii.CreateFileStream("trace"));
+
+
+  NS_LOG_INFO ("Run Simulation.");
+  Simulator::Stop (Seconds (600.));
+  Simulator::Run ();
+  Simulator::Destroy ();
+  NS_LOG_INFO ("Done.");
+
+  return 0;
+}

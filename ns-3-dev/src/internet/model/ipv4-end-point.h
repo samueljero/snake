@@ -54,8 +54,16 @@ public:
   uint16_t GetLocalPort (void);
   Ipv4Address GetPeerAddress (void);
   uint16_t GetPeerPort (void);
+  Ipv4Address GetOrgPeerAddress (void);
+  uint16_t GetOrgPeerPort (void);
+  Ipv4Address GetOrgLocalAddress (void);
+  uint16_t GetOrgLocalPort (void);
 
   void SetPeer (Ipv4Address address, uint16_t port);
+  void SetOrgPeer (Ipv4Address address, uint16_t port);
+  void SetOrgLocal (Ipv4Address address, uint16_t port);
+	void SetSrcNode(uint16_t node);
+	uint16_t GetSrcNode(void);
 
   void BindToNetDevice (Ptr<NetDevice> netdevice);
   Ptr<NetDevice> GetBoundNetDevice (void);
@@ -74,7 +82,8 @@ public:
   void ForwardIcmp (Ipv4Address icmpSource, uint8_t icmpTtl, 
                     uint8_t icmpType, uint8_t icmpCode,
                     uint32_t icmpInfo);
-
+	bool IsSpoof() const {return m_spoof;};
+	bool m_spoof;
 private:
   void DoForwardUp (Ptr<Packet> p, const Ipv4Header& header, uint16_t sport,
                     Ptr<Ipv4Interface> incomingInterface);
@@ -85,6 +94,12 @@ private:
   uint16_t m_localPort;
   Ipv4Address m_peerAddr;
   uint16_t m_peerPort;
+  Ipv4Address m_orgPeerAddr;
+  uint16_t m_orgPeerPort;
+  Ipv4Address m_orgLocalAddr;
+  uint16_t m_orgLocalPort;
+	uint16_t m_srcNode;
+
   Ptr<NetDevice> m_boundnetdevice;
   Callback<void,Ptr<Packet>, Ipv4Header, uint16_t, Ptr<Ipv4Interface> > m_rxCallback;
   Callback<void,Ipv4Address,uint8_t,uint8_t,uint8_t,uint32_t> m_icmpCallback;

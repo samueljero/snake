@@ -95,6 +95,17 @@ public:
    * This methods cannot be invoked if the list is empty.
    */
   virtual void Remove (const Event &ev) = 0;
+	
+	// save event queue
+	virtual void* Save(void *ptr, int *eventCount)  {
+		std::cout << "Save event queue for scheduler " << GetTypeId() << " is not implemented" << std::endl;
+		return NULL;
+	}
+	// load event queue
+	virtual int Load(void *ptr) {
+		std::cout << "Load event queue for scheduler " << GetTypeId() << " is not implemented" << std::endl;
+		return -1;
+	}
 };
 
 /* Note the invariants which this function must provide:

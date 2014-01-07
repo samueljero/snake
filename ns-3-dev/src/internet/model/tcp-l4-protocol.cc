@@ -37,6 +37,7 @@
 #include "tcp-socket-factory-impl.h"
 #include "tcp-newreno.h"
 #include "rtt-estimator.h"
+#include "malicious-tag.h"
 
 #include <vector>
 #include <sstream>
@@ -181,28 +182,36 @@ Ipv4EndPoint *
 TcpL4Protocol::Allocate (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_endPoints->Allocate ();
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate ();
+	m_node->tcpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 TcpL4Protocol::Allocate (Ipv4Address address)
 {
   NS_LOG_FUNCTION (this << address);
-  return m_endPoints->Allocate (address);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (address);
+	m_node->tcpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 TcpL4Protocol::Allocate (uint16_t port)
 {
   NS_LOG_FUNCTION (this << port);
-  return m_endPoints->Allocate (port);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (port);
+	m_node->tcpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 TcpL4Protocol::Allocate (Ipv4Address address, uint16_t port)
 {
   NS_LOG_FUNCTION (this << address << port);
-  return m_endPoints->Allocate (address, port);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (address, port);
+	m_node->tcpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
@@ -210,15 +219,18 @@ TcpL4Protocol::Allocate (Ipv4Address localAddress, uint16_t localPort,
                          Ipv4Address peerAddress, uint16_t peerPort)
 {
   NS_LOG_FUNCTION (this << localAddress << localPort << peerAddress << peerPort);
-  return m_endPoints->Allocate (localAddress, localPort,
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (localAddress, localPort,
                                 peerAddress, peerPort);
+	m_node->tcpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 void 
 TcpL4Protocol::DeAllocate (Ipv4EndPoint *endPoint)
 {
   NS_LOG_FUNCTION (this << endPoint);
-  m_endPoints->DeAllocate (endPoint);
+	m_node->tcpports.erase(endPoint->GetLocalPort());
+	m_endPoints->DeAllocate (endPoint);
 }
 
 enum Ipv4L4Protocol::RxStatus
@@ -226,76 +238,120 @@ TcpL4Protocol::Receive (Ptr<Packet> packet,
                         Ipv4Header const &ipHeader,
                         Ptr<Ipv4Interface> incomingInterface)
 {
-  NS_LOG_FUNCTION (this << packet << ipHeader << incomingInterface);
+	NS_LOG_FUNCTION (this << packet << ipHeader << incomingInterface);
+	bool isMal = true;
+	packet->RemovePacketTag(mtag_old);
+	TcpHeader tcpHeader;
+	if(!isMal && Node::ChecksumEnabled ())
+	{
+		tcpHeader.EnableChecksums ();
+		tcpHeader.InitializeChecksum (ipHeader.GetSource (), ipHeader.GetDestination (), PROT_NUMBER);
+	}
 
-  TcpHeader tcpHeader;
-  if(Node::ChecksumEnabled ())
-    {
-      tcpHeader.EnableChecksums ();
-      tcpHeader.InitializeChecksum (ipHeader.GetSource (), ipHeader.GetDestination (), PROT_NUMBER);
-    }
+	packet->PeekHeader (tcpHeader);
+	mtag_old.SetSrcPort(tcpHeader.GetSourcePort());
+	mtag_old.SetDestPort(tcpHeader.GetDestinationPort());
+	mtag_old.Print(std::cerr);
+	packet->AddPacketTag(mtag_old);
+	NS_LOG_INFO("TCPLOG === incomingHeader : " << tcpHeader << " UID is " << packet->GetUid());
 
-  packet->PeekHeader (tcpHeader);
+	NS_LOG_LOGIC ("TcpL4Protocol " << this
+			<< " receiving seq " << tcpHeader.GetSequenceNumber ()
+			<< " ack " << tcpHeader.GetAckNumber ()
+			<< " flags "<< std::hex << (int)tcpHeader.GetFlags () << std::dec
+			<< " data size " << packet->GetSize ());
 
-  NS_LOG_LOGIC ("TcpL4Protocol " << this
-                                 << " receiving seq " << tcpHeader.GetSequenceNumber ()
-                                 << " ack " << tcpHeader.GetAckNumber ()
-                                 << " flags "<< std::hex << (int)tcpHeader.GetFlags () << std::dec
-                                 << " data size " << packet->GetSize ());
+	if(!isMal && !tcpHeader.IsChecksumOk ())
+	{
+		NS_LOG_INFO ("Bad checksum, dropping packet!");
+		return Ipv4L4Protocol::RX_CSUM_FAILED;
+	}
 
-  if(!tcpHeader.IsChecksumOk ())
-    {
-      NS_LOG_INFO ("Bad checksum, dropping packet!");
-      return Ipv4L4Protocol::RX_CSUM_FAILED;
-    }
+	NS_LOG_LOGIC ("TcpL4Protocol "<<this<<" received a packet");
+	Ipv4Address destination = ipHeader.GetDestination();
+	if (mtag_old.GetMalStatus() == MaliciousTag::FROMTAP && mtag_old.GetSrcNode() == m_node->GetId()) destination = mtag_old.GetIPDestination();
 
-  NS_LOG_LOGIC ("TcpL4Protocol "<<this<<" received a packet");
-  Ipv4EndPointDemux::EndPoints endPoints =
-    m_endPoints->Lookup (ipHeader.GetDestination (), tcpHeader.GetDestinationPort (),
-                         ipHeader.GetSource (), tcpHeader.GetSourcePort (),incomingInterface);
-  if (endPoints.empty ())
-    {
-      NS_LOG_LOGIC ("  No endpoints matched on TcpL4Protocol "<<this);
-      std::ostringstream oss;
-      oss<<"  destination IP: ";
-      ipHeader.GetDestination ().Print (oss);
-      oss<<" destination port: "<< tcpHeader.GetDestinationPort ()<<" source IP: ";
-      ipHeader.GetSource ().Print (oss);
-      oss<<" source port: "<<tcpHeader.GetSourcePort ();
-      NS_LOG_LOGIC (oss.str ());
+	Ipv4EndPointDemux::EndPoints endPoints = m_endPoints->Lookup (destination, tcpHeader.GetDestinationPort (),
+				ipHeader.GetSource (), tcpHeader.GetSourcePort (),incomingInterface);
+	if (endPoints.empty() && mtag_old.IsSpoof()) {
+	//if (endPoints.empty() && mtag_old.IsSpoof()) {
+		NS_LOG_INFO(" SPOOF... lookup with different information ");
+		mtag_old.Print(std::cerr);
+		endPoints = m_endPoints->Lookup (mtag_old.GetIPSource(), tcpHeader.GetDestinationPort (),
+				ipHeader.GetSource (), tcpHeader.GetSourcePort (),incomingInterface);
+		if (!endPoints.empty()) (*endPoints.begin())->m_spoof = true;
+	}
 
-      if (!(tcpHeader.GetFlags () & TcpHeader::RST))
-        {
-          // build a RST packet and send
-          Ptr<Packet> rstPacket = Create<Packet> ();
-          TcpHeader header;
-          if (tcpHeader.GetFlags () & TcpHeader::ACK)
-            {
-              // ACK bit was set
-              header.SetFlags (TcpHeader::RST);
-              header.SetSequenceNumber (header.GetAckNumber ());
-            }
-          else
-            {
-              header.SetFlags (TcpHeader::RST | TcpHeader::ACK);
-              header.SetSequenceNumber (SequenceNumber32 (0));
-              header.SetAckNumber (header.GetSequenceNumber () + SequenceNumber32 (1));
-            }
-          header.SetSourcePort (tcpHeader.GetDestinationPort ());
-          header.SetDestinationPort (tcpHeader.GetSourcePort ());
-          SendPacket (rstPacket, header, ipHeader.GetDestination (), ipHeader.GetSource ());
-          return Ipv4L4Protocol::RX_ENDPOINT_CLOSED;
-        }
-      else
-        {
-          return Ipv4L4Protocol::RX_ENDPOINT_CLOSED;
-        }
-    }
-  NS_ASSERT_MSG (endPoints.size () == 1, "Demux returned more than one endpoint");
-  NS_LOG_LOGIC ("TcpL4Protocol "<<this<<" forwarding up to endpoint/socket");
-  (*endPoints.begin ())->ForwardUp (packet, ipHeader, tcpHeader.GetSourcePort (), 
-                                    incomingInterface);
-  return Ipv4L4Protocol::RX_OK;
+	if (endPoints.empty ())
+	{
+		NS_LOG_LOGIC ("  No endpoints matched on TcpL4Protocol "<<this);
+		std::cout << "No endpoints matched on TcpL4Protocol" << this << std::endl;
+		std::ostringstream oss;
+		oss<<"  destination IP: ";
+		ipHeader.GetDestination ().Print (oss);
+		oss<<" destination port: "<< tcpHeader.GetDestinationPort ()<<" source IP: ";
+		ipHeader.GetSource ().Print (oss);
+		oss<<" source port: "<<tcpHeader.GetSourcePort ();
+		NS_LOG_LOGIC (oss.str ());
+
+		if (!(tcpHeader.GetFlags () & TcpHeader::RST))
+		{
+			// build a RST packet and send
+			Ptr<Packet> rstPacket = Create<Packet> ();
+			TcpHeader header;
+			if (tcpHeader.GetFlags () & TcpHeader::ACK)
+			{
+				// ACK bit was set
+				header.SetFlags (TcpHeader::RST);
+				header.SetSequenceNumber (header.GetAckNumber ());
+			}
+			else
+			{
+				header.SetFlags (TcpHeader::RST | TcpHeader::ACK);
+				header.SetSequenceNumber (SequenceNumber32 (0));
+				header.SetAckNumber (header.GetSequenceNumber () + SequenceNumber32 (1));
+			}
+			header.SetSourcePort (tcpHeader.GetDestinationPort ());
+			header.SetDestinationPort (tcpHeader.GetSourcePort ());
+			SendPacket (rstPacket, header, ipHeader.GetDestination (), ipHeader.GetSource ());
+			return Ipv4L4Protocol::RX_ENDPOINT_CLOSED;
+		}
+		else
+		{
+			return Ipv4L4Protocol::RX_ENDPOINT_CLOSED;
+		}
+	}
+	NS_ASSERT_MSG (endPoints.size () == 1, "Demux returned more than one endpoint");
+	NS_LOG_LOGIC ("TcpL4Protocol "<<this<<" forwarding up to endpoint/socket");
+	// XXX - add malicious tag information to endpoint; if available
+	mtag_old.Print(std::cerr);
+	Ipv4EndPoint *endP = (*endPoints.begin());
+	NS_LOG_INFO(" TCPLOG endPoint orgPeer " << endP->GetOrgPeerAddress() << ":" << endP->GetOrgPeerPort()
+		<< " peer " << endP->GetPeerAddress() << ":" << endP->GetPeerPort()
+		<< " local " << endP->GetLocalAddress() << ":" << endP->GetLocalPort() << " " << endP);
+	
+	if (mtag_old.GetSrcNode() == m_node->GetId() && mtag_old.GetMalStatus() == MaliciousTag::FROMTAP) {
+		if ((*endPoints.begin())->GetPeerPort() != 0) { // this is specific endpoint
+			// set original peer information
+			// but if current endpoint is listening for global one, we don't need to update the endpoint
+			NS_LOG_INFO(" FROM MY TAP - SET ENDPOINT ORG Local using DEST " << mtag_old.GetIPDestination());
+			(*endPoints.begin())->SetOrgLocal(mtag_old.GetIPDestination(), mtag_old.GetDestPort());
+			(*endPoints.begin())->SetOrgPeer(mtag_old.GetIPSource(), mtag_old.GetSrcPort());
+		}
+	}
+
+	else {
+		NS_LOG_INFO(" NOT FROM MY TAP - SET ENDPOINT ORG PEER using SRC " << mtag_old.GetIPDestination());
+		(*endPoints.begin())->SetOrgPeer(mtag_old.GetIPSource(), mtag_old.GetSrcPort());
+		(*endPoints.begin())->SetOrgLocal(mtag_old.GetIPDestination(), mtag_old.GetDestPort());
+	}
+
+	NS_LOG_INFO(" TCPLOG endPoint AFTER orgPeer " << endP->GetOrgPeerAddress() << ":" << endP->GetOrgPeerPort()
+		<< " peer " << endP->GetPeerAddress() << ":" << endP->GetPeerPort()
+		<< " local " << endP->GetLocalAddress() << ":" << endP->GetLocalPort() << " " << endP);
+	(*endPoints.begin ())->ForwardUp (packet, ipHeader, tcpHeader.GetSourcePort (), 
+			incomingInterface);
+	return Ipv4L4Protocol::RX_OK;
 }
 
 void
@@ -354,7 +410,18 @@ TcpL4Protocol::SendPacket (Ptr<Packet> packet, const TcpHeader &outgoing,
   NS_LOG_FUNCTION (this << packet << saddr << daddr << oif);
   // XXX outgoingHeader cannot be logged
 
+	NS_LOG_INFO("=============> PACKET SENDING");
+  //JCS: Added 10/18/11
+	// most of logic moved to tcp-socket-bace SendPacketWrapper
+	
+  MaliciousTag mtag_new;
+	packet->RemovePacketTag(mtag_new);
+	mtag_new.SetMalStatus(MaliciousTag::FROMPROXY);
+	mtag_new.Print(std::cerr);
+	packet->AddPacketTag(mtag_new);
+
   TcpHeader outgoingHeader = outgoing;
+	NS_LOG_INFO("TCPLOG === outgoingHeader : " << outgoingHeader << " UID is " << packet->GetUid());
   outgoingHeader.SetLength (5); //header length in units of 32bit words
   /* outgoingHeader.SetUrgentPointer (0); //XXX */
   if(Node::ChecksumEnabled ())
@@ -381,8 +448,10 @@ TcpL4Protocol::SendPacket (Ptr<Packet> packet, const TcpHeader &outgoing,
       else
         {
           NS_LOG_ERROR ("No IPV4 Routing Protocol");
+          NS_LOG_INFO ("TCPLOG No IPV4 Routing Protocol UID is " << packet->GetUid());
           route = 0;
         }
+			NS_LOG_INFO("TCPLOG m_downTarget UID is " << packet->GetUid());
       m_downTarget (packet, saddr, daddr, PROT_NUMBER, route);
     }
   else

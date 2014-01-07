@@ -33,6 +33,7 @@
 #include "tcp-tx-buffer.h"
 #include "tcp-rx-buffer.h"
 #include "rtt-estimator.h"
+#include "ns3/malicious-tag.h"
 
 namespace ns3 {
 
@@ -120,9 +121,12 @@ protected:
   virtual bool     SetAllowBroadcast (bool allowBroadcast);
   virtual bool     GetAllowBroadcast () const;
 
+	// maltag
+	void SendPacketWrapper(Ptr<Packet> p, const TcpHeader* , Ipv4Address saddr, Ipv4Address daddr, Ptr<NetDevice> oif);
+
   // Helper functions: Connection set up
   int SetupCallback (void);        // Common part of the two Bind(), i.e. set callback and remembering local addr:port
-  int DoConnect (void);            // Sending a SYN packet to make a connection if the state allows
+  int DoConnect (bool toTap);            // Sending a SYN packet to make a connection if the state allows
   void ConnectionSucceeded (void); // Schedule-friendly wrapper for Socket::NotifyConnectionSucceeded()
   int SetupEndpoint (void);        // Configure m_endpoint for local addr for given remote addr
   void CompleteFork (Ptr<Packet>, const TcpHeader&, const Address& fromAddress, const Address& toAdress);
@@ -215,6 +219,10 @@ protected:
   // Window management
   uint32_t              m_segmentSize; //< Segment size
   TracedValue<uint32_t> m_rWnd;        //< Flow control window at remote side
+
+  //JCS
+  //MaliciousTag mtag_old;
+
 };
 
 } // namespace ns3

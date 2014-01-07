@@ -47,8 +47,8 @@ def build(bld):
         'utils/pcap-file-wrapper.cc',
         'utils/queue.cc',
         'utils/radiotap-header.cc',
-        'utils/simple-channel.cc',
-        'utils/simple-net-device.cc',
+        #'utils/simple-channel.cc',
+        #'utils/simple-net-device.cc',
         'helper/application-container.cc',
         'helper/net-device-container.cc',
         'helper/node-container.cc',
@@ -117,8 +117,8 @@ def build(bld):
         'utils/radiotap-header.h',
         'utils/sequence-number.h',
         'utils/sgi-hashmap.h',
-        'utils/simple-channel.h',
-        'utils/simple-net-device.h',
+        ###'utils/simple-channel.h',
+        #'utils/simple-net-device.h',
         'utils/pcap-test.h',
         'helper/application-container.h',
         'helper/net-device-container.h',
@@ -127,7 +127,7 @@ def build(bld):
         'helper/trace-helper.h',
         ]
 
-    if (bld.env['ENABLE_EXAMPLES']):
-        bld.add_subdirs('examples')
+    #if (bld.env['ENABLE_EXAMPLES']):
+        #bld.add_subdirs('examples')
 
     bld.ns3_python_bindings()

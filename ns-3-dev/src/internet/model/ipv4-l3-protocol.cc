@@ -40,6 +40,8 @@
 #include "icmpv4-l4-protocol.h"
 #include "ipv4-interface.h"
 #include "ipv4-raw-socket-impl.h"
+#include "ipv4-packet-info-tag.h"
+#include "malicious-tag.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4L3Protocol");
 
@@ -435,10 +437,10 @@ void
 Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol, const Address &from,
                           const Address &to, NetDevice::PacketType packetType)
 {
+	ProfileFunction("IPv4l3ProtocolReceive", true);
   NS_LOG_FUNCTION (this << &device << p << protocol <<  from);
 
-  NS_LOG_LOGIC ("Packet from " << from << " received on node " << 
-                m_node->GetId ());
+  NS_LOG_INFO ("Packet " << p->GetUid() << " from " << from << " received on node " << m_node->GetId ());
 
   uint32_t interface = 0;
   Ptr<Packet> packet = p->Copy ();
@@ -462,6 +464,7 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
               Ipv4Header ipHeader;
               packet->RemoveHeader (ipHeader);
               m_dropTrace (ipHeader, packet, DROP_INTERFACE_DOWN, m_node->GetObject<Ipv4> (), interface);
+							ProfileFunction("IPv4l3ProtocolReceive", false);
               return;
             }
         }
@@ -480,12 +483,63 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
       packet->RemoveAtEnd (packet->GetSize () - ipHeader.GetPayloadSize ());
     }
 
+  //Jeff: not really calculating checksum, check ipv4-header.cc for details
   if (!ipHeader.IsChecksumOk ()) 
     {
       NS_LOG_LOGIC ("Dropping received packet -- checksum not ok");
       m_dropTrace (ipHeader, packet, DROP_BAD_CHECKSUM, m_node->GetObject<Ipv4> (), interface);
+			ProfileFunction("IPv4l3ProtocolReceive", false);
       return;
     }
+
+	MaliciousTag mtag;
+	packet->PeekPacketTag(mtag);
+	mtag.StopTimer("ipv4 receive");
+	if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY
+			&& mtag.GetSrcNode() == m_node->GetId()
+			&& m_node->IsLocalAddress(ipHeader.GetDestination())) {
+		NS_LOG_INFO(" XXX - dup. module?  THIS IS SUPPOSED TO WRITETOTAP. PASS?"); // old code had outInterface -> Send
+		/*
+		uint32_t ifaceIndex = 0;
+		uint8_t ttl = m_defaultTtl;
+		SocketIpTtlTag tag;
+		bool found = packet->RemovePacketTag (tag);
+		if (found)
+		{
+			ttl = tag.GetTtl ();
+		}
+		// get the csma net device, in normal configuration it will pick the one ... or should check interface address
+		for (Ipv4InterfaceList::iterator ifaceIter = m_interfaces.begin ();
+				ifaceIter != m_interfaces.end (); ifaceIter++, ifaceIndex++)
+		{
+			Ptr<Ipv4Interface> outInterface = *ifaceIter;
+			if (ifaceIndex == 0) continue;
+			for (uint32_t i = 0; i < outInterface->GetNAddresses(); i++) {
+				if (outInterface->GetAddress(i).GetLocal() == ipHeader.GetDestination()) {
+				//if (outInterface->GetAddress(i).GetLocal() == mtag.GetIPDestination()) 
+					// ipHeader = BuildHeader(mtag.GetIPSource(), mtag.GetIPDestination(), protocol, packet->GetSize(), ttl, mayFragment);
+					outInterface->GetAddress(i).GetPayloadSize
+					packet->RemovePacketTag(mtag);
+					mtag.Print(std::cerr);
+					packet->AddHeader (ipHeader);
+					packet->AddPacketTag(mtag);
+					outInterface->Send (packet, ipHeader.GetSource()); // try direct receive? - didn't work. how? describe
+					return;
+				}
+			}
+		}
+		*/
+		NS_LOG_INFO("SHOULD CHECK THE CASE.");
+	} else {
+		NS_LOG_INFO(" DESTINATION WAS " << ipHeader.GetDestination() << " and SET TO " << ipv4Interface->GetAddress(0).GetLocal());
+		NS_LOG_INFO(" SRC WAS " << ipHeader.GetSource());
+		ipHeader.SetDestination(ipv4Interface->GetAddress(0).GetLocal());
+	}
+
+	NS_LOG_INFO(" IP PROTOCOL RECEIVE: TAG = " << mtag.GetMalStatus());
+	//packet->AddPacketTag(mtag);
+	NS_LOG_INFO("IP PROTOCOL RECEIVE: from " << ipHeader.GetSource() << " to " << ipHeader.GetDestination());
+	packet->PrintPacketTags(std::cerr);
 
   for (SocketList::iterator i = m_sockets.begin (); i != m_sockets.end (); ++i)
     {
@@ -506,7 +560,7 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), interface);
     }
 
-
+	ProfileFunction("IPv4l3ProtocolReceive", false);
 }
 
 Ptr<Icmpv4L4Protocol> 
@@ -545,7 +599,10 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                       uint8_t protocol,
                       Ptr<Ipv4Route> route)
 {
+	ProfileFunction("IPv4l3ProtocolSend", true);
+	ProfileFunction("IPv4l3ProtocolSend_part1", true);
   NS_LOG_FUNCTION (this << packet << source << destination << uint32_t (protocol) << route);
+	NS_LOG_INFO("IP Send UID is " << packet->GetUid());
 
   Ipv4Header ipHeader;
   bool mayFragment = true;
@@ -557,6 +614,49 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       ttl = tag.GetTtl ();
     }
 
+	MaliciousTag mtag;
+	packet->PeekPacketTag(mtag);
+	mtag.StopTimer("ipv4 send");
+	mtag.Print(std::cerr);
+	if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY
+			&& mtag.GetSrcNode() == m_node->GetId()
+			&& m_node->IsLocalAddress(mtag.GetIPDestination())) {
+		NS_LOG_INFO(" Should write to my tap device ");
+		uint32_t ifaceIndex = 0;
+		// get the csma net device, in normal configuration it will pick the one ... or should check interface address
+		for (Ipv4InterfaceList::iterator ifaceIter = m_interfaces.begin ();
+				ifaceIter != m_interfaces.end (); ifaceIter++, ifaceIndex++)
+		{
+			Ptr<Ipv4Interface> outInterface = *ifaceIter;
+			if (ifaceIndex == 0) continue;
+			for (uint32_t i = 0; i < outInterface->GetNAddresses(); i++) {
+				if (outInterface->GetAddress(i).GetLocal() == mtag.GetIPDestination()) {
+					if (mtag.GetIPSource() == mtag.GetIPDestination()) {
+						Ipv4Address src = Ipv4Address((uint32_t)0);
+						ProfileFunction("IP BuildHeader", true);
+						ipHeader = BuildHeader(src, mtag.GetIPDestination(), protocol, packet->GetSize(), ttl, mayFragment);
+						ProfileFunction("IP BuildHeader", false);
+					} else {
+						ProfileFunction("IP BuildHeader", true);
+						ipHeader = BuildHeader(mtag.GetIPSource(), mtag.GetIPDestination(), protocol, packet->GetSize(), ttl, mayFragment);
+						ProfileFunction("IP BuildHeader", false);
+					}
+					packet->RemovePacketTag(mtag);
+					mtag.Print(std::cerr);
+						ProfileFunction("IP AddHeader", true);
+					packet->AddHeader (ipHeader);
+						ProfileFunction("IP AddHeader", false);
+					packet->AddPacketTag(mtag);
+					outInterface->Send (packet, ipHeader.GetSource()); // try direct receive? - didn't work. how? describe
+					ProfileFunction("IPv4l3ProtocolSend_part1", false);
+					ProfileFunction("IPv4l3ProtocolSend", false);
+					return;
+				}
+			}
+		}
+		NS_LOG_INFO("SHOULD CHECK THE CASE.");
+	}
+	ProfileFunction("IPv4l3ProtocolSend_part1", false);
   // Handle a few cases:
   // 1) packet is destined to limited broadcast address
   // 2) packet is destined to a subnet-directed broadcast address
@@ -565,6 +665,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   // 5) packet is not broadcast, and route is NULL (e.g., a raw socket call, or ICMP)
 
   // 1) packet is destined to limited broadcast address or link-local multicast address
+	ProfileFunction("IPv4l3ProtocolSend:IfThatWillPass", true);
   if (destination.IsBroadcast () || destination.IsLocalMulticast ())
     {
       NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 1:  limited broadcast");
@@ -583,6 +684,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           m_txTrace (packetCopy, m_node->GetObject<Ipv4> (), ifaceIndex);
           outInterface->Send (packetCopy, destination);
         }
+			ProfileFunction("IPv4l3ProtocolSend", false);
       return;
     }
 
@@ -606,6 +708,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               packetCopy->AddHeader (ipHeader);
               m_txTrace (packetCopy, m_node->GetObject<Ipv4> (), ifaceIndex);
               outInterface->Send (packetCopy, destination);
+							ProfileFunction("IPv4l3ProtocolSend", false);
               return;
             }
         }
@@ -620,6 +723,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       int32_t interface = GetInterfaceForDevice (route->GetOutputDevice ());
       m_sendOutgoingTrace (ipHeader, packet, interface);
       SendRealOut (route, packet->Copy (), ipHeader);
+			ProfileFunction("IPv4l3ProtocolSend", false);
       return; 
     } 
   // 4) packet is not broadcast, and is passed in with a route entry but route->GetGateway is not set (e.g., on-demand)
@@ -631,11 +735,15 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       // to be queried).
       NS_FATAL_ERROR ("Ipv4L3Protocol::Send case 4: This case not yet implemented");
     }
+	ProfileFunction("IPv4l3ProtocolSend:IfThatWillPass", false);
   // 5) packet is not broadcast, and route is NULL (e.g., a raw socket call)
   NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 5:  passed in with no route " << destination);
   Socket::SocketErrno errno_; 
   Ptr<NetDevice> oif (0); // unused for now
+	ProfileFunction("IPv4l3ProtocolSend:Build Header", true);
   ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
+	ProfileFunction("IPv4l3ProtocolSend:Build Header", false);
+	ProfileFunction("IPv4l3ProtocolSend:GetRoute", true);
   Ptr<Ipv4Route> newRoute;
   if (m_routingProtocol != 0)
     {
@@ -645,17 +753,25 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
     {
       NS_LOG_ERROR ("Ipv4L3Protocol::Send: m_routingProtocol == 0");
     }
+	ProfileFunction("IPv4l3ProtocolSend:GetRoute", false);
+	ProfileFunction("IPv4l3ProtocolSend:Lastpart2", true);
   if (newRoute)
     {
+	ProfileFunction("IPv4l3ProtocolSend:GetInterface", true);
       int32_t interface = GetInterfaceForDevice (newRoute->GetOutputDevice ());
       m_sendOutgoingTrace (ipHeader, packet, interface);
+	ProfileFunction("IPv4l3ProtocolSend:GetInterface", false);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut", true);
       SendRealOut (newRoute, packet->Copy (), ipHeader);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut", false);
     }
   else
     {
       NS_LOG_WARN ("No route to host.  Drop.");
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
     }
+	ProfileFunction("IPv4l3ProtocolSend:Lastpart2", false);
+	ProfileFunction("IPv4l3ProtocolSend", false);
 }
 
 // XXX when should we set ip_id?   check whether we are incrementing
@@ -702,6 +818,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
                              Ptr<Packet> packet,
                              Ipv4Header const &ipHeader)
 {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Preprocessing", true);
   NS_LOG_FUNCTION (this << packet << &ipHeader);
 
   if (route == 0)
@@ -710,6 +827,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
       return;
     }
+
   packet->AddHeader (ipHeader);
   Ptr<NetDevice> outDev = route->GetOutputDevice ();
   int32_t interface = GetInterfaceForDevice (outDev);
@@ -717,10 +835,12 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
   Ptr<Ipv4Interface> outInterface = GetInterface (interface);
   NS_LOG_LOGIC ("Send via NetDevice ifIndex " << outDev->GetIfIndex () << " ipv4InterfaceIndex " << interface);
 
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Preprocessing", false);
   if (!route->GetGateway ().IsEqual (Ipv4Address ("0.0.0.0")))
     {
       if (outInterface->IsUp ())
         {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Send000", true);
           NS_LOG_LOGIC ("Send to gateway " << route->GetGateway ());
           if ( packet->GetSize () > outInterface->GetDevice ()->GetMtu () )
             {
@@ -737,13 +857,16 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
               m_txTrace (packet, m_node->GetObject<Ipv4> (), interface);
               outInterface->Send (packet, route->GetGateway ());
             }
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Send000", false);
         }
       else
         {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendDrop000", true);
           NS_LOG_LOGIC ("Dropping -- outgoing interface is down: " << route->GetGateway ());
           Ipv4Header ipHeader;
           packet->RemoveHeader (ipHeader);
           m_dropTrace (ipHeader, packet, DROP_INTERFACE_DOWN, m_node->GetObject<Ipv4> (), interface);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendDrop000", false);
         }
     } 
   else 
@@ -753,6 +876,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
           NS_LOG_LOGIC ("Send to destination " << ipHeader.GetDestination ());
           if ( packet->GetSize () > outInterface->GetDevice ()->GetMtu () )
             {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendFrag", true);
               std::list<Ptr<Packet> > listFragments;
               DoFragmentation (packet, outInterface->GetDevice ()->GetMtu (), listFragments);
               for ( std::list<Ptr<Packet> >::iterator it = listFragments.begin (); it != listFragments.end (); it++ )
@@ -761,19 +885,27 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
                   m_txTrace (*it, m_node->GetObject<Ipv4> (), interface);
                   outInterface->Send (*it, ipHeader.GetDestination ());
                 }
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendFrag", false);
             }
           else
             {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Trace", true);
               m_txTrace (packet, m_node->GetObject<Ipv4> (), interface);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Trace", false);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Send", true);
               outInterface->Send (packet, ipHeader.GetDestination ());
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:Send", false);
             }
         }
       else
         {
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendDrop", true);
+              m_txTrace (packet, m_node->GetObject<Ipv4> (), interface);
           NS_LOG_LOGIC ("Dropping -- outgoing interface is down: " << ipHeader.GetDestination ());
           Ipv4Header ipHeader;
           packet->RemoveHeader (ipHeader);
           m_dropTrace (ipHeader, packet, DROP_INTERFACE_DOWN, m_node->GetObject<Ipv4> (), interface);
+	ProfileFunction("IPv4l3ProtocolSend:SendRealOut:SendDrop", false);
         }
     }
 }

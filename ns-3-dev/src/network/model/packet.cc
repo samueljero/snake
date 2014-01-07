@@ -375,6 +375,19 @@ Packet::PeekData (void) const
   return data;
 }
 
+uint8_t *
+Packet::PeekDataForMal (void) 
+{
+  NS_LOG_FUNCTION (this);
+  uint32_t oldStart = m_buffer.GetCurrentStartOffset ();
+  uint8_t * data = m_buffer.GetData ();
+  uint32_t newStart = m_buffer.GetCurrentStartOffset ();
+ 
+  // Update tag offsets if buffer offsets were changed
+  const_cast<ByteTagList &>(m_byteTagList).AddAtStart (newStart - oldStart, newStart);
+  return data;
+}
+
 uint32_t 
 Packet::CopyData (uint8_t *buffer, uint32_t size) const
 {

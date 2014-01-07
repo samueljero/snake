@@ -33,6 +33,7 @@
 #include "ipv4-end-point.h"
 #include "ipv4-l3-protocol.h"
 #include "udp-socket-impl.h"
+#include "malicious-tag.h"
 
 NS_LOG_COMPONENT_DEFINE ("UdpL4Protocol");
 
@@ -147,42 +148,53 @@ Ipv4EndPoint *
 UdpL4Protocol::Allocate (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  return m_endPoints->Allocate ();
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate ();
+	m_node->udpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 UdpL4Protocol::Allocate (Ipv4Address address)
 {
   NS_LOG_FUNCTION (this << address);
-  return m_endPoints->Allocate (address);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (address);
+	m_node->udpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 UdpL4Protocol::Allocate (uint16_t port)
 {
   NS_LOG_FUNCTION (this << port);
-  return m_endPoints->Allocate (port);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (port);
+	m_node->udpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 Ipv4EndPoint *
 UdpL4Protocol::Allocate (Ipv4Address address, uint16_t port)
 {
   NS_LOG_FUNCTION (this << address << port);
-  return m_endPoints->Allocate (address, port);
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (address, port);
+	m_node->udpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 Ipv4EndPoint *
 UdpL4Protocol::Allocate (Ipv4Address localAddress, uint16_t localPort,
                          Ipv4Address peerAddress, uint16_t peerPort)
 {
   NS_LOG_FUNCTION (this << localAddress << localPort << peerAddress << peerPort);
-  return m_endPoints->Allocate (localAddress, localPort,
+	Ipv4EndPoint *endPoint = m_endPoints->Allocate (localAddress, localPort,
                                 peerAddress, peerPort);
+	m_node->udpports.insert(endPoint->GetLocalPort());
+	return endPoint;
 }
 
 void 
 UdpL4Protocol::DeAllocate (Ipv4EndPoint *endPoint)
 {
   NS_LOG_FUNCTION (this << endPoint);
+	m_node->udpports.erase(endPoint->GetLocalPort());
   m_endPoints->DeAllocate (endPoint);
 }
 
@@ -218,39 +230,85 @@ UdpL4Protocol::Receive (Ptr<Packet> packet,
                         Ipv4Header const &header,
                         Ptr<Ipv4Interface> interface)
 {
-  NS_LOG_FUNCTION (this << packet << header);
-  UdpHeader udpHeader;
-  if(Node::ChecksumEnabled ())
-    {
-      udpHeader.EnableChecksums ();
-    }
+	ProfileFunction("UDPl4Receive", true);
+	NS_LOG_FUNCTION (this << packet << header);
+	MaliciousTag mtag;
+	bool mal = false;
+	packet->RemovePacketTag(mtag);
+	mtag.Print(std::cout);
 
-  udpHeader.InitializeChecksum (header.GetSource (), header.GetDestination (), PROT_NUMBER);
+	if (mtag.GetMalStatus() != 0) mal = true;
+	/*
+	if (mtag.GetMalStatus() != MaliciousTag::FROMTAP)  {
+		mal = true;
+		NS_LOG_INFO("malStatus: " << mtag.GetMalStatus());
+	}
+	*/
+	UdpHeader udpHeader;
+	if (!mal) {
+		if(Node::ChecksumEnabled ())
+		{
+			udpHeader.EnableChecksums ();
+		}
+		udpHeader.InitializeChecksum (header.GetSource (), header.GetDestination (), PROT_NUMBER);
+	}
 
-  packet->RemoveHeader (udpHeader);
+	packet->RemoveHeader (udpHeader);
+  //mtag.StopTimer("udp receive");
+	mtag.SetDestPort(udpHeader.GetDestinationPort());
+	mtag.SetSrcPort(udpHeader.GetSourcePort());
+	packet->AddPacketTag(mtag);
+	NS_LOG_INFO("###### source port " << udpHeader.GetSourcePort() << " dest port " << udpHeader.GetDestinationPort());
 
-  if(!udpHeader.IsChecksumOk ())
-    {
-      NS_LOG_INFO ("Bad checksum : dropping packet!");
-      return Ipv4L4Protocol::RX_CSUM_FAILED;
-    }
+	if(!mal && !udpHeader.IsChecksumOk ())
+	{
+		NS_LOG_INFO ("Bad checksum : dropping packet!");
+		ProfileFunction("UDPl4Receive", false);
+		return Ipv4L4Protocol::RX_CSUM_FAILED;
+	}
 
-  NS_LOG_DEBUG ("Looking up dst " << header.GetDestination () << " port " << udpHeader.GetDestinationPort ()); 
-  Ipv4EndPointDemux::EndPoints endPoints =
-    m_endPoints->Lookup (header.GetDestination (), udpHeader.GetDestinationPort (),
-                         header.GetSource (), udpHeader.GetSourcePort (), interface);
-  if (endPoints.empty ())
-    {
-      NS_LOG_LOGIC ("RX_ENDPOINT_UNREACH");
-      return Ipv4L4Protocol::RX_ENDPOINT_UNREACH;
-    }
-  for (Ipv4EndPointDemux::EndPointsI endPoint = endPoints.begin ();
-       endPoint != endPoints.end (); endPoint++)
-    {
-      (*endPoint)->ForwardUp (packet->Copy (), header, udpHeader.GetSourcePort (), 
-                              interface);
-    }
-  return Ipv4L4Protocol::RX_OK;
+	NS_LOG_DEBUG ("Looking up dst " << header.GetDestination () << " port " << udpHeader.GetDestinationPort ()); 
+	Ipv4EndPointDemux::EndPoints endPoints;
+	if (mal) {
+		NS_LOG_INFO(" THE PACKET SHOULD ALREADY HAVE CORRECT DESTINATION ");
+		NS_LOG_INFO("###### source port " << udpHeader.GetSourcePort() << " dest port " << udpHeader.GetDestinationPort());
+		endPoints = m_endPoints->Lookup (header.GetSource (), udpHeader.GetDestinationPort (),
+				header.GetSource (), udpHeader.GetSourcePort (), interface);
+	}
+	else
+		endPoints = m_endPoints->Lookup (header.GetDestination (), udpHeader.GetDestinationPort (),
+				header.GetSource (), udpHeader.GetSourcePort (), interface);
+
+	if (endPoints.empty() && mal) {
+		endPoints = m_endPoints->Lookup (mtag.GetIPDestination(), udpHeader.GetDestinationPort (),
+				header.GetSource (), udpHeader.GetSourcePort (), interface);
+		if (!endPoints.empty()) (*endPoints.begin())->m_spoof = true;
+	}
+
+	if (endPoints.empty ())
+	{
+		NS_LOG_LOGIC ("RX_ENDPOINT_UNREACH AT NODE " << m_node->GetId());
+		NS_LOG_LOGIC("Node: " << m_node->GetId() << " No endpoints matched on UDP " << udpHeader.GetDestinationPort());
+		ProfileFunction("UDPl4Receive", false);
+		return Ipv4L4Protocol::RX_ENDPOINT_UNREACH;
+	}
+	for (Ipv4EndPointDemux::EndPointsI endPoint = endPoints.begin ();
+			endPoint != endPoints.end (); endPoint++)
+	{
+		NS_LOG_INFO(" END POINT SPOOF : " << (*endPoint)->IsSpoof());
+		if (mtag.IsSpoof()) {
+			(*endPoint)->m_spoof = mtag.IsSpoof();
+		}
+		else {
+			
+		}
+		NS_LOG_INFO(" FORWARD UP ");
+		ProfileFunction("UDPl4Receive", false);
+		(*endPoint)->ForwardUp (packet->Copy (), header, udpHeader.GetSourcePort (), 
+				interface);
+	}
+
+	return Ipv4L4Protocol::RX_OK;
 }
 
 void
@@ -258,9 +316,20 @@ UdpL4Protocol::Send (Ptr<Packet> packet,
                      Ipv4Address saddr, Ipv4Address daddr, 
                      uint16_t sport, uint16_t dport)
 {
+	ProfileFunction("UDPl4Send", true);
   NS_LOG_FUNCTION (this << packet << saddr << daddr << sport << dport);
 
   UdpHeader udpHeader;
+	MaliciousTag mtag;
+	packet->PeekPacketTag(mtag);
+  //mtag.StopTimer("udp send");
+	if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY) {
+		if (mtag.IsSpoof()) {
+			NS_LOG_INFO("WRITE TO MY TAP");
+		} else {
+			NS_LOG_INFO("AFTER MODIFICATION OUTGOING " << daddr << mtag.GetIPDestination() );
+		}
+	}
   if(Node::ChecksumEnabled ())
     {
       udpHeader.EnableChecksums ();
@@ -272,7 +341,9 @@ UdpL4Protocol::Send (Ptr<Packet> packet,
   udpHeader.SetSourcePort (sport);
 
   packet->AddHeader (udpHeader);
+	NS_LOG_INFO("###### source port " << udpHeader.GetSourcePort() << " dest port " << udpHeader.GetDestinationPort());
 
+	ProfileFunction("UDPl4Send", false);
   m_downTarget (packet, saddr, daddr, PROT_NUMBER, 0);
 }
 

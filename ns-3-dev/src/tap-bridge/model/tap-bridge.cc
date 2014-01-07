@@ -20,9 +20,11 @@
 #include "tap-encode-decode.h"
 
 #include "ns3/node.h"
+#include "ns3/node-list.h"
 #include "ns3/channel.h"
 #include "ns3/packet.h"
 #include "ns3/ethernet-header.h"
+#include "ns3/ethernet-trailer.h"
 #include "ns3/llc-snap-header.h"
 #include "ns3/log.h"
 #include "ns3/abort.h"
@@ -30,10 +32,18 @@
 #include "ns3/string.h"
 #include "ns3/enum.h"
 #include "ns3/ipv4.h"
+#include "ns3/arp-header.h"
 #include "ns3/simulator.h"
 #include "ns3/realtime-simulator-impl.h"
 #include "ns3/unix-fd-reader.h"
 #include "ns3/uinteger.h"
+#include "ns3/malicious-tag.h"
+#include "ns3/ipv4-packet-info-tag.h"
+#include "ns3/ipv4-l3-protocol.h"
+#include "ns3/udp-l4-protocol.h"
+#include "ns3/tcp-l4-protocol.h"
+#include "ns3/udp-header.h"
+#include "ns3/tcp-header.h"
 
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -60,6 +70,9 @@
 #include <linux/if_tun.h>
 #include <sys/ioctl.h>
 #endif
+
+#include <iostream>
+#include <fstream>
 
 NS_LOG_COMPONENT_DEFINE ("TapBridge");
 
@@ -379,6 +392,7 @@ TapBridge::CreateTap (void)
   Ptr<NetDevice> nd = GetBridgedNetDevice ();
   Ptr<Node> n = nd->GetNode ();
   Ptr<Ipv4> ipv4 = n->GetObject<Ipv4> ();
+	n->SetTapDevice(this);
 
   //
   // Fork and exec the process to create our socket.  If we're us (the parent)
@@ -684,134 +698,701 @@ TapBridge::ReadCallback (uint8_t *buf, ssize_t len)
   NS_LOG_INFO ("TapBridge::ReadCallback(): Received packet on node " << m_nodeId);
   NS_LOG_INFO ("TapBridge::ReadCallback(): Scheduling handler");
   NS_ASSERT_MSG (m_rtImpl, "TapBridge::ReadCallback(): Realtime simulator implementation pointer not set");
-  m_rtImpl->ScheduleRealtimeNowWithContext (m_nodeId, MakeEvent (&TapBridge::ForwardToBridgedDevice, this, buf, len));
+  m_rtImpl->ScheduleRealtimeNowWithContext (m_nodeId, MakeSpecialEvent (&TapBridge::ForwardToBridgedDevice, this, buf, len));
+  free(buf);
+  buf = 0;
+  //ForwardToBridgedDevice(buf, len);
+}
+
+void TapBridge::PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type) {
+	if (m_mode == USE_LOCAL) {
+		if (m_ns3AddressRewritten == false) {
+			Mac48Address learnedMac = Mac48Address::ConvertFrom (src);
+			m_bridgedDevice->SetAddress (Mac48Address::ConvertFrom (learnedMac));
+			m_ns3AddressRewritten = true;
+		}
+		m_bridgedDevice->Send (packet, dst, type);
+		return;
+	}
+	if (m_mode == USE_BRIDGE)
+		m_bridgedDevice->SendFrom (packet, src, dst, type);
+	else
+		m_bridgedDevice->Send (packet, dst, type);
+}
+
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2009 University of Washington
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifndef TAP_BRIDGE_H
+#define TAP_BRIDGE_H
+
+#include <string.h>
+#include "ns3/address.h"
+#include "ns3/net-device.h"
+#include "ns3/node.h"
+#include "ns3/callback.h"
+#include "ns3/packet.h"
+#include "ns3/traced-callback.h"
+#include "ns3/event-id.h"
+#include "ns3/nstime.h"
+#include "ns3/data-rate.h"
+#include "ns3/ptr.h"
+#include "ns3/mac48-address.h"
+#include "ns3/unix-fd-reader.h"
+#include "ns3/realtime-simulator-impl.h"
+
+namespace ns3 {
+
+class TapBridgeFdReader : public FdReader
+{
+private:
+  FdReader::Data DoRead (void);
+};
+
+class Node;
+
+/**
+ * \ingroup tap-bridge
+ * 
+ * \brief A bridge to make it appear that a real host process is connected to 
+ * an ns-3 net device.
+ *
+ * The Tap Bridge lives in a kind of a gray world somewhere between a
+ * Linux host and an ns-3 bridge device.  From the Linux perspective,
+ * this code appears as the user mode handler for a Tap net device.  That
+ * is, when the Linux host writes to a /dev/tap device (that is either
+ * manually or automatically created depending on basic operating mode 
+ * -- more on this later), the write is redirected into the TapBridge that
+ * lives in the ns-3 world; and from this perspective, becomes a read.
+ * In other words, a Linux process writes a packet to a tap device and
+ * this packet is redirected to an ns-3 process where it is received by
+ * the TapBridge as a result of a read operation there.  The TapBridge
+ * then sends the packet to the ns-3 net device to which it is bridged.
+ * In the other direction, a packet received by an ns-3 net device is
+ * bridged to the TapBridge (it appears via a callback from that net
+ * device.  The TapBridge then takes that packet and writes it back to
+ * the host using the Linux TAP mechanism.  This write to the device will
+ * then appear to the Linux host as if a packet has arrived on its
+ * device.
+ * 
+ * The upshot is that the Tap Bridge appears to bridge a tap device on a
+ * Linux host in the "real world" to an ns-3 net device in the simulation
+ * and make is appear that a ns-3 net device is actually installed in the
+ * Linux host.  In order to do this on the ns-3 side, we need a "ghost
+ * node" in the simulation to hold the bridged ns-3 net device and the
+ * TapBridge.  This node should not actually do anything else in the
+ * simulation since its job is simply to make the net device appear in
+ * Linux.  This is not just arbitrary policy, it is because:
+ *
+ * - Bits sent to the Tap Bridge from higher layers in the ghost node (using
+ *   the TapBridge Send() method) are completely ignored.  The Tap Bridge is 
+ *   not, itself, connected to any network, neither in Linux nor in ns-3;
+ * - The bridged ns-3 net device is has had its receive callback disconnected
+ *   from the ns-3 node and reconnected to the Tap Bridge.  All data received 
+ *   by a bridged device will be sent to the Linux host and will not be 
+ *   received by the node.  From the perspective of the ghost node, you can 
+ *   send over this device but you cannot ever receive.
+ *
+ * Of course, if you understand all of the issues you can take control of
+ * your own destiny and do whatever you want -- we do not actively
+ * prevent you from using the ghost node for anything you decide.  You
+ * will be able to perform typical ns-3 operations on the ghost node if
+ * you so desire.  The internet stack, for example, must be there and
+ * functional on that node in order to participate in IP address
+ * assignment and global routing.  However, as mentioned above,
+ * interfaces talking any Tap Bridge or associated bridged net devices
+ * will not work completely.  If you understand exactly what you are
+ * doing, you can set up other interfaces and devices on the ghost node
+ * and use them; or take advantage of the operational send side of the
+ * bridged devices to create traffic generators.  We generally recommend
+ * that you treat this node as a ghost of the Linux host and leave it to
+ * itself, though.
+ */
+class TapBridge : public NetDevice
+{
+public:
+  static TypeId GetTypeId (void);
+
+  /**
+   * Enumeration of the operating modes supported in the class.
+   *
+   */
+  enum Mode {
+    ILLEGAL,         /**< mode not set */
+    CONFIGURE_LOCAL, /**< ns-3 creates and configures tap device */
+    USE_LOCAL,       /**< ns-3 uses a pre-created tap, without configuring it */
+    USE_BRIDGE, /**< ns-3 uses a pre-created tap, and bridges to a bridging net device */
+  };
+
+  TapBridge ();
+  virtual ~TapBridge ();
+
+  /**
+   * \brief Get the bridged net device.
+   *
+   * The bridged net device is the ns-3 device to which this bridge is connected,
+   *
+   * \returns the bridged net device.
+   */
+  Ptr<NetDevice> GetBridgedNetDevice (void);
+
+  /**
+   * \brief Set the ns-3 net device to bridge.
+   *
+   * This method tells the bridge which ns-3 net device it should use to connect
+   * the simulation side of the bridge.
+   *
+   * \param bridgedDevice device to set
+   *
+   * \attention The ns-3 net device that is being set as the device must have an
+   * an IP address assigned to it before the simulation is run.  This address 
+   * will be used to set the hardware address of the host Linux device.
+   */
+  void SetBridgedNetDevice (Ptr<NetDevice> bridgedDevice);
+
+  /**
+   * \brief Set a start time for the device.
+   *
+   * The tap bridge consumes a non-trivial amount of time to start.  It starts
+   * up in the context of a scheduled event to ensure that all configuration
+   * has been completed before extracting the configuration (IP addresses, etc.)
+   * In order to allow a more reasonable start-up sequence than a thundering 
+   * herd of devices, the time at which each device starts is also configurable
+   * bot via the Attribute system and via this call.
+   *
+   * \param tStart the start time
+   */
+  void Start (Time tStart);
+
+  /**
+   * Set a stop time for the device.
+   *
+   * @param tStop the stop time
+   *
+   * \see TapBridge::Start
+   */
+  void Stop (Time tStop);
+
+  /**
+   * Set the operating mode of this device.
+   *
+   * \param mode The operating mode of this device.
+   */
+  void SetMode (TapBridge::Mode mode);
+
+  /**
+   * Get the operating mode of this device.
+   *
+   * \returns The operating mode of this device.
+   */
+  TapBridge::Mode  GetMode (void);
+
+  //
+  // The following methods are inherited from NetDevice base class and are
+  // documented there.
+  //
+  virtual void SetIfIndex (const uint32_t index);
+  virtual uint32_t GetIfIndex (void) const;
+  virtual Ptr<Channel> GetChannel (void) const;
+  virtual void SetAddress (Address address);
+  virtual Address GetAddress (void) const;
+  virtual bool SetMtu (const uint16_t mtu);
+  virtual uint16_t GetMtu (void) const;
+  virtual bool IsLinkUp (void) const;
+  virtual void AddLinkChangeCallback (Callback<void> callback);
+  virtual bool IsBroadcast (void) const;
+  virtual Address GetBroadcast (void) const;
+  virtual bool IsMulticast (void) const;
+  virtual Address GetMulticast (Ipv4Address multicastGroup) const;
+  virtual bool IsPointToPoint (void) const;
+  virtual bool IsBridge (void) const;
+  virtual bool Send (Ptr<Packet> packet, const Address& dest, uint16_t protocolNumber);
+  virtual bool SendFrom (Ptr<Packet> packet, const Address& source, const Address& dest, uint16_t protocolNumber);
+  virtual Ptr<Node> GetNode (void) const;
+  virtual void SetNode (Ptr<Node> node);
+  virtual bool NeedsArp (void) const;
+  virtual void SetReceiveCallback (NetDevice::ReceiveCallback cb);
+  virtual void SetPromiscReceiveCallback (NetDevice::PromiscReceiveCallback cb);
+  virtual bool SupportsSendFrom () const;
+  virtual Address GetMulticast (Ipv6Address addr) const;
+	virtual void PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type);
+	virtual int MaliciousProcess (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction);
+
+protected:
+  /**
+   * \internal
+   *
+   * Call out to a separate process running as suid root in order to get our
+   * tap device created.  We do this to avoid having the entire simulation 
+   * running as root.  If this method returns, we'll have a socket waiting 
+   * for us in m_sock that we can use to talk to the tap device.
+   */
+  virtual void DoDispose (void);
+
+  bool ReceiveFromBridgedDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
+                                 Address const &src, Address const &dst, PacketType packetType);
+
+  bool DiscardFromBridgedDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, Address const &src);
+
+private:
+
+  /**
+   * \internal
+   *
+   * Call out to a separate process running as suid root in order to get our
+   * tap device created.  We do this to avoid having the entire simulation 
+   * running as root.  If this method returns, we'll have a socket waiting 
+   * for us in m_sock that we can use to talk to the tap device.
+   */
+  void CreateTap (void);
+
+  /**
+   * \internal
+   *
+   * Spin up the device
+   */
+  void StartTapDevice (void);
+
+  /**
+   * \internal
+   *
+   * Tear down the device
+   */
+  void StopTapDevice (void);
+
+  /**
+   * \internal
+   *
+   * Callback to process packets that are read
+   */
+  void ReadCallback (uint8_t *buf, ssize_t len);
+
+  /*
+   * \internal
+   *
+   * Forward a packet received from the tap device to the bridged ns-3 
+   * device
+   *
+   * \param buf A character buffer containing the actual packet bits that were
+   *            received from the host.
+   * \param buf The length of the buffer.
+   */
+  void ForwardToBridgedDevice (uint8_t *buf, ssize_t len);
+
+  /**
+   * \internal
+   *
+   * The host we are bridged to is in the evil real world.  Do some sanity
+   * checking on a received packet to make sure it isn't too evil for our
+   * poor naive virginal simulator to handle.
+   *
+   * \param packet The packet we received from the host, and which we need 
+   *               to check.
+   * \param src    A pointer to the data structure that will get the source
+   *               MAC address of the packet (extracted from the packet Ethernet
+   *               header).
+   * \param dst    A pointer to the data structure that will get the destination
+   *               MAC address of the packet (extracted from the packet Ethernet 
+   *               header).
+   * \param type   A pointer to the variable that will get the packet type from 
+   *               either the Ethernet header in the case of type interpretation
+   *               (DIX framing) or from the 802.2 LLC header in the case of 
+   *               length interpretation (802.3 framing).
+   */
+  Ptr<Packet> Filter (Ptr<Packet> packet, Address *src, Address *dst, uint16_t *type);
+
+  /**
+   * \internal
+   *
+   * Callback used to hook the standard packet receive callback of the TapBridge
+   * ns-3 net device.  This is never called, and therefore no packets will ever
+   * be received forwarded up the IP stack on the ghost node through this device.
+   */
+  NetDevice::ReceiveCallback m_rxCallback;
+
+  /**
+   * \internal
+   *
+   * Callback used to hook the promiscuous packet receive callback of the TapBridge
+   * ns-3 net device.  This is never called, and therefore no packets will ever
+   * be received forwarded up the IP stack on the ghost node through this device.
+   *
+   * Note that we intercept the similar callback in the bridged device in order to
+   * do the actual bridging between the bridged ns-3 net device and the Tap device
+   * on the host.
+   */
+  NetDevice::PromiscReceiveCallback m_promiscRxCallback;
+
+  /**
+   * \internal
+   *
+   * Pointer to the (ghost) Node to which we are connected.
+   */
+  Ptr<Node> m_node;
+
+
+  /**
+   * \internal
+   *
+   * The ns-3 interface index of this TapBridge net device.
+   */
+  uint32_t m_ifIndex;
+
+  /**
+   * \internal
+   *
+   * The common mtu to use for the net devices
+   */
+  uint16_t m_mtu;
+
+  /**
+   * \internal
+   *
+   * The socket (actually interpreted as fd) to use to talk to the Tap device on
+   * the real internet host.
+   */
+  int m_sock;
+
+  /**
+   * \internal
+   *
+   * The ID of the ns-3 event used to schedule the start up of the underlying
+   * host Tap device and ns-3 read thread.
+   */
+  EventId m_startEvent;
+
+  /**
+   * \internal
+   *
+   * The ID of the ns-3 event used to schedule the tear down of the underlying
+   * host Tap device and ns-3 read thread.
+   */
+  EventId m_stopEvent;
+
+  /**
+   * \internal
+   *
+   * Includes the ns-3 read thread used to do blocking reads on the fd
+   * corresponding to the host device.
+   */
+  Ptr<TapBridgeFdReader> m_fdReader;
+
+  /**
+   * \internal
+   *
+   * The operating mode of the bridge.  Tells basically who creates and
+   * configures the underlying network tap.
+   */
+  Mode m_mode;
+
+  /**
+   * \internal
+   *
+   * The (unused) MAC address of the TapBridge net device.  Since the TapBridge
+   * is implemented as a ns-3 net device, it is required to implement certain
+   * functionality.  In this case, the TapBridge is automatically assigned a
+   * MAC address, but it is not used.
+   */
+  Mac48Address m_address;
+
+  /**
+   * \internal
+   *
+   * Time to start spinning up the device
+   */
+  Time m_tStart;
+
+  /**
+   * \internal
+   *
+   * Time to start tearing down the device
+   */
+  Time m_tStop;
+
+  /**
+   * \internal
+   *
+   * The name of the device to create on the host.  If the device name is the
+   * empty string, we allow the host kernel to choose a name.
+   */
+  std::string m_tapDeviceName;
+
+  /**
+   * \internal
+   *
+   * The IP address to use as the device default gateway on the host.
+   */
+  Ipv4Address m_tapGateway;
+
+  /**
+   * \internal
+   *
+   * The IP address to use as the device IP on the host.
+   */
+  Ipv4Address m_tapIp;
+  /**
+   * \internal
+   *
+   * The MAC address to use as the hardware address on the host; only used
+   * in UseLocal mode.  This value comes from the MAC
+   * address assigned to the bridged ns-3 net device and matches the MAC 
+   * address of the underlying network TAP which we configured to have the 
+   * same value.
+   */
+  Mac48Address m_tapMac;
+
+  /**
+   * \internal
+   *
+   * The network mask to assign to the device created on the host.
+   */
+  Ipv4Mask m_tapNetmask;
+
+  /**
+   * \internal
+   *
+   * The ns-3 net device to which we are bridging.
+   */
+  Ptr<NetDevice> m_bridgedDevice;
+  /**
+   * \internal
+   *
+   * Whether the MAC address of the underlying ns-3 device has already been
+   * rewritten is stored in this variable (for UseLocal mode only).
+   */
+  bool m_ns3AddressRewritten;
+
+  /**
+   * A 64K buffer to hold packet data while it is being sent.
+   */
+  uint8_t *m_packetBuffer;
+
+  /**
+   * A copy of a raw pointer to the required real-time simulator implementation.
+   * Never free this pointer!
+   */
+  RealtimeSimulatorImpl *m_rtImpl;
+
+  /*
+   * a copy of the node id so the read thread doesn't have to GetNode() in
+   * in order to find the node ID.  Thread unsafe reference counting in 
+   * multithreaded apps is not a good thing.
+   */
+  uint32_t m_nodeId;
+};
+
+} // namespace ns3
+
+#endif /* TAP_BRIDGE_H */
+#define SENDING 0
+#define RECEIVING 1
+int TapBridge::MaliciousProcess
+(Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction)
+{
+	uint16_t protocol = 0;
+	int divert = false;
+	int replay = -1; // NO REPLAY
+	double delay = 0.0;
+	int duptimes = 1;
+	Mac48Address destination = Mac48Address::ConvertFrom (dest);
+	Mac48Address source = Mac48Address::ConvertFrom (src);
+	Ptr<Packet> packet = p->Copy(); // copy one time
+
+	// 1. get IP header
+	Ipv4Header ipHeader;
+	packet->PeekHeader(ipHeader);
+	protocol = ipHeader.GetProtocol();
+	if (protocol != UdpL4Protocol::PROT_NUMBER && protocol != TcpL4Protocol::PROT_NUMBER) {
+		return 0;
+	}
+	packet->RemoveHeader(ipHeader);
+
+	UdpHeader udpHeader;
+        int UDP = 0;
+	TcpHeader tcpHeader;
+        uint16_t destPort, srcPort;
+        if (protocol != UdpL4Protocol::PROT_NUMBER) {
+	// 2. UDP port looking at?
+          packet->RemoveHeader (udpHeader);
+          UDP = 1;
+          destPort = udpHeader.GetDestinationPort();
+          srcPort = udpHeader.GetSourcePort();
+        } else {
+          packet->PeekHeader (tcpHeader);
+          destPort = tcpHeader.GetDestinationPort();
+          srcPort = tcpHeader.GetSourcePort();
+        }
+  /* No PORT Check
+	if (!m_node->IsLocalPort(false, destPort)) {
+    std::cout << "not listening port " << destPort << std::endl;
+		return 0;
+	}
+  */
+
+	// 3. get message type
+	Ptr<Application> app = m_node->GetApplication(0);
+
+	uint8_t *msg = new uint8_t[packet->GetSize()];
+	msg = p->PeekDataForMal();
+	//msg = packet->CopyData(msg, packet->GetSize());
+	uint32_t offset = 8 + 20; //size of udp header
+        if (protocol == TcpL4Protocol::PROT_NUMBER) {
+          offset = 20 + 20;
+        } 
+	Message *m = new Message(msg+offset);
+	Application *ptr;
+	ptr = GetPointer(app);
+	Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
+	// opt filter
+        int action = NONE;
+        if (proxy->MalMsg(m) == true) {
+          std::cout << "mesaage m: " << m->type << std::endl;
+          action = proxy->MaliciousStrategyUDP(packet, m, packet->GetSize() - 8 - 20, &divert, &delay, &duptimes, &replay);
+        } else {
+          return 0; // normal processing
+        }
+
+	if (action == DROP) {
+		return 1;
+	}
+	for (int i=1; i<= duptimes; i++) {
+		Ptr<Packet> packet_send = packet->Copy();
+		Ipv4Address ipdest, ipsource;
+		if (divert) {
+			static int num_nodes = NodeList::GetNNodes();
+			int r = rand()%num_nodes;
+			while (r == m_nodeId) {
+				if (m_nodeId == 0) r++;
+				else r--;
+			}
+			Ptr<Node> targetNode = NodeList::GetNode(r);
+			dest = targetNode->GetDevice(1)->GetAddress();
+			ipdest = *targetNode->m_ipv4AddressList.begin();
+		}
+		else if (direction == RECEIVING && replay == 1) {
+			ipdest = ipHeader.GetSource();
+			ipsource = ipHeader.GetDestination();
+			Address swap = dest;
+			dest = src;
+			src = swap;
+
+		} else {
+			ipdest = ipHeader.GetDestination();
+			ipsource = ipHeader.GetSource();
+		}
+                if (UDP) {
+		udpHeader.EnableChecksums();
+		udpHeader.InitializeChecksum(ipsource, ipdest, UdpL4Protocol::PROT_NUMBER);
+		udpHeader.SetDestinationPort (destPort);
+		udpHeader.SetSourcePort (srcPort);
+		packet_send->AddHeader(udpHeader);
+                } else {
+                  tcpHeader.EnableChecksums();
+                  tcpHeader.InitializeChecksum(ipsource, ipdest, TcpL4Protocol::PROT_NUMBER);
+                  packet_send->AddHeader(tcpHeader);
+                }
+		Ipv4Header ipHeadernew = ipHeader;
+		ipHeadernew.EnableChecksum();
+		ipHeadernew.SetDestination(ipdest);
+		ipHeadernew.SetSource(ipsource);
+
+		packet_send->AddHeader(ipHeadernew);
+		if (delay > 0) {
+      std::cout << "delay " << delay << " sec" << std::endl;
+			Time next(Seconds(delay));
+			Simulator::Schedule(next, &TapBridge::PacketSend, this, packet_send, src, dest, type);
+		}
+		else PacketSend(packet_send, src, dest, type);
+	}
+	return 1;
 }
 
 void
 TapBridge::ForwardToBridgedDevice (uint8_t *buf, ssize_t len)
 {
-  NS_LOG_FUNCTION (buf << len);
+	NS_LOG_FUNCTION (buf << len);
+	ProfileFunction("ForwardToBridgedDevice", true);
+	// RECEIVE A PACKET FROM TAP AND NOW FORWARD TO BRIDGED DEVICE
 
-  //
-  // There are three operating modes for the TapBridge
-  //
-  // CONFIGURE_LOCAL means that ns-3 will create and configure a tap device
-  // and we are expected to use it.  The tap device and the ns-3 net device
-  // will have the same MAC address by definition.  Thus Send and SendFrom
-  // are equivalent in this case.  We use Send to allow all ns-3 devices to
-  // participate in this mode.
-  //
-  // USE_LOCAL mode tells us that we have got to USE a pre-created tap device
-  // that will have a different MAC address from the ns-3 net device.  We 
-  // also enforce the requirement that there will only be one MAC address
-  // bridged on the Linux side so we can use Send (instead of SendFrom) in
-  // the linux to ns-3 direction.  Again, all ns-3 devices can participate
-  // in this mode.
-  //
-  // USE_BRIDGE mode tells us that we are logically extending a Linux bridge
-  // on which lies our tap device.  In this case there may be many linux
-  // net devices on the other side of the bridge and so we must use SendFrom
-  // to preserve the possibly many source addresses.  Thus, ns-3 devices 
-  // must support SendFrom in order to be considered for USE_BRIDGE mode.
-  //
+	//
+	// There are three operating modes for the TapBridge
+	//
+	// CONFIGURE_LOCAL means that ns-3 will create and configure a tap device
+	// and we are expected to use it.  The tap device and the ns-3 net device
+	// will have the same MAC address by definition.  Thus Send and SendFrom
+	// are equivalent in this case.  We use Send to allow all ns-3 devices to
+	// participate in this mode.
+	//
+	// USE_LOCAL mode tells us that we have got to USE a pre-created tap device
+	// that will have a different MAC address from the ns-3 net device.  We 
+	// also enforce the requirement that there will only be one MAC address
+	// bridged on the Linux side so we can use Send (instead of SendFrom) in
+	// the linux to ns-3 direction.  Again, all ns-3 devices can participate
+	// in this mode.
+	//
+	// USE_BRIDGE mode tells us that we are logically extending a Linux bridge
+	// on which lies our tap device.  In this case there may be many linux
+	// net devices on the other side of the bridge and so we must use SendFrom
+	// to preserve the possibly many source addresses.  Thus, ns-3 devices 
+	// must support SendFrom in order to be considered for USE_BRIDGE mode.
+	//
 
-  //
-  // First, create a packet out of the byte buffer we received and free that
-  // buffer.
-  //
-  Ptr<Packet> packet = Create<Packet> (reinterpret_cast<const uint8_t *> (buf), len);
-  free (buf);
-  buf = 0;
+	//
+	// First, create a packet out of the byte buffer we received and free that
+	// buffer.
+	//
+	Ptr<Packet> packet = Create<Packet> (reinterpret_cast<const uint8_t *> (buf), len);
+	// XXX these should be deleted when they are destructed
+	//free (buf);
+	//buf = 0;
 
-  //
-  // Make sure the packet we received is reasonable enough for the rest of the 
-  // system to handle and get it ready to be injected directly into an ns-3
-  // device.  What should come back is a packet with the Ethernet header 
-  // (and possibly an LLC header as well) stripped off.
-  //
-  Address src, dst;
-  uint16_t type;
+	//
+	// Make sure the packet we received is reasonable enough for the rest of the 
+	// system to handle and get it ready to be injected directly into an ns-3
+	// device.  What should come back is a packet with the Ethernet header 
+	// (and possibly an LLC header as well) stripped off.
+	//
+	Address src, dst;
+	uint16_t type;
 
-  NS_LOG_LOGIC ("Received packet from tap device");
+	NS_LOG_LOGIC ("Received packet from tap device");
+	NS_LOG_INFO ("Packet " << packet->GetUid() << " MAC ADDRESS OF TAP DEVICE: " << GetAddress() << " NODE " << m_nodeId);
 
-  Ptr<Packet> p = Filter (packet, &src, &dst, &type);
-  if (p == 0)
-    {
-      NS_LOG_LOGIC ("TapBridge::ForwardToBridgedDevice:  Discarding packet as unfit for ns-3 consumption");
-      return;
-    }
+	Ptr<Packet> p = Filter (packet, &src, &dst, &type);
+	if (p == 0)
+	{
+		NS_LOG_LOGIC ("TapBridge::ForwardToBridgedDevice:  Discarding packet as unfit for ns-3 consumption");
+	ProfileFunction("ForwardToBridgedDevice", false);
+		return;
+	}
 
-  NS_LOG_LOGIC ("Pkt source is " << src);
-  NS_LOG_LOGIC ("Pkt destination is " << dst);
-  NS_LOG_LOGIC ("Pkt LengthType is " << type);
-  if (m_mode == USE_LOCAL)
-    {
-      //
-      // Packets we are going to forward should not be from a broadcast src
-      //
-      NS_ASSERT_MSG (Mac48Address::ConvertFrom (src) != Mac48Address ("ff:ff:ff:ff:ff:ff"), 
-                     "TapBridge::ForwardToBridgedDevice:  Source addr is broadcast");
-      if (m_ns3AddressRewritten == false)
-        {
-          //
-          // Set the ns-3 device's mac address to the overlying container's
-          // mac address
-          //
-          Mac48Address learnedMac = Mac48Address::ConvertFrom (src);
-          NS_LOG_LOGIC ("Learned MacAddr is " << learnedMac << ": setting ns-3 device to use this address");
-          m_bridgedDevice->SetAddress (Mac48Address::ConvertFrom (learnedMac));
-          m_ns3AddressRewritten = true;
-        }
-      // 
-      // If we are operating in USE_LOCAL mode, we may be attached to an ns-3
-      // device that does not support bridging (SupportsSendFrom returns false).
-      // But, since the mac addresses are now aligned, we can call Send()
-      //
-      NS_LOG_LOGIC ("Forwarding packet to ns-3 device via Send()");
-      m_bridgedDevice->Send (packet, dst, type);
-      return;
-    }
-
-  //
-  // If we are operating in USE_BRIDGE mode, we have the 
-  // situation described below:
-  //
-  //  Other Device  <-bridge->  Tap Device  <-bridge-> ns3 device
-  //   Mac Addr A               Mac Addr B             Mac Addr C
-  //
-  // In Linux, "Other Device" and "Tap Device" are bridged together.  By this
-  // we mean that a user has sone something in Linux like:
-  //
-  //   brctl addbr mybridge
-  //   brctl addif other-device
-  //   brctl addif tap-device
-  //
-  // In USE_BRIDGE mode, we want to logically extend this Linux behavior to the 
-  // simulated ns3 device and make it appear as if it is connected to the Linux
-  // subnet.  As you may expect, this means that we need to act like a real
-  // Linux bridge and take all packets that come from "Tap Device" and ask 
-  // "ns3 Device" to send them down its directly connected network.  Just like 
-  // in a normal everyday bridge we need to call SendFrom in order to preserve 
-  //the original packet's from address.
-  //
-  // If we are operating in CONFIGURE_LOCAL mode, we simply simply take all packets
-  // that come from "Tap Device" and ask "ns3 Device" to send them down its 
-  // directly connected network.  A normal bridge would need to call SendFrom
-  // in order to preserve the original from address, but in CONFIGURE_LOCAL mode
-  // the tap device and the ns-3 device have the same MAC address by definition so 
-  // we can call Send.
-  //
-  NS_LOG_LOGIC ("Forwarding packet");
-
-  if (m_mode == USE_BRIDGE)
-    {
-      m_bridgedDevice->SendFrom (packet, src, dst, type);
-    }
-  else
-    {
-      NS_ASSERT_MSG (m_mode == CONFIGURE_LOCAL, "TapBridge::ForwardToBridgedDevice(): Internal error");
-      m_bridgedDevice->Send (packet, dst, type);
-    }
+	static unsigned long packetcnt = 0;
+	if (packetcnt % 10000 == 0) ProfileFunction("DUMP", false);
+	packetcnt ++;
+	ProfileFunction("ForwardToBridgedDevice", false);
+	if (m_node->IsMalicious() && type == 2048) {
+		if (MaliciousProcess(packet, src, dst, type, SENDING) == 1) {
+			return;
+		}
+	} else {
+  }
+	PacketSend(packet, src, dst, type);
+	return;
 }
 
 Ptr<Packet>
@@ -885,34 +1466,38 @@ TapBridge::GetBridgedNetDevice (void)
 void 
 TapBridge::SetBridgedNetDevice (Ptr<NetDevice> bridgedDevice)
 {
-  NS_LOG_FUNCTION (bridgedDevice);
+	NS_LOG_FUNCTION (bridgedDevice);
 
-  NS_ASSERT_MSG (m_node != 0, "TapBridge::SetBridgedDevice:  Bridge not installed in a node");
-  NS_ASSERT_MSG (bridgedDevice != this, "TapBridge::SetBridgedDevice:  Cannot bridge to self");
-  NS_ASSERT_MSG (m_bridgedDevice == 0, "TapBridge::SetBridgedDevice:  Already bridged");
+	NS_ASSERT_MSG (m_node != 0, "TapBridge::SetBridgedDevice:  Bridge not installed in a node");
+	NS_ASSERT_MSG (bridgedDevice != this, "TapBridge::SetBridgedDevice:  Cannot bridge to self");
+	NS_ASSERT_MSG (m_bridgedDevice == 0, "TapBridge::SetBridgedDevice:  Already bridged");
 
-  if (!Mac48Address::IsMatchingType (bridgedDevice->GetAddress ()))
-    {
-      NS_FATAL_ERROR ("TapBridge::SetBridgedDevice: Device does not support eui 48 addresses: cannot be added to bridge.");
-    }
+	if (!Mac48Address::IsMatchingType (bridgedDevice->GetAddress ()))
+	{
+		NS_FATAL_ERROR ("TapBridge::SetBridgedDevice: Device does not support eui 48 addresses: cannot be added to bridge.");
+	}
 
-  if (m_mode == USE_BRIDGE && !bridgedDevice->SupportsSendFrom ())
-    {
-      NS_FATAL_ERROR ("TapBridge::SetBridgedDevice: Device does not support SendFrom: cannot be added to bridge.");
-    }
+	if (m_mode == USE_BRIDGE && !bridgedDevice->SupportsSendFrom ())
+	{
+		NS_FATAL_ERROR ("TapBridge::SetBridgedDevice: Device does not support SendFrom: cannot be added to bridge.");
+	}
 
-  //
-  // We need to disconnect the bridged device from the internet stack on our
-  // node to ensure that only one stack responds to packets inbound over the
-  // bridged device.  That one stack lives outside ns-3 so we just blatantly
-  // steal the device callbacks.
-  //
-  // N.B This can be undone if someone does a RegisterProtocolHandler later 
-  // on this node.
-  //
-  bridgedDevice->SetReceiveCallback (MakeCallback (&TapBridge::DiscardFromBridgedDevice, this));
-  bridgedDevice->SetPromiscReceiveCallback (MakeCallback (&TapBridge::ReceiveFromBridgedDevice, this));
-  m_bridgedDevice = bridgedDevice;
+	//
+	// We need to disconnect the bridged device from the internet stack on our
+	// node to ensure that only one stack responds to packets inbound over the
+	// bridged device.  That one stack lives outside ns-3 so we just blatantly
+	// steal the device callbacks.
+	//
+	// N.B This can be undone if someone does a RegisterProtocolHandler later 
+	// on this node.
+	//
+	if (!m_node->IsMalicious()) {
+		// if the node is not malicious 
+		//bridgedDevice->SetReceiveCallback (MakeCallback (&TapBridge::DiscardFromBridgedDevice, this));
+	} 
+	//?
+	bridgedDevice->SetPromiscReceiveCallback (MakeCallback (&TapBridge::ReceiveFromBridgedDevice, this));
+	m_bridgedDevice = bridgedDevice;
 }
 
 bool
@@ -932,10 +1517,11 @@ TapBridge::ReceiveFromBridgedDevice (
   const Address &dst, 
   PacketType packetType)
 {
-  NS_LOG_FUNCTION (device << packet << protocol << src << dst << packetType);
+  NS_LOG_FUNCTION (device << packet->GetUid() << protocol << src << dst << packetType);
   NS_ASSERT_MSG (device == m_bridgedDevice, "TapBridge::SetBridgedDevice:  Received packet from unexpected device");
+  ProfileFunction("Tap:Receive", true);
   NS_LOG_DEBUG ("Packet UID is " << packet->GetUid ());
-
+	
   //
   // There are three operating modes for the TapBridge
   //
@@ -952,6 +1538,12 @@ TapBridge::ReceiveFromBridgedDevice (
   // on which lies our tap device.
   //
 
+	// FOR REPLAYING ATTACK
+	if (m_node->IsMalicious() && protocol == 2048) {
+		//Ptr<Packet> p = packet->Copy();
+		//MaliciousProcess(p, src, dst, protocol, RECEIVING); // care only about replay
+	}
+
   if (m_mode == CONFIGURE_LOCAL && packetType == PACKET_OTHERHOST)
     {
       //
@@ -965,11 +1557,13 @@ TapBridge::ReceiveFromBridgedDevice (
       // we want to act like a bridge and forward these PACKET_OTHERHOST 
       // packets.
       //
+  ProfileFunction("Tap:Receive", false);
       return true;
     }
 
   Mac48Address from = Mac48Address::ConvertFrom (src);
   Mac48Address to = Mac48Address::ConvertFrom (dst);
+	NS_LOG_INFO("FROM: " << from << " (" << src << ") TO: " << to << " (" << dst << ")");
 
   Ptr<Packet> p = packet->Copy ();
   EthernetHeader header = EthernetHeader (false);
@@ -989,9 +1583,11 @@ TapBridge::ReceiveFromBridgedDevice (
   p->CopyData (m_packetBuffer, p->GetSize ());
 
   uint32_t bytesWritten = write (m_sock, m_packetBuffer, p->GetSize ());
+
   NS_ABORT_MSG_IF (bytesWritten != p->GetSize (), "TapBridge::ReceiveFromBridgedDevice(): Write error.");
 
   NS_LOG_LOGIC ("End of receive packet handling on node " << m_node->GetId ());
+  ProfileFunction("Tap:Receive", false);
   return true;
 }
 

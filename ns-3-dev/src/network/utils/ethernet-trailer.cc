@@ -48,6 +48,8 @@ EthernetTrailer::CheckFcs (Ptr<const Packet> p) const
   uint8_t *buffer;
   uint32_t crc;
 
+	// hjlee for performance
+	return true;
   if (!m_calcFcs)
     {
       return true;
@@ -66,6 +68,8 @@ EthernetTrailer::CalcFcs (Ptr<const Packet> p)
   int len = p->GetSize ();
   uint8_t *buffer;
 
+	// hjlee for performance
+	return ;
   if (!m_calcFcs)
     {
       return;

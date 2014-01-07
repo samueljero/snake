@@ -712,6 +712,15 @@ Buffer::TransformIntoRealBuffer (void) const
 }
 
 
+uint8_t *
+Buffer::GetData (void) 
+{
+  NS_ASSERT (CheckInternalState ());
+  TransformIntoRealBuffer ();
+  NS_ASSERT (CheckInternalState ());
+  return m_data->m_data + m_start;
+}
+
 uint8_t const*
 Buffer::PeekData (void) const
 {

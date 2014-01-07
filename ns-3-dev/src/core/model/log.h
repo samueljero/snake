@@ -56,6 +56,9 @@ enum LogLevel {
   LOG_PREFIX_NODE    = 0x20000000  // prefix all trace prints with simulation node
 };
 
+
+void ProfileFunction(char const *name, bool start);
+
 /**
  * \param name a log component name
  * \param level a logging level
@@ -136,8 +139,9 @@ void LogComponentDisableAll (enum LogLevel level);
       ns3::LogNodePrinter printer = ns3::LogGetNodePrinter ();  \
       if (printer != 0)                                         \
         {                                                       \
+          std::clog << "[node ";                                     \
           (*printer)(std::clog);                               \
-          std::clog << " ";                                     \
+          std::clog << "] ";                                     \
         }                                                       \
     }
 

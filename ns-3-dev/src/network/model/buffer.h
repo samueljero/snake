@@ -410,6 +410,7 @@ private:
    * evil and is present only for a few specific uses.
    */
   uint8_t const*PeekData (void) const;
+  uint8_t *GetData (void) ;
 
   /**
    * \param start size to reserve

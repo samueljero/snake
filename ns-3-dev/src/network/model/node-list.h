@@ -69,6 +69,10 @@ public:
    * \returns the number of nodes currently in the list.
    */
   static uint32_t GetNNodes (void);
+
+	/* MALICIOUS */
+	static Ptr<Node> GetMalProxy();
+	static void SetMalProxy(int n);
 };
 
 } // namespace ns3

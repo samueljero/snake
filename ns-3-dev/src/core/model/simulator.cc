@@ -163,6 +163,26 @@ Simulator::Run (void)
   GetImpl ()->Run ();
 }
 
+int
+Simulator::ToggleFreeze(bool freeze)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return GetImpl ()->ToggleFreeze(freeze);
+}
+
+void *
+Simulator::Save(void *ptr)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return GetImpl ()->Save(ptr);
+}
+
+int Simulator::Load(void *ptr)
+{
+  NS_LOG_FUNCTION_NOARGS ();
+  return GetImpl ()->Load(ptr);
+}
+
 void 
 Simulator::RunOneEvent (void)
 {
@@ -365,8 +385,6 @@ Simulator::GetImplementation (void)
 {
   return GetImpl ();
 }
-
-
 
 } // namespace ns3
 

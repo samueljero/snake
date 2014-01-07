@@ -5,6 +5,8 @@ def build(bld):
     module.source = [
         'model/uan-channel.cc',
         'model/uan-phy-gen.cc',
+        'model/uan-mac.cc',
+        'model/uan-transducer.cc',
         'model/uan-transducer-hd.cc',
         'model/uan-address.cc',
         'model/uan-net-device.cc',
@@ -61,7 +63,7 @@ def build(bld):
         'model/uan-mac-rc-gw.h',
         ]
 
-    if (bld.env['ENABLE_EXAMPLES']):
-      bld.add_subdirs('examples')
+    #if (bld.env['ENABLE_EXAMPLES']):
+     # bld.add_subdirs('examples')
 
     bld.ns3_python_bindings()

@@ -21,10 +21,12 @@
 #define SIMPLE_NET_DEVICE_H
 
 #include "ns3/net-device.h"
-#include "mac48-address.h"
+#include "ns3/mac48-address.h"
 #include <stdint.h>
 #include <string>
 #include "ns3/traced-callback.h"
+#include "ns3/ipv4-header.h"
+#include <ext/hash_map>
 
 namespace ns3 {
 
@@ -49,7 +51,13 @@ public:
   SimpleNetDevice ();
 
   void Receive (Ptr<Packet> packet, uint16_t protocol, Mac48Address to, Mac48Address from);
+  bool GhostIntercept (Ptr<Packet> p, bool sending, bool* writeToTap, Mac48Address from);
   void SetChannel (Ptr<SimpleChannel> channel);
+	void AddHeaderTrailer (Ptr<Packet> p,   Mac48Address source,  Mac48Address dest,  uint16_t protocolNumber);
+	Ipv4Header GetIPHeader(Ptr<Packet> packet_received);
+	void AddChannel (Ptr<SimpleChannel> channel, Mac48Address dest_addr);
+	uint32_t GetNChannels (void) ;
+	//Ptr<Channel> GetChannel (uint32_t i);
 
   /**
    * Attach a receive ErrorModel to the SimpleNetDevice.
@@ -93,6 +101,9 @@ public:
 protected:
   virtual void DoDispose (void);
 private:
+  //std::vector<Ptr<SimpleChannel> > m_channels;
+	//std::vector<Mac48Address> m_channelAddresses;
+	__gnu_cxx::hash_map<uint64_t, Ptr<SimpleChannel> > m_channels;
   Ptr<SimpleChannel> m_channel;
   NetDevice::ReceiveCallback m_rxCallback;
   NetDevice::PromiscReceiveCallback m_promiscCallback;

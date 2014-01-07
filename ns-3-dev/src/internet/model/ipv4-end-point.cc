@@ -33,6 +33,7 @@ Ipv4EndPoint::Ipv4EndPoint (Ipv4Address address, uint16_t port)
     m_peerAddr (Ipv4Address::GetAny ()),
     m_peerPort (0)
 {
+	m_spoof = false;
 }
 Ipv4EndPoint::~Ipv4EndPoint ()
 {
@@ -69,9 +70,44 @@ Ipv4EndPoint::GetPeerPort (void)
 {
   return m_peerPort;
 }
+Ipv4Address 
+Ipv4EndPoint::GetOrgLocalAddress (void)
+{
+  return m_orgLocalAddr;
+}
+uint16_t 
+Ipv4EndPoint::GetOrgLocalPort (void)
+{
+  return m_orgLocalPort;
+}
+Ipv4Address 
+Ipv4EndPoint::GetOrgPeerAddress (void)
+{
+  return m_orgPeerAddr;
+}
+uint16_t 
+Ipv4EndPoint::GetOrgPeerPort (void)
+{
+  return m_orgPeerPort;
+}
+void 
+Ipv4EndPoint::SetOrgPeer (Ipv4Address address, uint16_t port)
+{
+	NS_LOG_INFO(" SET ORGPEER TCPLOG " << address << ":" << port << " TCPLOG " << this);
+  m_orgPeerAddr = address;
+  m_orgPeerPort = port;
+}
+void 
+Ipv4EndPoint::SetOrgLocal (Ipv4Address address, uint16_t port)
+{
+	NS_LOG_INFO(" SET ORGLOCAL TCPLOG " << address << ":" << port << " TCPLOG " << this);
+  m_orgLocalAddr = address;
+  m_orgLocalPort = port;
+}
 void 
 Ipv4EndPoint::SetPeer (Ipv4Address address, uint16_t port)
 {
+	NS_LOG_INFO(" SET PEER TCPLOG " << address << ":" << port << " TCPLOG " << this);
   m_peerAddr = address;
   m_peerPort = port;
 }
@@ -142,6 +178,16 @@ Ipv4EndPoint::DoForwardIcmp (Ipv4Address icmpSource, uint8_t icmpTtl,
                              uint32_t icmpInfo)
 {
   m_icmpCallback (icmpSource,icmpTtl,icmpType,icmpCode,icmpInfo);
+}
+
+void Ipv4EndPoint::SetSrcNode(uint16_t node)
+{
+	m_srcNode = node;
+}
+
+uint16_t Ipv4EndPoint::GetSrcNode(void)
+{
+	return m_srcNode;
 }
 
 } // namespace ns3

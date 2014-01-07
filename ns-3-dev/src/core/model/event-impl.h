@@ -51,12 +51,16 @@ public:
    * before calling Invoke.
    */
   void Cancel (void);
+
   /**
    * \returns true if the event has been canceled.
    *
    * Invoked by the simulation engine before calling Invoke.
    */
   bool IsCancelled (void);
+  virtual EventImpl* clone(void) {
+    std::cout << "NULL clone" << std::endl; return NULL;
+  };
 
 protected:
   virtual void Notify (void) = 0;

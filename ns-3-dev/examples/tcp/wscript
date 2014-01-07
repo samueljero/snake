@@ -2,25 +2,42 @@
 
 def build(bld):
     obj = bld.create_ns3_program('tcp-large-transfer',
-                                 ['point-to-point', 'applications', 'internet'])
+                                 ['point-to-point', 'applications', 'internet', 'csma'])
     obj.source = 'tcp-large-transfer.cc'
 
     obj = bld.create_ns3_program('tcp-nsc-lfn',
-                                 ['point-to-point', 'applications', 'internet'])
+                                 ['point-to-point', 'applications', 'internet', 'csma'])
     obj.source = 'tcp-nsc-lfn.cc'
 
     obj = bld.create_ns3_program('tcp-nsc-zoo',
-                                 ['csma', 'internet', 'applications'])
+                                 ['csma', 'internet', 'applications', 'csma'])
     obj.source = 'tcp-nsc-zoo.cc'
 
     obj = bld.create_ns3_program('tcp-star-server',
-                                 ['point-to-point', 'applications', 'internet'])
+                                 ['point-to-point', 'applications', 'internet', 'csma'])
     obj.source = 'tcp-star-server.cc'
 
     obj = bld.create_ns3_program('star',
-                                 ['netanim', 'point-to-point', 'point-to-point-layout', 'applications', 'internet'])
+                                 ['netanim', 'csma', 'csma-layout', 'point-to-point', 'point-to-point-layout', 'applications', 'internet'])
     obj.source = 'star.cc'
 
+    obj = bld.create_ns3_program('twonode',
+                                 ['netanim', 'csma', 'csma-layout', 'applications', 'internet', 'tap-bridge', 'bridge'])
+    obj.source = 'twonode.cc'
+
+    obj = bld.create_ns3_program('tcp-twonode',
+                                 ['netanim', 'csma', 'csma-layout', 'applications', 'internet', 'tap-bridge', 'bridge'])
+    obj.source = 'tcp-twonode.cc'
+
+
+    obj = bld.create_ns3_program('malproxy-topology',
+                                 ['netanim', 'csma', 'csma-layout', 'applications', 'internet', 'tap-bridge', 'bridge', 'nix-vector-routing', 'point-to-point'])
+    obj.source = 'malproxy-topology.cc'
+
+    obj = bld.create_ns3_program('malproxy_simple',
+                                 ['netanim', 'csma', 'csma-layout', 'applications', 'internet', 'tap-bridge', 'bridge', 'nix-vector-routing', 'point-to-point', 'network', 'simple'])
+    obj.source = 'malproxy_simple.cc'
+
     obj = bld.create_ns3_program('tcp-bulk-send',
-                                 ['point-to-point', 'applications', 'internet'])
+                                 ['point-to-point', 'applications', 'internet', 'csma'])
     obj.source = 'tcp-bulk-send.cc'

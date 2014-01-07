@@ -36,12 +36,24 @@ SimpleChannel::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::SimpleChannel")
     .SetParent<Channel> ()
     .AddConstructor<SimpleChannel> ()
+		/*
+    .AddAttribute ("Delay", "Transmission delay through the channel",
+                   TimeValue (MilliSeconds(0)),
+                   MakeTimeAccessor (&SimpleChannel::m_delay),
+                   MakeTimeChecker ())
+		*/
   ;
   return tid;
 }
 
 SimpleChannel::SimpleChannel ()
 {
+	m_delay = MilliSeconds(0);
+}
+
+void SimpleChannel::SetDelay(uint32_t t)
+{
+	m_delay = MicroSeconds(t);
 }
 
 void
@@ -49,6 +61,7 @@ SimpleChannel::Send (Ptr<Packet> p, uint16_t protocol,
                      Mac48Address to, Mac48Address from,
                      Ptr<SimpleNetDevice> sender)
 {
+	ProfileFunction("ChannelSend", true);
   NS_LOG_FUNCTION (p << protocol << to << from << sender);
   for (std::vector<Ptr<SimpleNetDevice> >::const_iterator i = m_devices.begin (); i != m_devices.end (); ++i)
     {
@@ -57,9 +70,10 @@ SimpleChannel::Send (Ptr<Packet> p, uint16_t protocol,
         {
           continue;
         }
-      Simulator::ScheduleWithContext (tmp->GetNode ()->GetId (), Seconds (0),
+      Simulator::ScheduleWithContext (tmp->GetNode ()->GetId (), m_delay, // this should be delay
                                       &SimpleNetDevice::Receive, tmp, p->Copy (), protocol, to, from);
     }
+	ProfileFunction("ChannelSend", false);
 }
 
 void

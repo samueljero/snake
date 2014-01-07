@@ -103,6 +103,7 @@ public:
    */
   virtual void SetAddress (Address address) = 0;
 
+	virtual void ReceiveFromProxy(Ptr<const Packet>packet) {return;};
   /**
    * \return the current Address of this interface.
    */

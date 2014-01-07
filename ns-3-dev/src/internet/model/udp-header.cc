@@ -143,7 +143,8 @@ UdpHeader::Serialize (Buffer::Iterator start) const
   i.WriteHtonU16 (m_destinationPort);
   i.WriteHtonU16 (start.GetSize ());
   i.WriteU16 (0);
-
+	
+	/* hjlee commented out for performance
   if (m_calcChecksum)
     {
       uint16_t headerChecksum = CalculateHeaderChecksum (start.GetSize ());
@@ -154,6 +155,7 @@ UdpHeader::Serialize (Buffer::Iterator start) const
       i.Next (6);
       i.WriteU16 (checksum);
     }
+		*/
 }
 uint32_t
 UdpHeader::Deserialize (Buffer::Iterator start)
@@ -166,9 +168,9 @@ UdpHeader::Deserialize (Buffer::Iterator start)
 
   if(m_calcChecksum)
     {
-      uint16_t headerChecksum = CalculateHeaderChecksum (start.GetSize ());
-      i = start;
-      uint16_t checksum = i.CalculateIpChecksum (start.GetSize (), headerChecksum);
+      //uint16_t headerChecksum = CalculateHeaderChecksum (start.GetSize ());
+      //i = start;
+      uint16_t checksum = 0;//i.CalculateIpChecksum (start.GetSize (), headerChecksum);
 
       m_goodChecksum = (checksum == 0);
     }

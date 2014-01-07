@@ -164,6 +164,8 @@ DefaultSimulatorImpl::Run (void)
   NS_ASSERT (!m_events->IsEmpty () || m_unscheduledEvents == 0);
 }
 
+int DefaultSimulatorImpl::ToggleFreeze(bool) {return -1; }
+int DefaultSimulatorImpl::Save() {return -1; }
 void
 DefaultSimulatorImpl::RunOneEvent (void)
 {

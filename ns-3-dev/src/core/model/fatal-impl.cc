@@ -124,7 +124,7 @@ FlushStreams (void)
   std::list<std::ostream*> *l = *pl;
 
   /* Need to do it this way in case any of the ostream* causes SIGSEGV */
-  while (!l->empty ())
+  while (l != NULL && !l->empty ())
     {
       std::ostream* s (l->front ());
       l->pop_front ();
@@ -143,7 +143,7 @@ FlushStreams (void)
   std::cerr.flush ();
   std::clog.flush ();
 
-  delete l;
+  if (l != NULL) delete l;
   *pl = 0;
 }
 

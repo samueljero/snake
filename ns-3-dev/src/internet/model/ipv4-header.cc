@@ -286,6 +286,7 @@ Ipv4Header::Deserialize (Buffer::Iterator start)
   uint8_t verIhl = i.ReadU8 ();
   uint8_t ihl = verIhl & 0x0f; 
   uint16_t headerSize = ihl * 4;
+  if (verIhl >> 4 != 4) return 0;
   NS_ASSERT ((verIhl >> 4) == 4);
   m_tos = i.ReadU8 ();
   uint16_t size = i.ReadNtohU16 ();
@@ -316,7 +317,8 @@ Ipv4Header::Deserialize (Buffer::Iterator start)
   if (m_calcChecksum) 
     {
       i = start;
-      uint16_t checksum = i.CalculateIpChecksum (headerSize);
+      uint16_t checksum = 0;
+			//i.CalculateIpChecksum (headerSize);
       NS_LOG_LOGIC ("checksum=" <<checksum);
 
       m_goodChecksum = (checksum == 0);

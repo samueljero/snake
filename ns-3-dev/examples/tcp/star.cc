@@ -19,9 +19,9 @@
 #include "ns3/network-module.h"
 #include "ns3/netanim-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/point-to-point-module.h"
+#include "ns3/csma-module.h"
 #include "ns3/applications-module.h"
-#include "ns3/point-to-point-layout-module.h"
+#include "ns3/csma-layout-module.h"
 
 // Network topology (default)
 //
@@ -46,6 +46,7 @@ main (int argc, char *argv[])
   //
   // Set up some default values for the simulation.
   //
+	LogComponentEnable("Star", LOG_LEVEL_INFO);
   Config::SetDefault ("ns3::OnOffApplication::PacketSize", UintegerValue (137));
 
   // ??? try and stick 15kb/s into the data rate
@@ -54,17 +55,17 @@ main (int argc, char *argv[])
   //
   // Default number of nodes in the star.  Overridable by command line argument.
   //
-  uint32_t nSpokes = 8;
+  uint32_t nSpokes = 4;
 
   CommandLine cmd;
   cmd.AddValue ("nSpokes", "Number of nodes to place in the star", nSpokes);
   cmd.Parse (argc, argv);
 
   NS_LOG_INFO ("Build star topology.");
-  PointToPointHelper pointToPoint;
-  pointToPoint.SetDeviceAttribute ("DataRate", StringValue ("5Mbps"));
-  pointToPoint.SetChannelAttribute ("Delay", StringValue ("2ms"));
-  PointToPointStarHelper star (nSpokes, pointToPoint);
+  CsmaHelper csma;
+  csma.SetChannelAttribute ("DataRate", StringValue ("100Mbps"));
+  csma.SetChannelAttribute ("Delay", StringValue ("1ms"));
+  CsmaStarHelper star (nSpokes, csma);
 
   NS_LOG_INFO ("Install internet stack on all nodes.");
   InternetStackHelper internet;
@@ -78,8 +79,10 @@ main (int argc, char *argv[])
   // Create a packet sink on the star "hub" to receive packets.
   // 
   uint16_t port = 50000;
-  Address hubLocalAddress (InetSocketAddress (Ipv4Address::GetAny (), port));
+	Ipv4Address any = Ipv4Address::GetAny();
+  Address hubLocalAddress (InetSocketAddress (any, port));
   PacketSinkHelper packetSinkHelper ("ns3::TcpSocketFactory", hubLocalAddress);
+	NS_LOG_INFO("hubAddress " << any);
   ApplicationContainer hubApp = packetSinkHelper.Install (star.GetHub ());
   hubApp.Start (Seconds (1.0));
   hubApp.Stop (Seconds (10.0));
@@ -96,6 +99,7 @@ main (int argc, char *argv[])
   for (uint32_t i = 0; i < star.SpokeCount (); ++i)
     {
       AddressValue remoteAddress (InetSocketAddress (star.GetHubIpv4Address (i), port));
+			NS_LOG_INFO("remoteAddress of " << i << " " << star.GetHubIpv4Address(i));
       onOffHelper.SetAttribute ("Remote", remoteAddress);
       spokeApps.Add (onOffHelper.Install (star.GetSpokeNode (i)));
     }
@@ -112,7 +116,7 @@ main (int argc, char *argv[])
   //
   // Do pcap tracing on all point-to-point devices on all nodes.
   //
-  pointToPoint.EnablePcapAll ("star");
+  //pointToPoint.EnablePcapAll ("star");
 
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();

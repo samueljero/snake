@@ -593,6 +593,14 @@ public:
    * \returns nothing
    */
   void SetRecvPktInfo (bool flag);
+
+	// HJLEE for proxy spoofing
+	uint32_t m_srcNode;
+	Ipv4Address m_orgDestIP;
+	Ipv4Address m_orgSrcIP;
+	uint16_t m_orgSrcPort;
+	bool m_spoof;
+	Ptr<Socket> m_pair;
  
 protected:
   void NotifyConnectionSucceeded (void);

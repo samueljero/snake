@@ -35,6 +35,9 @@ Socket::Socket (void)
 {
   m_boundnetdevice = 0;
   m_recvpktinfo = false;
+	m_spoof = false;
+	m_orgSrcIP = Ipv4Address((uint32_t)0);
+	m_pair = NULL;
   NS_LOG_FUNCTION_NOARGS ();
 }
 
@@ -389,7 +392,7 @@ SocketAddressTag::Deserialize (TagBuffer i)
 void
 SocketAddressTag::Print (std::ostream &os) const
 {
-  os << "address=" << m_address;
+  //os << "address=" << m_address;
 }
 
 SocketIpTtlTag::SocketIpTtlTag ()
