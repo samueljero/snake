@@ -65,17 +65,15 @@ sub runSystem()
   #system("./serverLog.pl & ");
 	system("pssh -p $s_parallel -h $serverList \"pkill server\"  &");
 	system("pssh -p $s_parallel -h $clientList \"pkill client\"  &");
-	print "about to execute the : $server_command\n";
+	print "About to execute server command: $server_command\n";
 	system("pssh -p $s_parallel -h $serverList -t $runTime \"$server_command\"  &");
 }
 
 sub runClient()
 {
-	print "about to execute the : $client_command\n";
+	print "About to execute client command: $client_command\n";
 	system("pssh -p $s_parallel -h $clientList \"pkill client\"  &");
 	system("pssh -p $c_parallel -h $clientList -t $runTime \"$client_command &\"  &");
-	#system("ssh 10.1.1.1 \"pkill server\"  &");
-# 7 server
 }
 
 sub setSystem() 

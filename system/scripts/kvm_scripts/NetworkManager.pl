@@ -17,7 +17,6 @@ my $brname = "br-vm";
 my $bridge = "brhost";
 
 my $usage = "usage: $0 dnsconf|dns|addall|delall start end";
-#$usage = $usage."The default value of (start) is 1\n";
 
 if (@ARGV < 3) {
   print "$usage\n";
@@ -78,7 +77,6 @@ if ($command eq "stopdns")
 if ($command eq "addall")
 {
   # this prepares VM-host network
-  # system("sudo brctl addbr $bridge");
 
   for (my $i = $start; $i <= $num; $i++) 
   {
@@ -86,7 +84,6 @@ if ($command eq "addall")
     system("sudo ifconfig $hwname1$i 0.0.0.0 promisc up");
     system("sudo brctl addif $bridge $hwname1$i");
   }
-  # system("sudo ifconfig brhost 10.0.0.1 netmask 255.0.0.0 up");
 
   # system("$basedir/startdns.sh");
   
@@ -99,7 +96,6 @@ if ($command eq "addall")
     system("sudo tunctl -u $user -t $hwname2$i"); # tap for VM
     system("sudo tunctl -u $user -t $tapname$i"); # tap for NS-3
     system("sudo ifconfig $hwname2$i 0.0.0.0 promisc up");
-    #system("sudo ifconfig $tapname$i hw ether 00:16:3e:00:01:$tmp");
     system("sudo ifconfig $tapname$i 0.0.0.0 promisc up");
     system("sudo brctl addif $brname$i $hwname2$i");
     system("sudo brctl addif $brname$i $tapname$i");
@@ -121,14 +117,12 @@ if ($command eq "delall")
     system("sudo brctl delbr $brname$i");
   }
 
-  #system("sudo ifconfig $bridge down");
   for (my $i = $start; $i <= $num; $i++) 
   {
     system("sudo ifconfig $hwname1$i down");
     system("sudo brctl delif $bridge $hwname1$i");
     system("sudo tunctl -d $hwname1$i");
   }
-  #system("sudo brctl delbr $bridge");
 
 #  system("pkill dnsmasq");
 }  

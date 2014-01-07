@@ -101,7 +101,6 @@ if ($command eq "prep")
     my $ip = $ipbase.".$end";
 # TODO: if pub key does not exist, gen it
     system("cat ~/.ssh/id_rsa.pub | ssh root\@$ip \"cat >> ~/.ssh/authorized_keys\"");
-# need to add root's
     system("cat /root/.ssh/id_rsa.pub | ssh root\@$ip \"cat >> ~/.ssh/authorized_keys\"");
     print "copying CustomizeVM.pl\n";
     system("scp -o StrictHostKeyChecking=no $basedir/CustomizeVM.pl root\@$ip:/usr/local/bin/CustomizeVM.pl");
@@ -146,7 +145,6 @@ if ($command eq "arp" or $command eq "prep" )
 if ($command eq "status")
 {
   chomp(my $user = `echo \$USER`); 
-  # print "Running as user: $user\n";
 
   system ("ps -ef | grep $user | grep qemu-system-x86_64 | grep -v grep > /dev/null");
   if ($? == 0)

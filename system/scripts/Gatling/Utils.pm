@@ -48,7 +48,9 @@ sub directTopology($)
   die "Could not create socket to connect NS3: $!\n" unless $sock;
   print $sock "$comm\n";
   $sock->recv($res, 1024);
-  print "$comm : $res\n";
+  if ($GatlingConfig::debug > 1) {
+  	print "$comm : $res\n";
+  }
   $sock->close();
   return;
 }
@@ -85,7 +87,7 @@ sub takeTime() {
   $time_taken = Time::HiRes::time;
   $tmstr = `date --rfc-3339=ns`;
   chop($tmstr);
-  print "--> $tmstr\n";
+  print "Set Time to: $tmstr\n";
 }
 
 sub timeRollback() {
@@ -112,10 +114,8 @@ sub getPerfScore()
     while (my $line = <SCORE>) {
       $count = $count + 1;
       $sum = $sum+$line;
-      print "read score : $sum from $line count $count\n";
     }
     $score = $sum/$count;
-    print "final score $score\n";
   }
   close SCORE;
   return $score;

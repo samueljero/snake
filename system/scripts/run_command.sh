@@ -3,5 +3,5 @@
 chmod 755 ./run_arp.sh
 #echo "setting VM arp table"
 #./run_arp.sh
-NS3_PATH="/home/sjero/turret2/ns-3-dev"
+NS3_PATH="/home/sjero/turret/ns-3-dev"
 sudo LD_LIBRARY_PATH="$NS3_PATH/build/" $NS3_PATH/build/examples/tcp/$1

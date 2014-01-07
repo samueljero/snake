@@ -12,8 +12,6 @@ use threads ('yield',
 use threads::shared;
 use lib ("./Gatling/");
 
-#use Attack;
-
 require MsgParse;
 require Utils;
 require GatlingConfig;
@@ -44,23 +42,24 @@ sub ns3_thread {
   exit();
 }
 
-# prepare VMs clean
-#Attack::start_Listener();
-while (1) {
-  system("./startNclean.sh"); # prepare VMs clean
-  GatlingConfig::movePrevPerf();
-# as this will parse messages, it should be after setting the system
-  Attack::prepareMessages();
-  GatlingConfig::prepare(); # start log servers
 
-  print "startNS3\n"; # Start NS-3
+while (1) {
+  #Start VMs
+  system("./startNclean.sh");
+  
+  #Initialize Turret system
+  GatlingConfig::movePrevPerf();
+  Attack::prepareMessages();
+  GatlingConfig::prepare();
+
+  print "Starting NS-3\n";
   my $ns3_thread;
   if ($GatlingConfig::startNS3 == 1) {
     $GatlingConfig::watch_ns3 = 1;
     $ns3_thread = threads->create('ns3_thread', "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms 5 -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\"");  
   }
-
-# ping
+  
+  #Verify that VMs and NS-3 are up
   sleep 3;
   system("pssh -P -h pssh_all.txt -t 5 \"ping 10.1.2.5 -c 5\"");
 
@@ -68,20 +67,18 @@ while (1) {
     print "Gatling suspended due to NS3 termination\n";
     exit;
   }
-
+  
+  #Begin Attack!
   my $gatling_thread = threads->create('Attack::start_Listener');
   while ($GatlingConfig::watch_ns3 == 1 && $GatlingConfig::watch_turret) {
     sleep 1;
   }
-  print "out $GatlingConfig::watch_ns3\n";
+  
+  #Sombody died...
   if ($GatlingConfig::watch_ns3 == 0) {
     $gatling_thread->kill('SIGTERM');
   } else {
     $ns3_thread->kill('SIGTERM');
   }
   exit;
-  #print "out2\n";
-  #close $GatlingConfig::socket;
-  #print "NOW prepare to start again\n";
-  #sleep 2; # binding
 }

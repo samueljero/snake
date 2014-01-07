@@ -82,16 +82,16 @@ if ($command eq "pause") {
     tellKVM($telnetport, "c", 1);
 	}
 } elsif ($command eq "save") { # kill afer saving
+	print("Saving Snapshot: sn.$sn.#\n");
 	for (my $i = $start; $i <= $num; $i++) {
 		my $telnetport = 10100 + $i;
 		my $snapshot = "$basedir/sn.$sn.$i";
 		$exec = "migrate \"exec:cat > $snapshot\"";
-    print("echo $exec | telnet localhost $telnetport \n");
     tellKVM($telnetport, $exec, 1);
     tellKVM($telnetport, "q", 0);
 	}
 } elsif ($command eq "load") {
-  print "Loading sn.$sn.#";
+	print("Loading Snapshot: sn.$sn.#\n");
 	for (my $i = $start; $i <= $num; $i++) {
 		my $telnetport = 10100 + $i;
 		my $vncport = (11000 - 5900) + $i;
