@@ -1261,7 +1261,7 @@ int TapBridge::MaliciousProcess
 	// opt filter
         int action = NONE;
         if (proxy->MalMsg(m) == true) {
-          std::cout << "mesaage m: " << m->type << std::endl;
+          std::cout << "Message m: " << m->type << std::endl;
           action = proxy->MaliciousStrategyUDP(packet, m, packet->GetSize() - 8 - 20, &divert, &delay, &duptimes, &replay);
         } else {
           return 0; // normal processing
@@ -1313,7 +1313,6 @@ int TapBridge::MaliciousProcess
 
 		packet_send->AddHeader(ipHeadernew);
 		if (delay > 0) {
-      std::cout << "delay " << delay << " sec" << std::endl;
 			Time next(Seconds(delay));
 			Simulator::Schedule(next, &TapBridge::PacketSend, this, packet_send, src, dest, type);
 		}

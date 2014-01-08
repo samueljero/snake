@@ -46,6 +46,7 @@ using namespace std;
 
 static bool global_consult_gatling = true;
 static short global_once = 0;
+static int app_debug=0;
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("MalProxyApplication");
@@ -108,7 +109,7 @@ void MalProxy::ParseStrategy(string line) {
 void MalProxy::AddStrategy(string line) {
 
 	NS_LOG_DEBUG("Adding new strategy " << line);
-	std::cout << "MALProxy] " << "Adding new strategy " << line << std::endl;
+	if(app_debug>0){std::cout << "MALProxy] " << "Adding new strategy " << line << std::endl;}
 	while (line.length() > 0) {
 		NS_LOG_DEBUG("left " << line << " " << line.length());
 		int cur = line.find(" ");
@@ -130,7 +131,7 @@ void MalProxy::AddStrategy(string line) {
 		}
 
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << value);
-		std::cout << "MALProxy] " << "msgType " << msgType << " action " << malact << " value " << value << std::endl;
+		if(app_debug>1){std::cout << "MALProxy] " << "msgType " << msgType << " action " << malact << " value " << value << std::endl;}
 
 		if (malact == "NONE") {
 			deliveryActions[msgType][NONE] = true;
@@ -225,25 +226,25 @@ MalProxy::Command(string command)
   if (command.compare(0, strlen("Learned"), "Learned") == 0) {
     string line = string(command.c_str() + strlen("Learned")+1);
 		int cur = line.find(" ");
-    std::cout << "MALProxy] " << "learning " << line << " from " << command << std::endl;
+		if(app_debug>1){std::cout << "MALProxy] " << "learning " << line << " from " << command << std::endl;}
     int msgType = Message::StrToType(line.substr(0, cur).c_str());
 		m_learned[msgType] = line;
 		//m_learned[msgType] = string(line.c_str()+cur+1);
     ParseStrategy(line);
     //ParseStrategy(m_learned[msgType]);
-    std::cout << "MALProxy] " <<"Learned " << line << " Msg " << msgType << std::endl;
+    if(app_debug>1){std::cout << "MALProxy] " <<"Learned " << line << " Msg " << msgType << std::endl;}
     if (m_learned.find(msgType) == m_learned.end())
-      std::cout << "MALProxy] " << "Learned didn't happen" << std::endl;
+      std::cout << "MALProxy] " << "Learning failed! (" << line << ")" << std::endl;
     return 1;
   }
 	if (command.compare(0, strlen("Once"), "Once") == 0) {
     string line = string(command.c_str() + strlen("Once")+1);
-    std::cout << "MALProxy] " <<"Once " << line << std::endl;
+    if(app_debug>1){std::cout << "MALProxy] " <<"Once " << line << std::endl;}
 		ParseStrategy(line.c_str());
     global_once = 1;
     return 1;
   }
-  std::cout << "MALProxy] " <<"command : " <<command << std::endl;
+	if(app_debug>1){std::cout << "MALProxy] " <<"command : " <<command << std::endl;}
 	ParseStrategy(command);
 	return 1;
 }
@@ -466,14 +467,14 @@ int MalProxy::CommunicateController(Message *m)
 	char read_buffer[256], send_buffer[256];
 	struct sockaddr_in serv_addr;
 	sprintf(send_buffer, "%d", m->type); // send Msg Type
-  std::cout << "MALProxy] " << "Asking for Msg " << m->type << std::endl;
+  std::cout << "MALProxy] " << "Asking Controller about Msg " << m->type << std::endl;
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(CTRL_IP);
 	serv_addr.sin_port = htons(CTRL_PORT);
   if (sendto(sockfd, send_buffer, strlen(send_buffer), 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
-		std::cout << "MALProxy] " << "CHECK IF CTRL LISTENS" << std::endl;
+		std::cout << "MALProxy] " << "Sending to controller failed!!" << std::endl;
   }
   close(sockfd);
   return 0;
@@ -489,14 +490,14 @@ int MalProxy::CommunicateController(Message *m)
 	serv_addr.sin_addr.s_addr = inet_addr(CTRL_IP);
 	serv_addr.sin_port = htons(CTRL_PORT);
 	if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-		std::cout << "MALProxy] " << "CHECK IF CTRL LISTENS" << std::endl;
+		std::cout << "MALProxy] " << "Sending to controller failed!!" << std::endl;
 		return NONE;
 	}
 
 	write(sockfd, send_buffer, strlen(send_buffer));
 	close(sockfd);
 	n = read(sockfd, read_buffer, 255);
-	std::cout << "MALProxy] " << "READ FROM CTRL: " << read_buffer << "]" <<  std::endl;
+	if(app_debug>1){std::cout << "MALProxy] " << "READ FROM CTRL: " << read_buffer << "]" <<  std::endl;}
   // XXX - I should consider to use shorter strings or numbers instead of 
   // long strings. leave it for now
 	if (strncmp(read_buffer, "Learned", strlen("Learned")) == 0) {
@@ -537,7 +538,7 @@ MalProxy::MalMsg(Message *m) {
 
   // XXX - this should be where to check LEARNED etc
   if (global_once == 1) {
-    std::cout <<"once executed" << std::endl;
+	if(app_debug>0){std::cout <<"once executed" << std::endl;}
     global_once = 2;
     return true;
   }
@@ -549,8 +550,7 @@ MalProxy::MalMsg(Message *m) {
     if (m_learned.find(m->type) != m_learned.end()) {
       return true;
     }
-    std::cout << "MALProxy] " << "Mal for " << m->type << std::endl;
-    std::cout << "MALProxy] " << "CommunicateController " << std::endl;
+    if(app_debug>0){std::cout << "MALProxy] " << "Determining Malicious action for type: " << m->type << std::endl;}
     if (m->encMsg != NULL) {
       Message *cur = m->encMsg;
       if (cur->type > 0 && m->type < MSG) {
@@ -565,14 +565,14 @@ MalProxy::MalMsg(Message *m) {
   }
 
 	if (m->encMsg != NULL) {
-		std::cout << "MALProxy] " << "Encapsulated msg type " << m->encMsg->type << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " << "Encapsulated msg type " << m->encMsg->type << std::endl;}
 		if (MalMsg(m->encMsg)) {
 			return true;
 		}
 	}
 
 	if (m->type < 0 || m->type >= MSG) {
-    std::cout << "MALProxy] " <<"invalid type " << m->type << ":" << MSG << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " <<"invalid type " << m->type << ":" << MSG << std::endl;}
 		return false;
 	}
 
@@ -582,28 +582,28 @@ MalProxy::MalMsg(Message *m) {
 
 	for (int i = 0; i < FIELD; i++) {
 		if (lyingValues[m->type][i] != NULL) {
-      std::cout << "MALProxy] " << "will lie for " << m->type << std::endl;
+			if(app_debug>0){std::cout << "MALProxy] " << "will lie for " << m->type << std::endl;}
 			return true;
 		}
 	}
 
 	if (deliveryActions[m->type][DUP]) {
-    std::cout << "MALProxy] " << "will dup for " << m->type << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " << "will dup for " << m->type << std::endl;}
 		return true;	
 	} 
 
 	if (deliveryActions[m->type][DELAY]) {
-    std::cout << "MALProxy] " << "will delay for " << m->type << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " << "will delay for " << m->type << std::endl;}
 		return true;
 	} 
 
 	if (deliveryActions[m->type][DIVERT]) {
-    std::cout << "MALProxy] " << "will divert for " << m->type << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " << "will divert for " << m->type << std::endl;}
 		return true;
 	}
 
 	if (deliveryActions[m->type][REPLAY]) {
-    std::cout << "MALProxy] " << "will replay for " << m->type << std::endl;
+		if(app_debug>0){std::cout << "MALProxy] " << "will replay for " << m->type << std::endl;}
 		return true;	
 	} 
 
@@ -644,7 +644,6 @@ MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, Mali
 				double prob = 100*(double)rand()/(double)RAND_MAX;
 				if (prob <= deliveryValues[cur->type][DROP]) {
 					NS_LOG_INFO("MalProxy dropping message");
-					//std::cout << "MalProxy dropping message " << m->type << std::endl;
 					ProfileFunction("MalSendUDPMsg", false);
 					return;
 				}
@@ -652,14 +651,12 @@ MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, Mali
 
 			for (int i = 0; i < FIELD; i++) {
 				if (lyingValues[cur->type][i] != NULL) {
-					//cout << "lying on field " << i << endl;
 					lie = true;
 				}
 			}
 			
 			if (deliveryActions[cur->type][DUP]) {
 				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[cur->type][DUP] << " times");
-				//std::cout << "MalProxy duplicating message " << m->type << ", " << (int)deliveryValues[m->type][DUP] << " times" << std::endl;
 				if (duptimes < (int)deliveryValues[cur->type][DUP]) {
 					duptimes = (int)deliveryValues[cur->type][DUP];
 				}
@@ -679,7 +676,6 @@ MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, Mali
 					delay = -1*deliveryValues[cur->type][DELAY]*(double)rand()/(double)RAND_MAX;
 				}
 				NS_LOG_INFO("MalProxy delaying message " << delay << " seconds");
-				//std::cout << "MalProxy delaying message " << m->type << ", " << delay << " seconds" << std::endl;
 			} 
 
 		}
@@ -697,7 +693,6 @@ MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, Mali
 
 				for (int i = 0; i < FIELD; i++) {
 					if (lyingValues[cur->type][i] != NULL) {
-						//cout << "lying on field " << i << endl;
 						cur->ChangeValue(i, lyingValues[cur->type][i]);
 					}
 				}
@@ -743,14 +738,11 @@ MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, Mali
 			packet->RemovePacketTag(tag);
 			packet->AddPacketTag(mtag);
 
-			//std::cout << "MalProxy diverting message " << m->type << " to " << iter->first.first << " out of " << m_udp_conn.size() << " " << r << " " << count << std::endl;
-
 		}
 
 		if (delay <= 0.0) {
 			socket->Send(packet);
 		} else {
-			//cout << "delaying " << delay << endl;
 			Time next(Seconds(delay));
 			Simulator::Schedule(next, &MalProxy::SendDelayMsg, this, socket, packet);
 		}
@@ -840,7 +832,6 @@ action:
 
 				for (int i = 0; i < FIELD; i++) {
 					if (lyingValues[cur->type][i] != NULL) {
-						//cout << "lying on field " << i << endl;
 						cur->ChangeValue(i, lyingValues[cur->type][i]);
 					}
 				}
@@ -878,7 +869,6 @@ action:
 void
 MalProxy::SendDelayMsg(Ptr<Socket> socket, Ptr<Packet> packet) {
 	NS_LOG_INFO("MalProxy Sending delayed packet");
-	//cout << "Sending delayed packet" << endl;
 	socket->Send(packet);
 }
 

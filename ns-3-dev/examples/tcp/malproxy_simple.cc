@@ -53,6 +53,7 @@ std::vector<string> mac_addresses;
 ifstream topology;
 ApplicationContainer* apps;
 map<int, int> delayMap;
+int debug=0;
 
 void 
 PopulateArpCache () 
@@ -248,24 +249,28 @@ void commandListener(void)
 			if (i) outbuffer = "command received\n";
 			else outbuffer = "command fail\n";
 		} else if (buffer[0] == 'F') {
-			std::cout << "Pause" << std::endl;
+			if(debug>1){std::cout << "NS-3: Pause" << std::endl;}
 			out_len = Simulator::ToggleFreeze(true);
-			std::cout << "Paused" << std::endl;
+			if(debug>1){std::cout << "NS-3: Paused" << std::endl;}
 		} else if (buffer[0] == 'S') {
 			//save event queue
-			std::cout << "Save" << std::endl;
+			if(debug>1){std::cout << "NS-3: Save" << std::endl;}
 			savePtr = Simulator::Save(NULL);
-			if (savePtr != NULL) std::cout << "Saved" << std::endl;
-			else std::cout << "Save Failed" << std::endl;
+			if (savePtr != NULL){
+				if(debug>1){std::cout << "NS-3: Saved" << std::endl;}
+			}
+			else{
+				std::cout << "NS-3: Save Failed" << std::endl;
+			}
 		} else if (buffer[0] == 'L') {
 			//save event queue
-			std::cout << "Load" << std::endl;
+			if(debug>1){std::cout << "NS-3: Load" << std::endl;}
 			out_len = Simulator::Load(savePtr);
-			std::cout << "Load" << std::endl;
+			if(debug>1){std::cout << "NS-3: Loaded" << std::endl;}
 		} else if (buffer[0] == 'R') {
-			std::cout << "Resume" << std::endl;
+			if(debug>1){std::cout << "NS-3: Resume" << std::endl;}
 			out_len = Simulator::ToggleFreeze(false);
-			std::cout << "Resume" << std::endl;
+			if(debug>1){std::cout << "NS-3: Resumed" << std::endl;}
 		} 
 		if (out_len) {
 			n = write(newsockfd, outbuffer.c_str(), outbuffer.length());
