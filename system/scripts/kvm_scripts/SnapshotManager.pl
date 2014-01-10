@@ -3,8 +3,8 @@
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
-use IO::Socket; 
-
+use IO::Socket;
+use Net::Ping;
 my $debug = 0;
 
 if ($#ARGV < 0) {
@@ -98,24 +98,20 @@ if ($command eq "pause") {
 		my $mac1 = "00:00:00:01:";
 		my $mac2 = "00:00:00:02:";
 		my $str = sprintf("%02d:%02d", $i / 100, $i % 100);
-		#my $line;
-		#my $socket;
 		$mac1 .= $str;
 		$mac2 .= $str;
 		my $snapshot = "$basedir/sn.$sn.$i";
-		system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -incoming \"exec: cat $snapshot\" &");
-		#system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -shared-mode F -shared-sequence $seq -incoming \"exec: cat $snapshot\" &");
-		my $t=0;
-		#while($t==0){
-		#$t=1;
-		#$socket = new IO::Socket::INET (
-	    #  PeerAddr => '127.0.0.1',
-	    #  PeerPort => $telnetport,
-	    #  Proto => 'tcp',
-	    # ) or $t=0;
-		#}
-  		#$socket->recv($line, 1024, 0);
-		#close $socket;
+		my $t;
+		my $p;
+		my $ip;
+		do {
+			system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
+			#system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -shared-mode F -shared-sequence $seq -daemonize -incoming \"exec: cat $snapshot\"");
+			$ip = sprintf("10.1.1.%d", $i);
+			$p = Net::Ping->new("tcp");
+			$p->port_number(22); 
+		}until($p->ping($ip,2));
+		$p->close();
 	}
 } elsif ($command eq "kill") {
 	for (my $i = $start; $i <= $num; $i++) {
