@@ -5,7 +5,16 @@ use Cwd 'abs_path';
 use File::Basename;
 use IO::Socket;
 use Net::Ping;
+use threads ('yield',
+     'stack_size' => 64*4096,
+     'exit' => 'threads_only',
+     'stringify');
+
 my $debug = 0;
+my $basedir = abs_path(dirname(__FILE__));
+my $masterdir = $basedir."/master";
+my $clonedir = $basedir."/images";
+my $sn = 1;
 
 if ($#ARGV < 0) {
 	print "usage 1: ./SnapshotManager.pl pause|save|load|resume|kill (start) num\n";
@@ -16,6 +25,7 @@ if ($#ARGV < 1) {
 	print "Need number of clones\n";
 	exit;
 }
+
 
 sub tellKVM {
   my $telnetport = shift;
@@ -37,15 +47,35 @@ sub tellKVM {
   close $socket;
 }
 
-my $basedir = abs_path(dirname(__FILE__));
-my $masterdir = $basedir."/master";
-my $clonedir = $basedir."/images";
+
+sub load_and_start {
+	my $i=shift;
+	my $telnetport = 10100 + $i;
+	my $vncport = (11000 - 5900) + $i;
+	my $mac1 = "00:00:00:01:";
+	my $mac2 = "00:00:00:02:";
+	my $str = sprintf("%02d:%02d", $i / 100, $i % 100);
+	$mac1 .= $str;
+	$mac2 .= $str;
+	my $snapshot = "$basedir/sn.$sn.$i";
+	my $t;
+	my $p;
+	my $ip;
+	do {
+		system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
+		#system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -shared-mode F -shared-sequence $seq -daemonize -incoming \"exec: cat $snapshot\"");
+		$ip = sprintf("10.1.1.%d", $i);
+		$p = Net::Ping->new("tcp");
+		$p->port_number(22);
+	}until($p->ping($ip,2));
+	$p->close();
+}
+
 
 my $command = $ARGV[0];
 my $num = $ARGV[1];
 my $start = 1;
 my $exec_command = $ARGV[2];
-my $sn = 1;
 my $seq = 1;
 if ($#ARGV == 2) {
   $start = $ARGV[1];
@@ -66,7 +96,6 @@ if($#ARGV == 4){
 	$sn = $ARGV[3];
 	$seq = $ARGV[4];
 }
-
 
 my $exec = "";
 my $batch_telnet = 1;
@@ -92,26 +121,12 @@ if ($command eq "pause") {
 	}
 } elsif ($command eq "load") {
 	print("Loading Snapshot: sn.$sn.#\n");
+	my @thr;
 	for (my $i = $start; $i <= $num; $i++) {
-		my $telnetport = 10100 + $i;
-		my $vncport = (11000 - 5900) + $i;
-		my $mac1 = "00:00:00:01:";
-		my $mac2 = "00:00:00:02:";
-		my $str = sprintf("%02d:%02d", $i / 100, $i % 100);
-		$mac1 .= $str;
-		$mac2 .= $str;
-		my $snapshot = "$basedir/sn.$sn.$i";
-		my $t;
-		my $p;
-		my $ip;
-		do {
-			system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			#system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -shared-mode F -shared-sequence $seq -daemonize -incoming \"exec: cat $snapshot\"");
-			$ip = sprintf("10.1.1.%d", $i);
-			$p = Net::Ping->new("tcp");
-			$p->port_number(22); 
-		}until($p->ping($ip,2));
-		$p->close();
+		push(@thr,threads->create('load_and_start', '$i'));
+	}
+	for(my $i = 0; $i <= $num - $start; $i++){
+		$thr[$i]->join();
 	}
 } elsif ($command eq "kill") {
 	for (my $i = $start; $i <= $num; $i++) {
