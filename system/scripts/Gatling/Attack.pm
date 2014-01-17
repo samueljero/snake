@@ -203,11 +203,11 @@ sub learnAction {
   $learned[$curMsgType] = $actionIndex;
   my $curMsgName=$MsgParse::msgName[$curMsgType];
   $learnedStrategyString = $learnedStrategyString.$strategy." ";
-  print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex\n";
+  print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
   
   if ($now == 1) {
     Utils::directTopology("C Learned $learnedStrategyString");
-    print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex\n";
+    print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
 	print NEW_LEARNED "$strategy\n";
     print PERF_LOG "$curMsgName $curMsgType $actionIndex 9999 Exclude\n";
   }
@@ -270,6 +270,8 @@ ACTION_TEST:
       next;
     }
     
+    print "Trying strategy $strategyList{$curMsgType}[$i]...\n";
+    
     #Load strategy into NS-3 malproxy
     my $command = "C $learnedStrategyString$strategyList{$curMsgType}[$i]";
     Utils::logTime("command $command");
@@ -324,7 +326,7 @@ ACTION_TEST:
       $worstScore = $curPerf;
       $actionIndex = $i;
       Utils::logTime("Select new: $curMsgName $actionIndex");
-      print "Selecting action $i for message $curMsgName\n";
+      print "Selecting action $i ($strategyList{$curMsgType}[$i]) for message $curMsgName\n";
     }
     $repeat = 0;
 
@@ -339,7 +341,7 @@ ACTION_TEST:
   
 	#Dump all perf scores if debugging
 	for (my $i = 0; $GatlingConfig::debug > 0 && $i < $strategyCount{$curMsgType}; $i++) {
-		print "perfScore $i: $perfScore{$curMsgType}[$i]\n";
+		print "perfScore $i: $perfScore{$curMsgType}[$i] for strategy: $strategyList{$curMsgType}[$i]\n";
 	}
 
 	#Choose strategy
