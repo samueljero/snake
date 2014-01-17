@@ -15,6 +15,7 @@ my $basedir = abs_path(dirname(__FILE__));
 my $masterdir = $basedir."/master";
 my $clonedir = $basedir."/images";
 my $sn = 1;
+my $seq = 1;
 
 if ($#ARGV < 0) {
 	print "usage 1: ./SnapshotManager.pl pause|save|load|resume|kill (start) num\n";
@@ -76,7 +77,6 @@ my $command = $ARGV[0];
 my $num = $ARGV[1];
 my $start = 1;
 my $exec_command = $ARGV[2];
-my $seq = 1;
 if ($#ARGV == 2) {
   $start = $ARGV[1];
   $num = $ARGV[2] + $start - 1;
@@ -123,7 +123,7 @@ if ($command eq "pause") {
 	print("Loading Snapshot: sn.$sn.#\n");
 	my @thr;
 	for (my $i = $start; $i <= $num; $i++) {
-		push(@thr,threads->create('load_and_start', '$i'));
+		push(@thr,threads->create('load_and_start', $i));
 	}
 	for(my $i = 0; $i <= $num - $start; $i++){
 		$thr[$i]->join();
