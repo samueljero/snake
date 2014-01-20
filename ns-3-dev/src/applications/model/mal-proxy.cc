@@ -224,18 +224,18 @@ MalProxy::Command(string command)
 		return 1;
 	}
   if (command.compare(0, strlen("Learned"), "Learned") == 0) {
-    string line = string(command.c_str() + strlen("Learned")+1);
-		int cur = line.find(" ");
-		if(app_debug>1){std::cout << "MALProxy] " << "learning " << line << " from " << command << std::endl;}
-    int msgType = Message::StrToType(line.substr(0, cur).c_str());
-		m_learned[msgType] = line;
-		//m_learned[msgType] = string(line.c_str()+cur+1);
-    ParseStrategy(line);
-    //ParseStrategy(m_learned[msgType]);
-    if(app_debug>1){std::cout << "MALProxy] " <<"Learned " << line << " Msg " << msgType << std::endl;}
-    if (m_learned.find(msgType) == m_learned.end())
-      std::cout << "MALProxy] " << "Learning failed! (" << line << ")" << std::endl;
-    return 1;
+	string line = string(command.c_str() + strlen("Learned")+1);
+	if(app_debug>1){std::cout << "MALProxy] " << "learning " << line << " from " << command << std::endl;}
+	int cur = line.find(" ");
+	int msgType = Message::StrToType(line.substr(0, cur).c_str());
+	m_learned[msgType] = line;
+
+	ClearStrategy();
+	std::map<int,std::string>::iterator it;
+	for(it=m_learned.begin(); it!=m_learned.end();it++){
+		AddStrategy(it->second);
+	}
+	return 1;
   }
 	if (command.compare(0, strlen("Once"), "Once") == 0) {
     string line = string(command.c_str() + strlen("Once")+1);
