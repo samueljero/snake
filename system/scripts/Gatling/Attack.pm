@@ -198,7 +198,7 @@ sub learnAction {
   my $curMsgType = shift;
   my $actionIndex = shift;
   my $strategy = shift;
-  my $now = shift;
+  my $now = shift; #tell Mal-proxy right now. Needed to handle pre-load before mal-proxy is running.
   
   $learned[$curMsgType] = $actionIndex;
   my $curMsgName=$MsgParse::msgName[$curMsgType];
@@ -206,7 +206,7 @@ sub learnAction {
   print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
   
   if ($now == 1) {
-    Utils::directTopology("C Learned $learnedStrategyString");
+    Utils::directTopology("C Learned $strategy");
     print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
 	print NEW_LEARNED "$strategy\n";
     print PERF_LOG "$curMsgName $curMsgType $actionIndex 9999 Exclude\n";
@@ -350,8 +350,12 @@ ACTION_TEST:
 	print PERF_LOG "$curMsgName $curMsgType $actionIndex $perfScore{$curMsgType}[$actionIndex] Chosen\n";
   	Utils::logTime("Chosen: $curMsgType $chosen");
 	chooseAction($curMsgType, $actionIndex, 1, $curMsgName);
-  	$curActionIndex[$curMsgType] = 0;
 	
+	#Reset strategy
+	$curActionIndex[$curMsgType] = 0;
+    Utils::logTime("command C $learnedStrategyString");
+    Utils::directTopology("C $learnedStrategyString");
+
   #Reload system
   Utils::logTime("end do gatling");
   Utils::killVMs(); # restore from checkpoint
