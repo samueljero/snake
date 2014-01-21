@@ -283,6 +283,11 @@ ACTION_TEST:
     Utils::reloadNS3(); 
     Utils::restoreVMs(-1); 
     Utils::resumeNS3();
+    if ($repeat==1) {
+		#We're retrying this because we got a bad perf score the first time.
+		#Restart the client in case it crashed.
+		GatlingConfig::runClient();
+    }
     my $exclude = 0;
     print "Running for $GatlingConfig::window_size seconds...\n";
     sleep $GatlingConfig::window_size;
@@ -304,7 +309,6 @@ ACTION_TEST:
         print PERF_LOG "#repeating action $i to make sure for perf $curPerf\n";
         print "Bad Perf Score. Restarting clients and retrying...\n";
         $i = $i - 1;
-        GatlingConfig::runClient();
         next;
       } else { 
       	#Well, that didn't help. Record and exclude this action.
