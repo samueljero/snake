@@ -7,6 +7,7 @@ my @msgName;
 my $parsingMsg = 0;
 my @fieldName;
 my $name;
+my $flen;
 
 print "BaseMessage NONE 0\n";
 print "BaseMessage NONE 0\n";
@@ -37,9 +38,33 @@ while(<FILE>) {
 		} else {
 
 			my $field = $token[1];
+
+			#Handle bitfields
+			$flen="";
+			if($field =~ /:/){
+				my @tmp=split(/:/,$field);
+				$field=$tmp[0];
+				$flen=$tmp[1];
+			}
 			push(@fieldName, $field);
 
-			if ($token[0] eq "int8_t") {
+			if($flen eq "1") {
+				print "$name LIE =0 $#fieldName\n";
+				print "$name LIE =1 $#fieldName\n";
+			}elsif($flen eq "4"){
+				print "$name LIE =0 $#fieldName\n";
+				print "$name LIE =2 $#fieldName\n";
+				print "$name LIE =3 $#fieldName\n";
+				print "$name LIE =4 $#fieldName\n";
+				print "$name LIE =8 $#fieldName\n";
+			}elsif($flen eq "5"){
+				print "$name LIE =0 $#fieldName\n";
+				print "$name LIE =2 $#fieldName\n";
+				print "$name LIE =4 $#fieldName\n";
+				print "$name LIE =8 $#fieldName\n";
+				print "$name LIE =16 $#fieldName\n";
+				print "$name LIE =31 $#fieldName\n";
+			}elsif ($token[0] eq "int8_t") {
 				print "$name LIE r $#fieldName\n";
 				print "$name LIE =0 $#fieldName\n";
 				print "$name LIE =-128 $#fieldName\n";

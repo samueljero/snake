@@ -60,6 +60,7 @@ my $fieldNum = 0;
 my $fieldOffset;
 my %fieldToType;
 my $needOffset = 0;
+my $flen = "";
 my $field = "";
 my $type = "";
 my $index = "1";
@@ -87,7 +88,8 @@ while(<FILE>) {
 if ($parsing == 0 and $#msgName == -1 and $token[0] ne "BaseMessage") {
 	print STDERR "First message type is not BaseMessage!\n";
 	exit;
-} 
+}
+$flen= "";
 $field = "";
 $type = "";
 $index = "1";
@@ -167,6 +169,13 @@ if ($parsing == 0) {
 			}
 		} else {
 			$field = $token[$j-1];
+		}
+
+		#Handle bitfields
+		if($field =~ /:/){
+			my @tmp=split(/:/,$field);
+			$field=$tmp[0];
+			$flen=$tmp[1];
 		}
 
 		if ($field eq "type") {
@@ -308,12 +317,21 @@ if ($parsing == 0) {
 			}
 
 			print DOTC "\tif (field == $fieldNum) {\n";
-			print DOTC "\t\t$type *cur ";
+			if($flen eq ""){
+				print DOTC "\t\t$type *cur ";
+			}
 
 			if (!$needOffset) {
 				if ($index eq "1") {
-					print DOTH "\t$type $field;\n";
-					print DOTC "= &(ptr->$field);\n";
+					print DOTH "\t$type $field";
+					if($flen ne ""){
+						print DOTH " : $flen";
+					}
+					print DOTH ";\n";
+					if($flen eq ""){
+						print DOTC "= &(ptr->$field);\n";
+					}
+
 				} else {
 					print DOTH "\t$type $field"; 
 					print DOTH "[$index];\n";
@@ -361,6 +379,27 @@ if ($parsing == 0) {
 				print DOTC "$tabs";
 				print DOTC "} else if (value[0] == 'r') {\n";
 				print DOTC "$tabs\t*cur = ($type)rand();\n";
+				print DOTC "$tabs";
+				print DOTC "}\n";
+			} elsif($flen ne ""){
+				print DOTC "$tabs";
+				print DOTC "if (value[0] == '=') {\n";
+				print DOTC "$tabs\tptr->$field = ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '+') {\n";
+				print DOTC "$tabs\tptr->$field += ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '-') {\n";
+				print DOTC "$tabs\tptr->$field -= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '*') {\n";
+				print DOTC "$tabs\tptr->$field *= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '/') {\n";
+				print DOTC "$tabs\tptr->$field /= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == 'r') {\n";
+				print DOTC "$tabs\tptr->$field = ($type)rand();\n";
 				print DOTC "$tabs";
 				print DOTC "}\n";
 			} else {
@@ -485,7 +524,23 @@ close(STRAT);
 
 
 sub printStrategy {
-	if ($type eq "int8_t") {
+	if($flen eq "1") {
+		print STRAT "$name LIE =0 $fieldNum\n";
+		print STRAT "$name LIE =1 $fieldNum\n";
+	}elsif($flen eq "4"){
+		print STRAT "$name LIE =0 $fieldNum\n";
+		print STRAT "$name LIE =2 $fieldNum\n";
+		print STRAT "$name LIE =3 $fieldNum\n";
+		print STRAT "$name LIE =4 $fieldNum\n";
+		print STRAT "$name LIE =8 $fieldNum\n";
+	}elsif($flen eq "5"){
+		print STRAT "$name LIE =0 $fieldNum\n";
+		print STRAT "$name LIE =2 $fieldNum\n";
+		print STRAT "$name LIE =4 $fieldNum\n";
+		print STRAT "$name LIE =8 $fieldNum\n";
+		print STRAT "$name LIE =16 $fieldNum\n";
+		print STRAT "$name LIE =31 $fieldNum\n";
+	}elsif ($type eq "int8_t") {
 		print STRAT "$name LIE r $fieldNum\n";
 		print STRAT "$name LIE =0 $fieldNum\n";
 		print STRAT "$name LIE =-128 $fieldNum\n";
@@ -579,6 +634,6 @@ sub printStrategy {
 		print STRAT "$name LIE r $fieldNum\n";
 		print STRAT "$name LIE =0 $fieldNum\n";
 		print STRAT "$name LIE =1 $fieldNum\n";
-	}  
+	}
 
 }
