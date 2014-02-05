@@ -92,6 +92,9 @@ sub setSystem()
   if ($systemname eq "Prime_bug") {
     systemPrime_bug();
   }
+  if($systemname eq "TCP"){
+	systemTCP();
+  }
   system("$setupCommand");
 }
 
@@ -192,6 +195,28 @@ sub systemSteward()
   $perfMeasured = "Steward/perf.txt";
   $newlyLearned = "Steward/new_learned.txt";
   $num_vms = 13;
+}
+
+sub systemTCP()
+{
+$setupCommand = "mkdir TCP";
+  $server_command = "";
+  $client_command = "";
+  $serverList = "pssh_servers.txt";
+  $clientList = "pssh_clients.txt";
+  $s_parallel = 1;
+  $c_parallel = 1;
+  $runTime = 100;
+  $watchPort = " -tcp_port 1234";
+  $mal = " -mal 0 ";
+  $alreadyLearned = "TCP/pre_learned.txt";
+  $prePerf = "TCP/pre_perf.txt";
+  $perfMeasured = "TCP/perf.txt";
+  $newlyLearned = "TCP/new_learned.txt";
+  $num_vms = 2;
+  $window_size = 7;
+  $learning_threashold = 1;
+  $formatFile = "$format_dir/tcp.format";
 }
 
 1;

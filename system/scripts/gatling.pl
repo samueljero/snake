@@ -18,7 +18,7 @@ require GatlingConfig;
 
 no warnings 'once';
 
-$GatlingConfig::systemname = "BFT";
+$GatlingConfig::systemname = "TCP";
 if ($#ARGV != -1) {
   $GatlingConfig::systemname = $ARGV[0];
 }
