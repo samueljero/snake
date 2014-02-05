@@ -40,6 +40,7 @@
 #include <string>
 #include <iomanip>
 #include <map>
+#include <unistd.h>
 
 // Socket related includes
 #if defined(HAVE_SYS_SOCKET_H) && defined(HAVE_NETINET_IN_H)

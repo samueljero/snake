@@ -51,6 +51,8 @@
 #define SYSTEM_PATH_SEP "/"
 #endif
 
+#include <unistd.h>
+
 namespace ns3 {
 
 namespace SystemPath {

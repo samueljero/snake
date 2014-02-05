@@ -31,6 +31,7 @@
 #include <iomanip>
 #include "ns3/simulator.h"
 #include "ns3/log.h"
+#include <unistd.h>
 
 NS_LOG_COMPONENT_DEFINE ("AodvRoutingTable");
 

@@ -21,6 +21,7 @@
 
 #include "ptr.h"
 #include "object.h"
+#include <unistd.h>
 
 namespace ns3 {
 
