@@ -32,6 +32,8 @@
 
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/ipv4-header.h"
+#include "ns3/tcp-header.h"
+#include "ns3/tcp-l4-protocol.h"
 #include <sys/time.h>
 
 
@@ -51,21 +53,6 @@ namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("MalProxyApplication");
 NS_OBJECT_ENSURE_REGISTERED (MalProxy);
-
-
-void MalProxy::PrintPairs() {
-        std::map<Ptr<Socket>, Ptr<Socket> >::iterator pi;
-        NS_LOG_LOGIC("**********************************************************");
-        for (pi = m_pair.begin(); pi != m_pair.end(); pi++) {
-                NS_LOG_LOGIC(" [ " << (*pi).first << " ] -> [ " << (*pi).second << " ]");
-        }
-        std::map<Ptr<Socket>, Ipv4Address>::iterator ci;
-        NS_LOG_LOGIC("**********************************************************");
-        for (ci = m_tcp_conn.begin(); ci != m_tcp_conn.end(); ci++) {
-                NS_LOG_LOGIC(" [ " << (*ci).first << " ] -> [ " << (*ci).second << " ]");
-        }
-
-}
 
 void MalProxy::ClearStrategyForMsg(int type) {
   deliveryActions[type][NONE] = false;
@@ -196,6 +183,7 @@ MalProxy::GetTypeId (void)
 MalProxy::MalProxy ()
 {
   NS_LOG_FUNCTION_NOARGS ();
+  conn_list.clear();
 }
 
 MalProxy::~MalProxy()
@@ -264,10 +252,6 @@ MalProxy::StartApplication (void)
 			//InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), m_udp_port);
 			m_udp_socket->Bind (local);
 		}
-
-		m_udp_socket->SetRecvCallback (MakeCallback (&MalProxy::HandleUDPRead, this));
-		//m_udp_socket->SetAcceptCallback (MakeNullCallback<bool, Ptr<Socket>, const Address &> (),MakeCallback (&MalProxy::HandleUDPAccept, this));
-		m_udp_socket->SetCloseCallbacks(MakeCallback(&MalProxy::HandleClose, this), MakeCallback(&MalProxy::HandleClose, this));
 	}
 
 	if (m_tcp_port != 0) {
@@ -280,27 +264,8 @@ MalProxy::StartApplication (void)
 			m_tcp_socket->Listen();
 			NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_tcp_port << " bind: " << res );
 		}
-
-		m_tcp_socket->SetRecvCallback (MakeCallback (&MalProxy::HandleTCPRead, this));
-		m_tcp_socket->SetAcceptCallback (
-				MakeNullCallback<bool, Ptr<Socket>, const Address &> (),
-				MakeCallback (&MalProxy::HandleAccept, this));
-		// the first one is for normalClose and the other is for errorClose
-		m_tcp_socket->SetCloseCallbacks(MakeCallback(&MalProxy::HandleClose, this), MakeCallback(&MalProxy::HandleClose, this));
 	}
 	srand((unsigned)time(0));
-}
-
-void MalProxy::HandleClose(Ptr<Socket> s1)
-{
-	NS_LOG_INFO(" PEER CLOSE ");
-	NS_LOG_INFO("**********************************************************");
-
-	if (s1->m_pair) {
-		s1->m_pair->Close();
-		s1->m_pair->m_pair = NULL;
-		s1->m_pair = NULL;
-	}
 }
 
 void 
@@ -311,148 +276,12 @@ MalProxy::StopApplication ()
   if (m_udp_socket != 0) 
     {
       m_udp_socket->Close ();
-      m_udp_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
     }
 
   if (m_tcp_socket != 0)
     {
       m_tcp_socket->Close ();
-      m_tcp_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
     }
-
-}
-
-/* TODO: 
-malproxy should consult the controller to see what to do upon receiving a
-message.  as if an action is learned, this can be unnecessary overhead. to
-prevent this, the controller should signal that it doesn't want to branch
-anymore on a certain message */
-	void
-MalProxy::HandleUDPRead (Ptr<Socket> socket)
-{
-/*
-	ProfileFunction("HandleUDPRead", true);
-
-	Ptr<Packet> packet;
-	Address from;
-
-	//TODO: Malproxy breaks if UDP packet sent is very large (probably > 1500)
-
-	while (packet = socket->RecvFrom (from))
-	{
-
-		NS_LOG_LOGIC ("UDP " << m_local << "Received " << packet->GetSize () << " bytes from " <<
-				InetSocketAddress::ConvertFrom (from).GetIpv4 ());
-		NS_LOG_LOGIC ("PACKET ID: " << packet->GetUid() << " SIZE: " << packet->GetSize());
-		//std::cout << "Got packet with size " << packet->GetSize() << std::endl;
-
-		Ipv4Address dst;
-		MaliciousTag mtag_old;
-		MaliciousTag mtag_new_in;
-		MaliciousTag mtag_new_out;
-
-		packet->RemovePacketTag(mtag_old);
-		mtag_old.Print(std::cerr);
-		dst = mtag_old.GetIPDestination();
-		uint16_t dst_port = mtag_old.GetDestPort();
-
-		mtag_new_in.SetHardwareDestination(mtag_old.GetHardwareDestination());
-		mtag_new_in.SetTimer(mtag_old.GetSec(), mtag_old.GetUSec());
-		mtag_new_out.SetHardwareDestination(mtag_old.GetHardwareDestination());
-		mtag_new_out.SetTimer(mtag_old.GetSec(), mtag_old.GetUSec());
-
-		if (InetSocketAddress::IsMatchingType (from))
-		{
-			mtag_old.Print(std::cerr);
-
-			//uint8_t *msg_data = new uint8_t[packet->GetSize()];
-			//packet->CopyData(msg_data, packet->GetSize());
-			//Message *msg = new Message(msg_data);
-			Message *msg = new Message((uint8_t*)packet->PeekData());
-
-
-			if (InetSocketAddress::ConvertFrom(from).GetIpv4() == m_local || deliveryActions[msg->type][REPLAY]) {
-				NS_LOG_LOGIC("*********************************************** THIS IS FROM ME DST: " << dst);
-				mtag_new_out.SetIPSource(m_local.Get());
-				mtag_new_out.SetIPDest(dst.Get());
-				NS_LOG_LOGIC("MalProxy will intercept msgType " << msg->type);
-			}
-			
-			if (InetSocketAddress::ConvertFrom(from).GetIpv4() != m_local) {
-				dst = m_local;
-				NS_LOG_LOGIC("*********************************************** THIS IS FROM OTHER DST: " << dst);
-				mtag_new_in.SetSpoof(true);
-				mtag_new_in.SetIPSource(InetSocketAddress::ConvertFrom(from).GetIpv4 ().Get());
-				mtag_new_in.SetSrcPort (InetSocketAddress::ConvertFrom (from).GetPort ());
-				mtag_new_in.SetIPDest(m_local.Get());
-				mtag_new_in.SetDestPort(m_udp_port);
-				NS_LOG_LOGIC("MalProxy bypass message");
-			}
-
-			pair <Ipv4Address, uint16_t> host (dst, dst_port);
-			Ptr<Socket> new_socket;	
-			//std::cout << "finding host " << dst << ":" << dst_port;
-			if (m_udp_conn.find(host) == m_udp_conn.end()) {
-
-				new_socket = Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::UdpSocketFactory"));
-				if (InetSocketAddress::ConvertFrom(from).GetIpv4() == m_local) {
-					if (new_socket->Bind(m_local) != 0) {
-						NS_LOG_LOGIC("BIND on m_local failed");
-					}
-					//socket->Connect(InetSocketAddress(m_local, InetSocketAddress::ConvertFrom(from).GetPort()));
-				} else {
-					if (new_socket->Bind(InetSocketAddress::ConvertFrom(from).GetIpv4 ()) != 0) {
-						NS_LOG_LOGIC("BIND on from failed");
-					}
-					//socket->Connect(from);
-				}
-				new_socket->Connect(InetSocketAddress(dst, dst_port));
-				NS_LOG_LOGIC(" PAIR DEST: " << dst << " : " << dst_port);
-				new_socket->SetRecvCallback (MakeCallback (&MalProxy::HandleUDPRead, this));
-				m_udp_conn[host] = new_socket;
-				//std::cout << " new socket";
-			} else {
-				new_socket = m_udp_conn[host];
-			}
-			//std::cout << " " << new_socket << std::endl;
-			mtag_new_in.SetMalStatus(MaliciousTag::FROMPROXY);
-			mtag_new_in.SetSrcNode(GetNode()->GetId());
-			mtag_new_in.Print(std::cerr);
-			mtag_new_out.SetMalStatus(MaliciousTag::FROMPROXY);
-			mtag_new_out.SetSrcNode(GetNode()->GetId());
-			mtag_new_out.Print(std::cerr);
-
-
-			if (InetSocketAddress::ConvertFrom(from).GetIpv4() == m_local) {
-				//std::cout << "dst " << dst << ":" << dst_port << " socket: " << new_socket << std::endl;
-				MalSendUDPMsg(new_socket, packet, msg, mtag_new_out, packet->GetSize());
-
-				//Ptr<Packet> packet2 = Create<Packet> (m->msg, packet->GetSize());
-				//packet2->AddPacketTag(mtag_new);
-				//new_socket->Send(packet2);
-			} else {
-				packet->AddPacketTag(mtag_new_in);
-				new_socket->Send(packet);
-				if (deliveryActions[msg->type][REPLAY]) {
-					//cout << "Replaying message " << m->type << " from " << InetSocketAddress::ConvertFrom(from).GetIpv4() << endl;
-					MalSendUDPMsg(socket, packet, msg, mtag_new_out, packet->GetSize());
-				}
-			}
-			//delete msg_data;
-			delete msg;
-
-		} 
-
-
-	}
-
-
-	ProfileFunction("HandleUDPRead", false);
-	num_processed++;
-	if (num_processed % 10000 == 0) {
-		ProfileFunction("DUMP", false);
-	}
-	*/
 }
 
 #define CTRL_IP "127.0.0.1"
@@ -610,147 +439,6 @@ MalProxy::MalMsg(Message *m) {
 	return false;
 }
 
-
-// XXX - THIS SHOULD BE COMBINED WITH MALSEND UDP
-void
-MalProxy::MalSendMsg(Ptr<Socket> socket, Message *m, MaliciousTag mtag, uint32_t size) {
-
-}
-
-void
-MalProxy::MalSendUDPMsg(Ptr<Socket> socket, Ptr<Packet> packet, Message *m, MaliciousTag mtag, uint32_t size) {
-	ProfileFunction("MalSendUDPMsg", true);
-
-	/*
-		struct timeval tv1, tv2, diff;
-		struct timezone tz;
-		gettimeofday(&tv1, &tz);
-	*/
-
-	NS_LOG_INFO("MalProxy intercepting msgtype " << m->type);
-	//std::cout << "MalProxy intercepting msgtype " << m->type << " packet size " << size << std::endl;
-	// XXX - tell controller that it should start snapshot (whenever?)
-	
-	int duptimes = 1;
-	bool divert = false;
-	double delay = 0.0;
-	bool lie = false;
-
-	Message *cur = m;
-	while (cur != NULL) {	
-		if (cur->type >= 0 && cur->type < MSG) {
-
-			if (deliveryActions[cur->type][DROP]) {
-				double prob = 100*(double)rand()/(double)RAND_MAX;
-				if (prob <= deliveryValues[cur->type][DROP]) {
-					NS_LOG_INFO("MalProxy dropping message");
-					ProfileFunction("MalSendUDPMsg", false);
-					return;
-				}
-			} 
-
-			for (int i = 0; i < FIELD; i++) {
-				if (lyingValues[cur->type][i] != NULL) {
-					lie = true;
-				}
-			}
-			
-			if (deliveryActions[cur->type][DUP]) {
-				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[cur->type][DUP] << " times");
-				if (duptimes < (int)deliveryValues[cur->type][DUP]) {
-					duptimes = (int)deliveryValues[cur->type][DUP];
-				}
-			} 
-
-			if (deliveryActions[cur->type][DIVERT]) {
-				NS_LOG_INFO("MalProxy diverting message" << cur->type);
-				divert = true;
-			}
-
-			if (deliveryActions[cur->type][DELAY]) {
-
-				if (delay < deliveryValues[cur->type][DELAY]) {
-					delay = deliveryValues[cur->type][DELAY];
-				}
-				if (deliveryValues[cur->type][DELAY] < 0) {
-					delay = -1*deliveryValues[cur->type][DELAY]*(double)rand()/(double)RAND_MAX;
-				}
-				NS_LOG_INFO("MalProxy delaying message " << delay << " seconds");
-			} 
-
-		}
-		cur = cur->encMsg;
-	}
-
-
-	if (lie == true) {
-		uint8_t *msg_data = new uint8_t[size];
-		packet->CopyData(msg_data, size);
-		Message *msg = new Message(msg_data);
-		cur = msg;
-		while (cur != NULL) {	
-			if (cur->type >= 0 && cur->type < MSG) {
-
-				for (int i = 0; i < FIELD; i++) {
-					if (lyingValues[cur->type][i] != NULL) {
-						cur->ChangeValue(i, lyingValues[cur->type][i]);
-					}
-				}
-			}
-			cur = cur->encMsg;
-		}
-		packet = Create<Packet> (msg_data, size);
-		delete msg;
-		delete msg_data;
-
-	}
-
-
-	/*
-	//std::cout << "Sending packet" << std::endl;
-		gettimeofday(&tv2, &tz);
-		diff.tv_sec  = tv2.tv_sec  - tv1.tv_sec;
-		diff.tv_usec = tv2.tv_usec - tv1.tv_usec;
-		if ( diff.tv_usec < 0 )
-		{
-			diff.tv_usec = diff.tv_usec + 1000000;
-			diff.tv_sec--;
-		} 
-		//std::cout << "malsendmsg process in " << diff.tv_sec << " " << diff.tv_usec << std::endl;
-	*/
-
-	//Ptr<Packet> packet = Create<Packet> (m->msg, size);
-	
-	packet->AddPacketTag(mtag);
-	for (int i = 1; i <= duptimes; ++i) {
-
-		if (divert) {
-			int r = rand()%m_udp_conn.size();
-			int count = 0;
-			std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> >::iterator iter = m_udp_conn.begin();
-			while (count++ < r) {
-				++iter;	
-			}
-			mtag.SetIPDest(iter->first.first.Get());
-			socket = iter->second;
-			
-			MaliciousTag tag;
-			packet->RemovePacketTag(tag);
-			packet->AddPacketTag(mtag);
-
-		}
-
-		if (delay <= 0.0) {
-			socket->Send(packet);
-		} else {
-			Time next(Seconds(delay));
-			Simulator::Schedule(next, &MalProxy::SendDelayMsg, this, socket, packet);
-		}
-	}
-	ProfileFunction("MalSendUDPMsg", false);
-
-}
-
 int
 MalProxy::MaliciousStrategyUDP(Ptr<Packet> packet, Message *m, uint32_t size,
 int *divert, double *delay, int *duptimes, int *replay) {
@@ -759,7 +447,7 @@ int *divert, double *delay, int *duptimes, int *replay) {
   if (global_consult_gatling) { // Controlled by the controller. while to use break. will work like if
     // 1. Learned messages
     if (m_learned.find(m->type) != m_learned.end()) {
-      // XXX leared actions are already parsed
+      // XXX learned actions are already parsed
     }
     else if (m->type < 0)  {
       std::cout << "MALProxy] " << "invalid" << std::endl;
@@ -823,9 +511,6 @@ action:
 	}
 
 	if (lie == true) {
-		//uint8_t *msg_data = new uint8_t[size];
-		//packet->CopyData(msg_data, size);
-		//Message *msg = new Message(msg_data);
 		cur = m;
 		while (cur != NULL) {	
 			if (cur->type >= 0 && cur->type < MSG) {
@@ -838,171 +523,108 @@ action:
 			}
 			cur = cur->encMsg;
 		}
-		//packet = Create<Packet> (msg_data, size);
-		//delete msg;
-		//delete msg_data;
 
 	}
-	/*
-	for (int i = 1; i <= *duptimes; ++i) {
-		
-		if (*divert) {
-			int r = rand()%m_udp_conn.size();
-			int count = 0;
-			std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> >::iterator iter = m_udp_conn.begin();
-			while (count++ < r) {
-				++iter;	
-			}
-		}
-
-		if (*delay <= 0.0) {
-		} else {
-			//cout << "delaying " << delay << endl;
-			Time next(Seconds(*delay));
-			//Simulator::Schedule(next, &MalProxy::SendDelayMsg, this, socket, packet);
-		}
-	}
-	*/
 	return DELAY;
 }
 
-void
-MalProxy::SendDelayMsg(Ptr<Socket> socket, Ptr<Packet> packet) {
-	NS_LOG_INFO("MalProxy Sending delayed packet");
-	socket->Send(packet);
+int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir)
+{
+	TcpHeader tcph;
+	connection *c;
+	std::vector<seq_state> *seq_list;
+	std::vector<seq_state> *ack_list;
+	int seq_offset;
+	int ack_offset;
+
+
+	tcph.EnableChecksums();
+	tcph.InitializeChecksum(ip.GetSource(), ip.GetDestination(), TcpL4Protocol::PROT_NUMBER);
+	packet->RemoveHeader(tcph);
+
+	if((dir==FROMTAP && tcph.GetDestinationPort()!=this->m_tcp_port) ||
+	   (dir==TOTAP && tcph.GetSourcePort()!=this->m_tcp_port)){
+		/*Packet we don't care about*/
+		packet->AddHeader(tcph);
+		return NONE;
+	}
+
+	if(dir==FROMTAP){
+		/*Forward direction, from "malicious" host*/
+		c=FindConnection(ip.GetSource(), ip.GetDestination(), tcph.GetSourcePort(),tcph.GetDestinationPort());
+		seq_list=&(c->d1);
+		ack_list=&(c->d2);
+	}else{
+		/*Reverse direction, from a victim*/
+		c=FindConnection(ip.GetDestination(), ip.GetSource(), tcph.GetDestinationPort(),tcph.GetSourcePort());
+		seq_list=&(c->d2);
+		ack_list=&(c->d1);
+
+	}
+
+	seq_offset=FindOffset(seq_list,tcph.GetSequenceNumber());
+	ack_offset=FindOffset(ack_list, tcph.GetAckNumber());
+	tcph.SetSequenceNumber(tcph.GetSequenceNumber()+seq_offset);
+	tcph.SetAckNumber(tcph.GetAckNumber()-ack_offset);
+
+	NS_LOG_INFO("TCP Packet: "<< tcph.GetFlags());
+
+	packet->AddHeader(tcph);
+	return NONE;
 }
 
-void
-MalProxy::HandleTCPRead (Ptr<Socket> socket)
-{
-	Ptr<Packet> packet;
-	Address from;
-	Ptr<Socket> pairsocket = m_pair[socket];
 
-	while (packet = socket->RecvFrom (from))
-	{
+MalProxy::connection* MalProxy::FindConnection(Ipv4Address src, Ipv4Address dest, int sport, int dport){
+	connection c;
 
-		NS_LOG_LOGIC (m_local << "Received " << packet->GetSize () << " bytes from " <<
-				InetSocketAddress::ConvertFrom (from).GetIpv4 ());
-		NS_LOG_LOGIC ("PACKET ID: " << packet->GetUid() << " SIZE: " << packet->GetSize());
-
-		Ipv4Address dst;
-		MaliciousTag mtag_old;
-		MaliciousTag mtag_new;
-
-		//packet->PrintPacketTags(std::cerr);
-		packet->RemovePacketTag(mtag_old);
-		mtag_old.Print(std::cerr);
-		dst = mtag_old.GetIPDestination();
-
-		NS_ASSERT_MSG(m_tcp_conn.find(socket) != m_tcp_conn.end(), "Received a packet from an unknown socket ");
-		mtag_new.SetHardwareDestination(mtag_old.GetHardwareDestination());
-
-
-		if (InetSocketAddress::IsMatchingType (from))
-		{
-			Message *m = NULL;
-			MessageState *ms = NULL;
-			if (InetSocketAddress::ConvertFrom (from).GetIpv4 () == m_local) {
-				NS_LOG_LOGIC("*********************************************** THIS IS FROM ME");
-				mtag_new.SetMalStatus(MaliciousTag::FROMPROXY);
-				mtag_new.SetIPSource(InetSocketAddress::ConvertFrom(from).GetIpv4().Get());
-				dst = socket->m_orgDestIP;
-
-				ms = &(m_state[pairsocket]);
-				if (ms->buffer == NULL) {
-					uint8_t *basemsg = new uint8_t[sizeof(BaseMessage)];
-					packet->CopyData(basemsg, sizeof(BaseMessage));
-					ms->cur = 0;
-					ms->size = ((BaseMessage*)basemsg)->size;
-					ms->buffer = new uint8_t[ms->size];
-					delete basemsg;
-				}
-				
-				do {
-					int copySize = packet->GetSize();
-                                        std::cout << " in copy size while" << std::endl;
-					if (packet->GetSize() > ms->size-ms->cur) {
-						copySize = ms->size-ms->cur;
-					} else {
-						std::cout << "There are extra bytes in this packet that are not associated with the previous message. We are not handling this currently!\n";
-					}
-					packet->CopyData(ms->buffer+ms->cur, copySize);
-					ms->cur += packet->GetSize();
-				} while ((packet = socket->RecvFrom(from)) != 0 && ms->cur < ms->size);
-
-				if (ms->cur < ms->size) {
-					return;
-				}
-				m = new Message(ms->buffer);
-			} else {
-				NS_LOG_LOGIC("*********************************************** THIS IS FROM OTHER");
-				dst = m_local;
-				mtag_new.SetMalStatus(MaliciousTag::FROMPROXY);
-				mtag_new.SetSpoof(true);
-				mtag_new.SetIPSource(InetSocketAddress::ConvertFrom(from).GetIpv4 ().Get());
-				mtag_new.SetSrcPort(InetSocketAddress::ConvertFrom (from).GetPort ());
-				mtag_new.SetIPDest(m_local.Get());
-			}
-			NS_LOG_LOGIC(" APP DST: " << dst << " vs " << m_tcp_conn[m_pair[socket]]);
-
-			NS_LOG_LOGIC("SENDING the packet to the original destination: " << dst);
-			NS_LOG_LOGIC("orig socket " << socket << " dest socket " << m_pair[socket]);
-			if (InetSocketAddress::ConvertFrom (from).GetIpv4 () == m_local) {
-				// XXX TCP lot's of things to do
-				//MalSendMsg(m_pair[socket], m, mtag_new, packet->GetSize());
-				delete ms->buffer;
-				ms->buffer = NULL;
-			} else {
-				packet->AddPacketTag(mtag_new);
-				m_pair[socket]->Send (packet);
-			}
+	for(int i=0; i < conn_list.size(); i++){
+		if(conn_list[i].ip_dest==dest &&
+		   conn_list[i].ip_src==src &&
+		   conn_list[i].port_dest==dport &&
+		   conn_list[i].port_src==sport){
+			return &conn_list[i];
 		}
-    }
+	}
+
+	c.ip_dest=dest;
+	c.ip_src=src;
+	c.port_dest=dport;
+	c.port_src=sport;
+	conn_list.push_back(c);
+	return &conn_list[conn_list.size()-1];
 }
 
-void MalProxy::HandleAccept (Ptr<Socket> s, const Address& from)
-{
-	NS_LOG_FUNCTION (this << s << from);
-	NS_LOG_LOGIC("ACCEPT IN ECHO SERVER from " << InetSocketAddress::ConvertFrom(from));
-	s->SetRecvCallback (MakeCallback (&MalProxy::HandleTCPRead, this));
-
-	Ipv4Address dst = s->m_orgDestIP;
-	if (InetSocketAddress::ConvertFrom (from).GetIpv4 () == m_local) {
-		NS_LOG_LOGIC(" FROM MY TAP - set dest: " << dst);
-	} else {
-		dst = m_local;
-		NS_LOG_LOGIC(" FROM  OUTSIDE - set dest: " << dst);
+int MalProxy::FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq){
+	if(lst->empty()){
+		return 0;
 	}
-	NS_LOG_LOGIC("ORIGINAL DST: " << dst << " original src: " << s->m_srcNode);
-	NS_LOG_LOGIC("FROM: " << InetSocketAddress::ConvertFrom(from).GetIpv4());
 
-	//open other tcp connection...
-	Ptr<Socket> new_socket = Socket::CreateSocket(GetNode(), TypeId::LookupByName("ns3::TcpSocketFactory"));
-	if (InetSocketAddress::ConvertFrom (from).GetIpv4 () == m_local) {
-		new_socket->Bind(m_local);
-	} else {
-		NS_LOG_LOGIC("BIND WITH REMOTE ADDRESS\n");
-		new_socket->Bind(InetSocketAddress::ConvertFrom (from).GetIpv4 () );
+	if(seq >= (*lst)[lst->size()-1].start_seq){
+		return (*lst)[lst->size()-1].offset;
 	}
-	// let the socket know orginial source information
-	new_socket->m_orgSrcIP = InetSocketAddress::ConvertFrom(from).GetIpv4();
-	new_socket->m_orgSrcPort = InetSocketAddress::ConvertFrom(from).GetPort();
-	NS_LOG_LOGIC(" CONNECT TO " << dst << " : " << m_tcp_port); 
-	new_socket->Connect(InetSocketAddress(dst, m_tcp_port));
-	new_socket->SetRecvCallback (MakeCallback (&MalProxy::HandleTCPRead, this));
-	//should do something if it fails...
 
-	m_tcp_conn[new_socket] = dst;
-	m_tcp_conn[s] = InetSocketAddress::ConvertFrom(from).GetIpv4();
-	m_pair[s] = new_socket;
-	m_pair[new_socket] = s;
-	s->m_pair = new_socket;
-	new_socket->m_pair = s;
+	for(int i=lst->size()-2;  i >= 0; i--){
+		if(seq >= (*lst)[i].start_seq){
+			return (*lst)[i].offset;
+		}
+	}
+
+	return 0;
 }
 
+void MalProxy::AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq, int offset){
+	seq_state s;
 
+	if(seq <= (*lst)[lst->size()-1].start_seq){
+		/*WTF?*/
+		return;
+	}
 
+	s.start_seq=seq;
+	s.offset=offset;
+	lst->push_back(s);
+	return;
+}
 
 } // Namespace ns3
 

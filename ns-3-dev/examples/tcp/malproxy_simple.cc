@@ -290,7 +290,7 @@ main (int argc, char *argv[])
 	//
 	GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
 	GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
-	//LogComponentEnable("MalProxyApplication", LOG_INFO);
+	LogComponentEnable("MalProxyApplication", LOG_INFO);
 	//LogComponentEnable("MalProxyApplication", LOG_LOGIC);
 	//LogComponentEnable("MalSimple", LOG_INFO);
 	//LogComponentEnable("SimpleNetDevice", LOG_INFO);

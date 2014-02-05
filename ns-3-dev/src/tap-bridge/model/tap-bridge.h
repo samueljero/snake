@@ -210,6 +210,8 @@ public:
   virtual Address GetMulticast (Ipv6Address addr) const;
 	virtual void PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type);
 	virtual int MaliciousProcess (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction);
+	virtual bool SendToTap (Ptr<const Packet> packet, uint16_t protocol,const Address &src,
+			  const Address &dst);
 
 protected:
   /**

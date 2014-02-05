@@ -27,1176 +27,6687 @@ void Message::ChangeBaseMessage(int field, char* value) {
 	BaseMessage *ptr = (BaseMessage*)msg;
 
 	if (field == 0) {
-		short *cur = &(ptr->type);
+		uint16_t *cur = &(ptr->src);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 1) {
-		short *cur = &(ptr->extra);
+		uint16_t *cur = &(ptr->dest);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 2) {
-		int *cur = &(ptr->size);
+		uint32_t *cur = &(ptr->seq);
 		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
+			*cur = (uint32_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
+			*cur += (uint32_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
+			*cur -= (uint32_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
+			*cur *= (uint32_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
+			*cur /= (uint32_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int)rand();
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
 		}
 	}
 	//std::cout << "Exiting ChangeBaseMessage" << std::endl;
 }
 
-void Message::ChangeRequest(int field, char* value) {
-	//std::cout << "Entering ChangeRequest" << std::endl;
-	Request *ptr = (Request*)msg;
+void Message::ChangeFin(int field, char* value) {
+	//std::cout << "Entering ChangeFin" << std::endl;
+	Fin *ptr = (Fin*)msg;
 
 	if (field == 0) {
-		short *cur = &(ptr->type);
+		uint16_t *cur = &(ptr->src);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 1) {
-		short *cur = &(ptr->extra);
+		uint16_t *cur = &(ptr->dest);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 2) {
-		int *cur = &(ptr->size);
+		uint32_t *cur = &(ptr->seq);
 		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
+			*cur = (uint32_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
+			*cur += (uint32_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
+			*cur -= (uint32_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
+			*cur *= (uint32_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
+			*cur /= (uint32_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	//std::cout << "Exiting ChangeRequest" << std::endl;
-}
-
-void Message::ChangeReply(int field, char* value) {
-	//std::cout << "Entering ChangeReply" << std::endl;
-	Reply *ptr = (Reply*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
+			*cur = (uint32_t)rand();
 		}
 	}
 	if (field == 3) {
-		int64_t *cur = &(ptr->v);
+		uint32_t *cur = &(ptr->ack);
 		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
+			*cur = (uint32_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
+			*cur += (uint32_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
+			*cur -= (uint32_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
+			*cur *= (uint32_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
+			*cur /= (uint32_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
+			*cur = (uint32_t)rand();
 		}
 	}
 	if (field == 4) {
-		uint64_t *cur = &(ptr->rid);
 		if (value[0] == '=') {
-			*cur = (uint64_t)atoi(value+1);
+			ptr->size = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (uint64_t)atoi(value+1);
+			ptr->size += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (uint64_t)atoi(value+1);
+			ptr->size -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (uint64_t)atoi(value+1);
+			ptr->size *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (uint64_t)atoi(value+1);
+			ptr->size /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (uint64_t)rand();
+			ptr->size = (uint16_t)rand();
 		}
 	}
 	if (field == 5) {
-		char *cur = ptr->digest;
-		strncpy(cur, value, 16);
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
 	}
 	if (field == 6) {
-		int *cur = &(ptr->replica);
 		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
+			ptr->cwr = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
+			ptr->cwr += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
+			ptr->cwr -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
+			ptr->cwr *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
+			ptr->cwr /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int)rand();
+			ptr->cwr = (uint16_t)rand();
 		}
 	}
 	if (field == 7) {
-		int *cur = &(ptr->reply_size);
 		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
+			ptr->ece = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
+			ptr->ece += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
+			ptr->ece -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
+			ptr->ece *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
+			ptr->ece /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	//std::cout << "Exiting ChangeReply" << std::endl;
-}
-
-void Message::ChangePrePrepare(int field, char* value) {
-	//std::cout << "Entering ChangePrePrepare" << std::endl;
-	PrePrepare *ptr = (PrePrepare*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->view);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		int64_t *cur = &(ptr->seqno);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 5) {
-		char *cur = ptr->digest;
-		strncpy(cur, value, 16);
-	}
-	if (field == 6) {
-		int *cur = &(ptr->rset_size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 7) {
-		short *cur = &(ptr->n_big_reqs);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			ptr->ece = (uint16_t)rand();
 		}
 	}
 	if (field == 8) {
-		short *cur = &(ptr->non_det_size);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			ptr->urg = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			ptr->urg += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			ptr->urg -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			ptr->urg *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			ptr->urg /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			ptr->urg = (uint16_t)rand();
 		}
 	}
 	if (field == 9) {
-		char *cur = (char*)(msg+sizeof(short)+sizeof(short)+sizeof(int)+sizeof(int64_t)+sizeof(int64_t)+sizeof(char)*16+sizeof(int)+sizeof(short)+sizeof(short));
-		strncpy(cur, value, ptr->rset_size);
-	}
-	//std::cout << "Exiting ChangePrePrepare" << std::endl;
-}
-
-void Message::ChangePrepare(int field, char* value) {
-	//std::cout << "Entering ChangePrepare" << std::endl;
-	Prepare *ptr = (Prepare*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			ptr->type = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			ptr->type += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			ptr->type -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			ptr->type *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			ptr->type /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->view);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		int64_t *cur = &(ptr->seqno);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 5) {
-		char *cur = ptr->digest;
-		strncpy(cur, value, 16);
-	}
-	if (field == 6) {
-		int *cur = &(ptr->id);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 7) {
-		int *cur = &(ptr->padding);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	//std::cout << "Exiting ChangePrepare" << std::endl;
-}
-
-void Message::ChangeCommit(int field, char* value) {
-	//std::cout << "Entering ChangeCommit" << std::endl;
-	Commit *ptr = (Commit*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->view);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		int64_t *cur = &(ptr->seqno);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 5) {
-		int *cur = &(ptr->id);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 6) {
-		int *cur = &(ptr->padding);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	//std::cout << "Exiting ChangeCommit" << std::endl;
-}
-
-void Message::ChangeCheckpoint(int field, char* value) {
-	//std::cout << "Entering ChangeCheckpoint" << std::endl;
-	Checkpoint *ptr = (Checkpoint*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->seqno);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		char *cur = ptr->digest;
-		strncpy(cur, value, 16);
-	}
-	if (field == 5) {
-		int *cur = &(ptr->id);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 6) {
-		int *cur = &(ptr->padding);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	//std::cout << "Exiting ChangeCheckpoint" << std::endl;
-}
-
-void Message::ChangeStatus(int field, char* value) {
-	//std::cout << "Entering ChangeStatus" << std::endl;
-	Status *ptr = (Status*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->v);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		int64_t *cur = &(ptr->ls);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 5) {
-		int64_t *cur = &(ptr->le);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 6) {
-		int *cur = &(ptr->id);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 7) {
-		short *cur = &(ptr->sz);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 8) {
-		short *cur = &(ptr->brsz);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 9) {
-		int *cur = &(ptr->vcs_size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
+			ptr->type = (uint16_t)rand();
 		}
 	}
 	if (field == 10) {
-		char *cur = (char*)(msg+sizeof(short)+sizeof(short)+sizeof(int)+sizeof(int64_t)+sizeof(int64_t)+sizeof(int64_t)+sizeof(int)+sizeof(short)+sizeof(short)+sizeof(int));
-		strncpy(cur, value, ptr->vcs_size);
-	}
-	//std::cout << "Exiting ChangeStatus" << std::endl;
-}
-
-void Message::ChangeViewChange(int field, char* value) {
-	//std::cout << "Entering ChangeViewChange" << std::endl;
-	ViewChange *ptr = (ViewChange*)msg;
-
-	if (field == 0) {
-		short *cur = &(ptr->type);
+		uint16_t *cur = &(ptr->window);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 1) {
-		short *cur = &(ptr->extra);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 2) {
-		int *cur = &(ptr->size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 3) {
-		int64_t *cur = &(ptr->v);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 4) {
-		int64_t *cur = &(ptr->ls);
-		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
-		}
-	}
-	if (field == 5) {
-		char *cur = ptr->ckpts;
-		strncpy(cur, value, 48);
-	}
-	if (field == 6) {
-		int *cur = &(ptr->id);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 7) {
-		short *cur = &(ptr->n_ckpts);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 8) {
-		short *cur = &(ptr->n_reqs);
-		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (short)rand();
-		}
-	}
-	if (field == 9) {
-		int *cur = &(ptr->prepared_size);
-		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
-		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
-		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
-		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
-		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
-		} else if (value[0] == 'r') {
-			*cur = (int)rand();
-		}
-	}
-	if (field == 10) {
-		unsigned int *cur = (unsigned int*)(msg+sizeof(short)+sizeof(short)+sizeof(int)+sizeof(int64_t)+sizeof(int64_t)+sizeof(char)*48+sizeof(int)+sizeof(short)+sizeof(short)+sizeof(int));
-		for (int i = 0; i < ptr->prepared_size; i++) {
-			if (value[0] == '=') {
-				*cur = (unsigned int)atoi(value+1);
-			} else if (value[0] == '+') {
-				*cur += (unsigned int)atoi(value+1);
-			} else if (value[0] == '-') {
-				*cur -= (unsigned int)atoi(value+1);
-			} else if (value[0] == '*') {
-				*cur *= (unsigned int)atoi(value+1);
-			} else if (value[0] == '/') {
-				*cur /= (unsigned int)atoi(value+1);
-			} else if (value[0] == 'r') {
-				*cur = (unsigned int)rand();
-			}
-			cur++;
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 11) {
-		char *cur = (char*)(msg+sizeof(short)+sizeof(short)+sizeof(int)+sizeof(int64_t)+sizeof(int64_t)+sizeof(char)*48+sizeof(int)+sizeof(short)+sizeof(short)+sizeof(int)+sizeof(unsigned int)*ptr->prepared_size);
-		strncpy(cur, value, 16);
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
 	}
-	//std::cout << "Exiting ChangeViewChange" << std::endl;
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFin" << std::endl;
 }
 
-void Message::ChangeNewView(int field, char* value) {
-	//std::cout << "Entering ChangeNewView" << std::endl;
-	NewView *ptr = (NewView*)msg;
+void Message::ChangeSyn(int field, char* value) {
+	//std::cout << "Entering ChangeSyn" << std::endl;
+	Syn *ptr = (Syn*)msg;
 
 	if (field == 0) {
-		short *cur = &(ptr->type);
+		uint16_t *cur = &(ptr->src);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 1) {
-		short *cur = &(ptr->extra);
+		uint16_t *cur = &(ptr->dest);
 		if (value[0] == '=') {
-			*cur = (short)atoi(value+1);
+			*cur = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (short)atoi(value+1);
+			*cur += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (short)atoi(value+1);
+			*cur -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (short)atoi(value+1);
+			*cur *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (short)atoi(value+1);
+			*cur /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (short)rand();
+			*cur = (uint16_t)rand();
 		}
 	}
 	if (field == 2) {
-		int *cur = &(ptr->size);
+		uint32_t *cur = &(ptr->seq);
 		if (value[0] == '=') {
-			*cur = (int)atoi(value+1);
+			*cur = (uint32_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int)atoi(value+1);
+			*cur += (uint32_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int)atoi(value+1);
+			*cur -= (uint32_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int)atoi(value+1);
+			*cur *= (uint32_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int)atoi(value+1);
+			*cur /= (uint32_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int)rand();
+			*cur = (uint32_t)rand();
 		}
 	}
 	if (field == 3) {
-		int64_t *cur = &(ptr->v);
+		uint32_t *cur = &(ptr->ack);
 		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
+			*cur = (uint32_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
+			*cur += (uint32_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
+			*cur -= (uint32_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
+			*cur *= (uint32_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
+			*cur /= (uint32_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
+			*cur = (uint32_t)rand();
 		}
 	}
 	if (field == 4) {
-		int64_t *cur = &(ptr->min);
 		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
+			ptr->size = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
+			ptr->size += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
+			ptr->size -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
+			ptr->size *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
+			ptr->size /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
+			ptr->size = (uint16_t)rand();
 		}
 	}
 	if (field == 5) {
-		int64_t *cur = &(ptr->max);
 		if (value[0] == '=') {
-			*cur = (int64_t)atoi(value+1);
+			ptr->res = (uint16_t)atoi(value+1);
 		} else if (value[0] == '+') {
-			*cur += (int64_t)atoi(value+1);
+			ptr->res += (uint16_t)atoi(value+1);
 		} else if (value[0] == '-') {
-			*cur -= (int64_t)atoi(value+1);
+			ptr->res -= (uint16_t)atoi(value+1);
 		} else if (value[0] == '*') {
-			*cur *= (int64_t)atoi(value+1);
+			ptr->res *= (uint16_t)atoi(value+1);
 		} else if (value[0] == '/') {
-			*cur /= (int64_t)atoi(value+1);
+			ptr->res /= (uint16_t)atoi(value+1);
 		} else if (value[0] == 'r') {
-			*cur = (int64_t)rand();
+			ptr->res = (uint16_t)rand();
 		}
 	}
-	//std::cout << "Exiting ChangeNewView" << std::endl;
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSyn" << std::endl;
+}
+
+void Message::ChangeFinSyn(int field, char* value) {
+	//std::cout << "Entering ChangeFinSyn" << std::endl;
+	FinSyn *ptr = (FinSyn*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSyn" << std::endl;
+}
+
+void Message::ChangeRst(int field, char* value) {
+	//std::cout << "Entering ChangeRst" << std::endl;
+	Rst *ptr = (Rst*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeRst" << std::endl;
+}
+
+void Message::ChangeFinRst(int field, char* value) {
+	//std::cout << "Entering ChangeFinRst" << std::endl;
+	FinRst *ptr = (FinRst*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinRst" << std::endl;
+}
+
+void Message::ChangeSynRst(int field, char* value) {
+	//std::cout << "Entering ChangeSynRst" << std::endl;
+	SynRst *ptr = (SynRst*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynRst" << std::endl;
+}
+
+void Message::ChangeFinSynRst(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynRst" << std::endl;
+	FinSynRst *ptr = (FinSynRst*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynRst" << std::endl;
+}
+
+void Message::ChangePsh(int field, char* value) {
+	//std::cout << "Entering ChangePsh" << std::endl;
+	Psh *ptr = (Psh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangePsh" << std::endl;
+}
+
+void Message::ChangeFinPsh(int field, char* value) {
+	//std::cout << "Entering ChangeFinPsh" << std::endl;
+	FinPsh *ptr = (FinPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinPsh" << std::endl;
+}
+
+void Message::ChangeSynPsh(int field, char* value) {
+	//std::cout << "Entering ChangeSynPsh" << std::endl;
+	SynPsh *ptr = (SynPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynPsh" << std::endl;
+}
+
+void Message::ChangeFinSynPsh(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynPsh" << std::endl;
+	FinSynPsh *ptr = (FinSynPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynPsh" << std::endl;
+}
+
+void Message::ChangeRstPsh(int field, char* value) {
+	//std::cout << "Entering ChangeRstPsh" << std::endl;
+	RstPsh *ptr = (RstPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeRstPsh" << std::endl;
+}
+
+void Message::ChangeFinRstPsh(int field, char* value) {
+	//std::cout << "Entering ChangeFinRstPsh" << std::endl;
+	FinRstPsh *ptr = (FinRstPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinRstPsh" << std::endl;
+}
+
+void Message::ChangeSynRstPsh(int field, char* value) {
+	//std::cout << "Entering ChangeSynRstPsh" << std::endl;
+	SynRstPsh *ptr = (SynRstPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynRstPsh" << std::endl;
+}
+
+void Message::ChangeFinSynRstPsh(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynRstPsh" << std::endl;
+	FinSynRstPsh *ptr = (FinSynRstPsh*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynRstPsh" << std::endl;
+}
+
+void Message::ChangeAck(int field, char* value) {
+	//std::cout << "Entering ChangeAck" << std::endl;
+	Ack *ptr = (Ack*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeAck" << std::endl;
+}
+
+void Message::ChangeFinAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinAck" << std::endl;
+	FinAck *ptr = (FinAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinAck" << std::endl;
+}
+
+void Message::ChangeSynAck(int field, char* value) {
+	//std::cout << "Entering ChangeSynAck" << std::endl;
+	SynAck *ptr = (SynAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynAck" << std::endl;
+}
+
+void Message::ChangeFinSynAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynAck" << std::endl;
+	FinSynAck *ptr = (FinSynAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynAck" << std::endl;
+}
+
+void Message::ChangeRstAck(int field, char* value) {
+	//std::cout << "Entering ChangeRstAck" << std::endl;
+	RstAck *ptr = (RstAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeRstAck" << std::endl;
+}
+
+void Message::ChangeFinRstAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinRstAck" << std::endl;
+	FinRstAck *ptr = (FinRstAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinRstAck" << std::endl;
+}
+
+void Message::ChangeSynRstAck(int field, char* value) {
+	//std::cout << "Entering ChangeSynRstAck" << std::endl;
+	SynRstAck *ptr = (SynRstAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynRstAck" << std::endl;
+}
+
+void Message::ChangeFinSynRstAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynRstAck" << std::endl;
+	FinSynRstAck *ptr = (FinSynRstAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynRstAck" << std::endl;
+}
+
+void Message::ChangePshAck(int field, char* value) {
+	//std::cout << "Entering ChangePshAck" << std::endl;
+	PshAck *ptr = (PshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangePshAck" << std::endl;
+}
+
+void Message::ChangeFinPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinPshAck" << std::endl;
+	FinPshAck *ptr = (FinPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinPshAck" << std::endl;
+}
+
+void Message::ChangeSynPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeSynPshAck" << std::endl;
+	SynPshAck *ptr = (SynPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynPshAck" << std::endl;
+}
+
+void Message::ChangeFinSynPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynPshAck" << std::endl;
+	FinSynPshAck *ptr = (FinSynPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynPshAck" << std::endl;
+}
+
+void Message::ChangeRstPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeRstPshAck" << std::endl;
+	RstPshAck *ptr = (RstPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeRstPshAck" << std::endl;
+}
+
+void Message::ChangeFinRstPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinRstPshAck" << std::endl;
+	FinRstPshAck *ptr = (FinRstPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinRstPshAck" << std::endl;
+}
+
+void Message::ChangeSynRstPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeSynRstPshAck" << std::endl;
+	SynRstPshAck *ptr = (SynRstPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeSynRstPshAck" << std::endl;
+}
+
+void Message::ChangeFinSynRstPshAck(int field, char* value) {
+	//std::cout << "Entering ChangeFinSynRstPshAck" << std::endl;
+	FinSynRstPshAck *ptr = (FinSynRstPshAck*)msg;
+
+	if (field == 0) {
+		uint16_t *cur = &(ptr->src);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 1) {
+		uint16_t *cur = &(ptr->dest);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 2) {
+		uint32_t *cur = &(ptr->seq);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 3) {
+		uint32_t *cur = &(ptr->ack);
+		if (value[0] == '=') {
+			*cur = (uint32_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint32_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint32_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint32_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint32_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint32_t)rand();
+		}
+	}
+	if (field == 4) {
+		if (value[0] == '=') {
+			ptr->size = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->size += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->size -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->size *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->size /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->size = (uint16_t)rand();
+		}
+	}
+	if (field == 5) {
+		if (value[0] == '=') {
+			ptr->res = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->res += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->res -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->res *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->res /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->res = (uint16_t)rand();
+		}
+	}
+	if (field == 6) {
+		if (value[0] == '=') {
+			ptr->cwr = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->cwr += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->cwr -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->cwr *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->cwr /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->cwr = (uint16_t)rand();
+		}
+	}
+	if (field == 7) {
+		if (value[0] == '=') {
+			ptr->ece = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->ece += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->ece -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->ece *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->ece /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->ece = (uint16_t)rand();
+		}
+	}
+	if (field == 8) {
+		if (value[0] == '=') {
+			ptr->urg = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->urg += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->urg -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->urg *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->urg /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->urg = (uint16_t)rand();
+		}
+	}
+	if (field == 9) {
+		if (value[0] == '=') {
+			ptr->type = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			ptr->type += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			ptr->type -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			ptr->type *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			ptr->type /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			ptr->type = (uint16_t)rand();
+		}
+	}
+	if (field == 10) {
+		uint16_t *cur = &(ptr->window);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 11) {
+		uint16_t *cur = &(ptr->chk);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	if (field == 12) {
+		uint16_t *cur = &(ptr->urgptr);
+		if (value[0] == '=') {
+			*cur = (uint16_t)atoi(value+1);
+		} else if (value[0] == '+') {
+			*cur += (uint16_t)atoi(value+1);
+		} else if (value[0] == '-') {
+			*cur -= (uint16_t)atoi(value+1);
+		} else if (value[0] == '*') {
+			*cur *= (uint16_t)atoi(value+1);
+		} else if (value[0] == '/') {
+			*cur /= (uint16_t)atoi(value+1);
+		} else if (value[0] == 'r') {
+			*cur = (uint16_t)rand();
+		}
+	}
+	//std::cout << "Exiting ChangeFinSynRstPshAck" << std::endl;
 }
 
 void Message::ChangeValue(int field, char* value) {
@@ -1205,32 +6716,98 @@ void Message::ChangeValue(int field, char* value) {
 		case BASEMESSAGE:
 			ChangeBaseMessage(field, value);
 			break;
-		case REQUEST:
-			ChangeRequest(field, value);
+		case FIN:
+			ChangeFin(field, value);
 			break;
-		case REPLY:
-			ChangeReply(field, value);
+		case SYN:
+			ChangeSyn(field, value);
 			break;
-		case PREPREPARE:
-			ChangePrePrepare(field, value);
+		case FINSYN:
+			ChangeFinSyn(field, value);
 			break;
-		case PREPARE:
-			ChangePrepare(field, value);
+		case RST:
+			ChangeRst(field, value);
 			break;
-		case COMMIT:
-			ChangeCommit(field, value);
+		case FINRST:
+			ChangeFinRst(field, value);
 			break;
-		case CHECKPOINT:
-			ChangeCheckpoint(field, value);
+		case SYNRST:
+			ChangeSynRst(field, value);
 			break;
-		case STATUS:
-			ChangeStatus(field, value);
+		case FINSYNRST:
+			ChangeFinSynRst(field, value);
 			break;
-		case VIEWCHANGE:
-			ChangeViewChange(field, value);
+		case PSH:
+			ChangePsh(field, value);
 			break;
-		case NEWVIEW:
-			ChangeNewView(field, value);
+		case FINPSH:
+			ChangeFinPsh(field, value);
+			break;
+		case SYNPSH:
+			ChangeSynPsh(field, value);
+			break;
+		case FINSYNPSH:
+			ChangeFinSynPsh(field, value);
+			break;
+		case RSTPSH:
+			ChangeRstPsh(field, value);
+			break;
+		case FINRSTPSH:
+			ChangeFinRstPsh(field, value);
+			break;
+		case SYNRSTPSH:
+			ChangeSynRstPsh(field, value);
+			break;
+		case FINSYNRSTPSH:
+			ChangeFinSynRstPsh(field, value);
+			break;
+		case ACK:
+			ChangeAck(field, value);
+			break;
+		case FINACK:
+			ChangeFinAck(field, value);
+			break;
+		case SYNACK:
+			ChangeSynAck(field, value);
+			break;
+		case FINSYNACK:
+			ChangeFinSynAck(field, value);
+			break;
+		case RSTACK:
+			ChangeRstAck(field, value);
+			break;
+		case FINRSTACK:
+			ChangeFinRstAck(field, value);
+			break;
+		case SYNRSTACK:
+			ChangeSynRstAck(field, value);
+			break;
+		case FINSYNRSTACK:
+			ChangeFinSynRstAck(field, value);
+			break;
+		case PSHACK:
+			ChangePshAck(field, value);
+			break;
+		case FINPSHACK:
+			ChangeFinPshAck(field, value);
+			break;
+		case SYNPSHACK:
+			ChangeSynPshAck(field, value);
+			break;
+		case FINSYNPSHACK:
+			ChangeFinSynPshAck(field, value);
+			break;
+		case RSTPSHACK:
+			ChangeRstPshAck(field, value);
+			break;
+		case FINRSTPSHACK:
+			ChangeFinRstPshAck(field, value);
+			break;
+		case SYNRSTPSHACK:
+			ChangeSynRstPshAck(field, value);
+			break;
+		case FINSYNRSTPSHACK:
+			ChangeFinSynRstPshAck(field, value);
 			break;
 	}
 	//std::cout << "Exiting ChangeValue" << std::endl;
@@ -1241,32 +6818,98 @@ int Message::StrToType(const char *str) {
 	if (strcmp(str, "BaseMessage") == 0) {
 		return BASEMESSAGE;
 	}
-	if (strcmp(str, "Request") == 0) {
-		return REQUEST;
+	if (strcmp(str, "Fin") == 0) {
+		return FIN;
 	}
-	if (strcmp(str, "Reply") == 0) {
-		return REPLY;
+	if (strcmp(str, "Syn") == 0) {
+		return SYN;
 	}
-	if (strcmp(str, "PrePrepare") == 0) {
-		return PREPREPARE;
+	if (strcmp(str, "FinSyn") == 0) {
+		return FINSYN;
 	}
-	if (strcmp(str, "Prepare") == 0) {
-		return PREPARE;
+	if (strcmp(str, "Rst") == 0) {
+		return RST;
 	}
-	if (strcmp(str, "Commit") == 0) {
-		return COMMIT;
+	if (strcmp(str, "FinRst") == 0) {
+		return FINRST;
 	}
-	if (strcmp(str, "Checkpoint") == 0) {
-		return CHECKPOINT;
+	if (strcmp(str, "SynRst") == 0) {
+		return SYNRST;
 	}
-	if (strcmp(str, "Status") == 0) {
-		return STATUS;
+	if (strcmp(str, "FinSynRst") == 0) {
+		return FINSYNRST;
 	}
-	if (strcmp(str, "ViewChange") == 0) {
-		return VIEWCHANGE;
+	if (strcmp(str, "Psh") == 0) {
+		return PSH;
 	}
-	if (strcmp(str, "NewView") == 0) {
-		return NEWVIEW;
+	if (strcmp(str, "FinPsh") == 0) {
+		return FINPSH;
+	}
+	if (strcmp(str, "SynPsh") == 0) {
+		return SYNPSH;
+	}
+	if (strcmp(str, "FinSynPsh") == 0) {
+		return FINSYNPSH;
+	}
+	if (strcmp(str, "RstPsh") == 0) {
+		return RSTPSH;
+	}
+	if (strcmp(str, "FinRstPsh") == 0) {
+		return FINRSTPSH;
+	}
+	if (strcmp(str, "SynRstPsh") == 0) {
+		return SYNRSTPSH;
+	}
+	if (strcmp(str, "FinSynRstPsh") == 0) {
+		return FINSYNRSTPSH;
+	}
+	if (strcmp(str, "Ack") == 0) {
+		return ACK;
+	}
+	if (strcmp(str, "FinAck") == 0) {
+		return FINACK;
+	}
+	if (strcmp(str, "SynAck") == 0) {
+		return SYNACK;
+	}
+	if (strcmp(str, "FinSynAck") == 0) {
+		return FINSYNACK;
+	}
+	if (strcmp(str, "RstAck") == 0) {
+		return RSTACK;
+	}
+	if (strcmp(str, "FinRstAck") == 0) {
+		return FINRSTACK;
+	}
+	if (strcmp(str, "SynRstAck") == 0) {
+		return SYNRSTACK;
+	}
+	if (strcmp(str, "FinSynRstAck") == 0) {
+		return FINSYNRSTACK;
+	}
+	if (strcmp(str, "PshAck") == 0) {
+		return PSHACK;
+	}
+	if (strcmp(str, "FinPshAck") == 0) {
+		return FINPSHACK;
+	}
+	if (strcmp(str, "SynPshAck") == 0) {
+		return SYNPSHACK;
+	}
+	if (strcmp(str, "FinSynPshAck") == 0) {
+		return FINSYNPSHACK;
+	}
+	if (strcmp(str, "RstPshAck") == 0) {
+		return RSTPSHACK;
+	}
+	if (strcmp(str, "FinRstPshAck") == 0) {
+		return FINRSTPSHACK;
+	}
+	if (strcmp(str, "SynRstPshAck") == 0) {
+		return SYNRSTPSHACK;
+	}
+	if (strcmp(str, "FinSynRstPshAck") == 0) {
+		return FINSYNRSTPSHACK;
 	}
 	//std::cout << "Exiting StrToType" << std::endl;
 	return -1;
@@ -1276,23 +6919,67 @@ uint8_t* Message::EncMsgOffset() {
 	//std::cout << "Entering EncMsgOffset" << std::endl;
 	if (type == BASEMESSAGE)
 			return NULL;
-	if (type == REQUEST)
+	if (type == FIN)
 			return NULL;
-	if (type == REPLY)
+	if (type == SYN)
 			return NULL;
-	if (type == PREPREPARE)
+	if (type == FINSYN)
 			return NULL;
-	if (type == PREPARE)
+	if (type == RST)
 			return NULL;
-	if (type == COMMIT)
+	if (type == FINRST)
 			return NULL;
-	if (type == CHECKPOINT)
+	if (type == SYNRST)
 			return NULL;
-	if (type == STATUS)
+	if (type == FINSYNRST)
 			return NULL;
-	if (type == VIEWCHANGE)
+	if (type == PSH)
 			return NULL;
-	if (type == NEWVIEW)
+	if (type == FINPSH)
+			return NULL;
+	if (type == SYNPSH)
+			return NULL;
+	if (type == FINSYNPSH)
+			return NULL;
+	if (type == RSTPSH)
+			return NULL;
+	if (type == FINRSTPSH)
+			return NULL;
+	if (type == SYNRSTPSH)
+			return NULL;
+	if (type == FINSYNRSTPSH)
+			return NULL;
+	if (type == ACK)
+			return NULL;
+	if (type == FINACK)
+			return NULL;
+	if (type == SYNACK)
+			return NULL;
+	if (type == FINSYNACK)
+			return NULL;
+	if (type == RSTACK)
+			return NULL;
+	if (type == FINRSTACK)
+			return NULL;
+	if (type == SYNRSTACK)
+			return NULL;
+	if (type == FINSYNRSTACK)
+			return NULL;
+	if (type == PSHACK)
+			return NULL;
+	if (type == FINPSHACK)
+			return NULL;
+	if (type == SYNPSHACK)
+			return NULL;
+	if (type == FINSYNPSHACK)
+			return NULL;
+	if (type == RSTPSHACK)
+			return NULL;
+	if (type == FINRSTPSHACK)
+			return NULL;
+	if (type == SYNRSTPSHACK)
+			return NULL;
+	if (type == FINSYNRSTPSHACK)
 			return NULL;
 	//std::cout << "Exiting EncMsgOffset" << std::endl;
 	return NULL;

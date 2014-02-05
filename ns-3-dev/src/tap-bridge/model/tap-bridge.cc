@@ -1209,6 +1209,7 @@ int TapBridge::MaliciousProcess
 	int replay = -1; // NO REPLAY
 	double delay = 0.0;
 	int duptimes = 1;
+	Application *ptr;
 	Mac48Address destination = Mac48Address::ConvertFrom (dest);
 	Mac48Address source = Mac48Address::ConvertFrom (src);
 	Ptr<Packet> packet = p->Copy(); // copy one time
@@ -1222,51 +1223,60 @@ int TapBridge::MaliciousProcess
 	}
 	packet->RemoveHeader(ipHeader);
 
+	//2. UDP or TCP
 	UdpHeader udpHeader;
-        int UDP = 0;
+	int UDP = 0;
 	TcpHeader tcpHeader;
-        uint16_t destPort, srcPort;
-        if (protocol != UdpL4Protocol::PROT_NUMBER) {
-	// 2. UDP port looking at?
-          packet->RemoveHeader (udpHeader);
-          UDP = 1;
-          destPort = udpHeader.GetDestinationPort();
-          srcPort = udpHeader.GetSourcePort();
-        } else {
-          packet->PeekHeader (tcpHeader);
-          destPort = tcpHeader.GetDestinationPort();
-          srcPort = tcpHeader.GetSourcePort();
-        }
-  /* No PORT Check
-	if (!m_node->IsLocalPort(false, destPort)) {
-    std::cout << "not listening port " << destPort << std::endl;
-		return 0;
+	uint16_t destPort, srcPort;
+	if (protocol == UdpL4Protocol::PROT_NUMBER) {
+	  packet->PeekHeader (udpHeader);
+	  UDP = 1;
+	  destPort = udpHeader.GetDestinationPort();
+	  srcPort = udpHeader.GetSourcePort();
+	} else {
+	  UDP = 0;
+	  packet->PeekHeader (tcpHeader);
+	  destPort = tcpHeader.GetDestinationPort();
+	  srcPort = tcpHeader.GetSourcePort();
 	}
-  */
 
-	// 3. get message type
+	//3. To Malproxy
 	Ptr<Application> app = m_node->GetApplication(0);
-
-	uint8_t *msg = new uint8_t[packet->GetSize()];
-	msg = p->PeekDataForMal();
-	//msg = packet->CopyData(msg, packet->GetSize());
-	uint32_t offset = 8 + 20; //size of udp header
-        if (protocol == TcpL4Protocol::PROT_NUMBER) {
-          offset = 20 + 20;
-        } 
-	Message *m = new Message(msg+offset);
-	Application *ptr;
 	ptr = GetPointer(app);
 	Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
-	// opt filter
-        int action = NONE;
-        if (proxy->MalMsg(m) == true) {
-          std::cout << "Message m: " << m->type << std::endl;
-          action = proxy->MaliciousStrategyUDP(packet, m, packet->GetSize() - 8 - 20, &divert, &delay, &duptimes, &replay);
-        } else {
-          return 0; // normal processing
-        }
+	int action = NONE;
+	MalDirection d=TOTAP;
+	if(direction==SENDING){
+		d=FROMTAP;
+	}else{
+		d=TOTAP;
+	}
+	if(protocol==TcpL4Protocol::PROT_NUMBER){
+		action = proxy->MalTCP(packet, ipHeader, d);
+	}
 
+
+	//4. Old Malicious Actions (UDP Only)
+	uint8_t *msg = new uint8_t[packet->GetSize()];
+	msg = p->PeekDataForMal();
+	uint32_t offset = 20;
+	if (protocol == TcpL4Protocol::PROT_NUMBER) {
+		offset = 20 + 20;
+	}else{
+		offset = 8 + 20;
+	}
+	Message *m = new Message(msg+offset);
+	if (protocol == UdpL4Protocol::PROT_NUMBER && direction==SENDING){
+#if 0
+		if(proxy->MalMsg(m) == true) {
+			action = proxy->MaliciousStrategyUDP(packet, m, packet->GetSize() - 8 - 20, &divert, &delay, &duptimes, &replay);
+		} else {
+			return 0; // normal processing
+		}
+#endif
+	}
+
+	//5. Process Actions
 	if (action == DROP) {
 		return 1;
 	}
@@ -1295,17 +1305,13 @@ int TapBridge::MaliciousProcess
 			ipdest = ipHeader.GetDestination();
 			ipsource = ipHeader.GetSource();
 		}
-                if (UDP) {
-		udpHeader.EnableChecksums();
-		udpHeader.InitializeChecksum(ipsource, ipdest, UdpL4Protocol::PROT_NUMBER);
-		udpHeader.SetDestinationPort (destPort);
-		udpHeader.SetSourcePort (srcPort);
-		packet_send->AddHeader(udpHeader);
-                } else {
-                  tcpHeader.EnableChecksums();
-                  tcpHeader.InitializeChecksum(ipsource, ipdest, TcpL4Protocol::PROT_NUMBER);
-                  packet_send->AddHeader(tcpHeader);
-                }
+        if (UDP) {
+			udpHeader.EnableChecksums();
+			udpHeader.InitializeChecksum(ipsource, ipdest, UdpL4Protocol::PROT_NUMBER);
+			udpHeader.SetDestinationPort (destPort);
+			udpHeader.SetSourcePort (srcPort);
+			packet_send->AddHeader(udpHeader);
+        }
 		Ipv4Header ipHeadernew = ipHeader;
 		ipHeadernew.EnableChecksum();
 		ipHeadernew.SetDestination(ipdest);
@@ -1314,9 +1320,18 @@ int TapBridge::MaliciousProcess
 		packet_send->AddHeader(ipHeadernew);
 		if (delay > 0) {
 			Time next(Seconds(delay));
-			Simulator::Schedule(next, &TapBridge::PacketSend, this, packet_send, src, dest, type);
+			if(direction==SENDING){
+				Simulator::Schedule(next, &TapBridge::PacketSend, this, packet_send, src, dest, type);
+			}else{
+				Simulator::Schedule(next, &TapBridge::SendToTap, this, packet_send, type, src, dest);
+			}
+		}else{
+			if(direction==SENDING){
+				PacketSend(packet_send, src, dest, type);
+			}else{
+				SendToTap(packet_send,type, src,dest);
+			}
 		}
-		else PacketSend(packet_send, src, dest, type);
 	}
 	return 1;
 }
@@ -1537,12 +1552,6 @@ TapBridge::ReceiveFromBridgedDevice (
   // on which lies our tap device.
   //
 
-	// FOR REPLAYING ATTACK
-	if (m_node->IsMalicious() && protocol == 2048) {
-		//Ptr<Packet> p = packet->Copy();
-		//MaliciousProcess(p, src, dst, protocol, RECEIVING); // care only about replay
-	}
-
   if (m_mode == CONFIGURE_LOCAL && packetType == PACKET_OTHERHOST)
     {
       //
@@ -1559,6 +1568,13 @@ TapBridge::ReceiveFromBridgedDevice (
   ProfileFunction("Tap:Receive", false);
       return true;
     }
+
+	if (m_node->IsMalicious() && protocol == 2048) {
+		Ptr<Packet> p=packet->Copy();
+		if(MaliciousProcess(p, src, dst, protocol, RECEIVING)==1){
+			return true;
+		}
+	}
 
   Mac48Address from = Mac48Address::ConvertFrom (src);
   Mac48Address to = Mac48Address::ConvertFrom (dst);
@@ -1588,6 +1604,43 @@ TapBridge::ReceiveFromBridgedDevice (
   NS_LOG_LOGIC ("End of receive packet handling on node " << m_node->GetId ());
   ProfileFunction("Tap:Receive", false);
   return true;
+}
+
+bool
+TapBridge::SendToTap (
+  Ptr<const Packet> packet,
+  uint16_t protocol,
+  const Address &src,
+  const Address &dst)
+{
+	Mac48Address from = Mac48Address::ConvertFrom (src);
+	  Mac48Address to = Mac48Address::ConvertFrom (dst);
+		NS_LOG_INFO("FROM: " << from << " (" << src << ") TO: " << to << " (" << dst << ")");
+
+	  Ptr<Packet> p = packet->Copy ();
+	  EthernetHeader header = EthernetHeader (false);
+	  header.SetSource (from);
+	  header.SetDestination (to);
+
+	  header.SetLengthType (protocol);
+	  p->AddHeader (header);
+
+	  NS_LOG_LOGIC ("Writing packet to Linux host");
+	  NS_LOG_LOGIC ("Pkt source is " << header.GetSource ());
+	  NS_LOG_LOGIC ("Pkt destination is " << header.GetDestination ());
+	  NS_LOG_LOGIC ("Pkt LengthType is " << header.GetLengthType ());
+	  NS_LOG_LOGIC ("Pkt size is " << p->GetSize ());
+
+	  NS_ASSERT_MSG (p->GetSize () <= 65536, "TapBridge::ReceiveFromBridgedDevice: Packet too big " << p->GetSize ());
+	  p->CopyData (m_packetBuffer, p->GetSize ());
+
+	  uint32_t bytesWritten = write (m_sock, m_packetBuffer, p->GetSize ());
+
+	  NS_ABORT_MSG_IF (bytesWritten != p->GetSize (), "TapBridge::ReceiveFromBridgedDevice(): Write error.");
+
+	  NS_LOG_LOGIC ("End of receive packet handling on node " << m_node->GetId ());
+	  ProfileFunction("Tap:Receive", false);
+	  return true;
 }
 
 void 
