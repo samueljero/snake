@@ -7,6 +7,7 @@ def build(bld):
         'model/event-garbage-collector.cc',
         'model/gnuplot.cc',
         'model/delay-jitter-estimation.cc',
+        'model/dotParser.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('tools')
@@ -21,9 +22,11 @@ def build(bld):
         'model/event-garbage-collector.h',
         'model/gnuplot.h',
         'model/delay-jitter-estimation.h',
+        'model/dotParser.h',
         ]
 
     #if (bld.env['ENABLE_EXAMPLES']):
         #bld.add_subdirs('examples')
 
+    bld.env.append_value('LINKFLAGS', '-lboost_graph')
     bld.ns3_python_bindings()

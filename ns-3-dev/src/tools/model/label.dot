@@ -1,0 +1,40 @@
+digraph TCP {
+
+CLOSED -> LISTEN [label="A_LISTEN/-"];
+ESTAB -> FIN_WAIT_1 [label="A_CLOSE/M_FIN"];
+
+SYN_RCVD -> FIN_WAIT_1 [label="A_CLOSE/M_FIN"];
+
+FIN_WAIT_1 -> FIN_WAIT_2[label="M_ACK/-"];
+
+FIN_WAIT_1-> CLOSING [label="M_FIN/M_ACK"];
+
+FIN_WAIT_2 -> TIME_WAIT[label="M_FIN+M_ACK/M_ACK"];
+
+CLOSING -> TIME_WAIT [label="M_ACK/-"];
+
+CLOSED -> SYN_SENT [label="A_CONNECT/M_SYN"];
+
+LISTEN -> SYN_SENT [label="A_SEND/M_SYN"];
+LISTEN -> SYN_RCVD [label="M_SYN/M_SYN+M_ACK"];
+
+
+SYN_SENT -> SYN_RCVD [label="M_SYN/M_SYN+M_ACK"];
+
+SYN_RCVD -> ESTAB [label="M_ACK"];
+SYN_RCVD -> LISTEN [label="M_RST"];
+SYN_RCVD -> CLOSED [label="E_TIMEOUT/M_RST"];
+
+SYN_SENT -> ESTAB [label="M_SYN+M_ACK/M_ACK"]; 
+SYN_SENT -> CLOSED [label="A_CLOSE/-"]; 
+SYN_SENT -> CLOSED [label="E_TIMEOUT/-"]; 
+
+
+CLOSE_WAIT -> LAST_ACK [label="A_CLOSE/M_FIN"];
+
+TIME_WAIT -> CLOSED [label="E_TIMEOUT"];
+
+LAST_ACK -> CLOSED [label="M_ACK/-"];
+
+ESTAB -> CLOSE_WAIT [label="M_FIN/M_ACK"];
+}
