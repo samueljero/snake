@@ -200,8 +200,8 @@ sub systemSteward()
 sub systemTCP()
 {
 $setupCommand = "mkdir TCP";
-  $server_command = "";
-  $client_command = "";
+  $server_command = "nc -l 1234 |  ~/perfcollector.pl";
+  $client_command = "cat /dev/zero | fold -w40 | nc 10.1.2.2 1234";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
   $s_parallel = 1;
