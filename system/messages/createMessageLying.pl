@@ -18,6 +18,7 @@ print STRAT "BaseMessage NONE 0\nBaseMessage NONE 0\n";
 print DOTH <<END;
 #include "ns3/uinteger.h"
 #include <string.h>
+#include <arpa/inet.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
 END
@@ -270,6 +271,52 @@ if ($parsing == 0) {
 							print DOTC "$tabs\tcur->$field = ($type)rand();\n";
 							print DOTC "$tabs";
 							print DOTC "}\n";
+						} elsif($type ne "uint16_t"){
+							print DOTC "$tabs$type tmp=ntohs(*cur);\n";
+							print DOTC "$tabs";
+							print DOTC "if (value[0] == '=') {\n";
+							print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '+') {\n";
+							print DOTC "$tabs\ttmp += ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '-') {\n";
+							print DOTC "$tabs\ttmp -= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '*') {\n";
+							print DOTC "$tabs\ttmp *= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '/') {\n";
+							print DOTC "$tabs\ttmp /= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == 'r') {\n";
+							print DOTC "$tabs\ttmp = ($type)rand();\n";
+							print DOTC "$tabs";
+							print DOTC "}\n";
+							print DOTC "$tabs *cur=htons(tmp);\n";
+						} elsif($type ne "uint32_t"){
+							print DOTC "$tabs$type tmp=ntohl(*cur);\n";
+							print DOTC "$tabs";
+							print DOTC "if (value[0] == '=') {\n";
+							print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '+') {\n";
+							print DOTC "$tabs\ttmp += ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '-') {\n";
+							print DOTC "$tabs\ttmp -= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '*') {\n";
+							print DOTC "$tabs\ttmp *= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == '/') {\n";
+							print DOTC "$tabs\ttmp /= ($type)atoi(value+1);\n";
+							print DOTC "$tabs";
+							print DOTC "} else if (value[0] == 'r') {\n";
+							print DOTC "$tabs\ttmp = ($type)rand();\n";
+							print DOTC "$tabs";
+							print DOTC "}\n";
+							print DOTC "$tabs *cur=htonl(tmp);\n";
 						} else {
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
@@ -402,6 +449,52 @@ if ($parsing == 0) {
 				print DOTC "$tabs\tptr->$field = ($type)rand();\n";
 				print DOTC "$tabs";
 				print DOTC "}\n";
+			} elsif($type ne "uint16_t"){
+				print DOTC "$tabs$type tmp=ntohs(*cur);\n";
+				print DOTC "$tabs";
+				print DOTC "if (value[0] == '=') {\n";
+				print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '+') {\n";
+				print DOTC "$tabs\ttmp += ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '-') {\n";
+				print DOTC "$tabs\ttmp -= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '*') {\n";
+				print DOTC "$tabs\ttmp *= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '/') {\n";
+				print DOTC "$tabs\ttmp /= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == 'r') {\n";
+				print DOTC "$tabs\ttmp = ($type)rand();\n";
+				print DOTC "$tabs";
+				print DOTC "}\n";
+				print DOTC "$tabs *cur=htons(tmp);\n";
+			} elsif($type ne "uint32_t"){
+				print DOTC "$tabs$type tmp=ntohl(*cur);\n";
+				print DOTC "$tabs";
+				print DOTC "if (value[0] == '=') {\n";
+				print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '+') {\n";
+				print DOTC "$tabs\ttmp += ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '-') {\n";
+				print DOTC "$tabs\ttmp -= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '*') {\n";
+				print DOTC "$tabs\ttmp *= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == '/') {\n";
+				print DOTC "$tabs\ttmp /= ($type)atoi(value+1);\n";
+				print DOTC "$tabs";
+				print DOTC "} else if (value[0] == 'r') {\n";
+				print DOTC "$tabs\ttmp = ($type)rand();\n";
+				print DOTC "$tabs";
+				print DOTC "}\n";
+				print DOTC "$tabs *cur=htonl(tmp);\n";
 			} else {
 				print DOTC "$tabs";
 				print DOTC "if (value[0] == '=') {\n";
