@@ -1,12 +1,8 @@
-#include "dotParser.h"
-
 #include "ns3/dotParser.h"
 
 using namespace ns3;
 
-
 int main(int argc, char **argv) {
-    struct dotParseData dpd;
     const char *filename = "filename.txt";
     std::string state = "ESTB";
     if (argc > 1) {
@@ -16,8 +12,8 @@ int main(int argc, char **argv) {
     if (argc > 2) {
         state = argv[2];
     }
-    class DotParser dt;
-    dt->(filename);
+    DotParser *dt = new DotParser();
+    dt->parseGraph(filename);
     dt->print_graph();
     dt->getLegalTransision(std::string(state));
 }

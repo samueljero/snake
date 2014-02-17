@@ -34,6 +34,22 @@ namespace ns3 {
     // adjacency_list-based type
     typedef boost::adjacency_list < boost::vecS, boost::vecS, boost::directedS,
             vertex_p, edge_p, graph_p > graph_t;
+
+
+    class State 
+    {
+        public:
+            std::string name;
+    };
+
+    class Transition
+    {
+        public:
+            std::string name;
+            State from;
+            State to;
+    };
+
     class DotParser 
     {
         public:
@@ -48,6 +64,8 @@ namespace ns3 {
         int parseGraph(const char *);
         void print_graph ();
         int getLegalTransision(std::string cur) ;
+        void getInvalidTransitions(std::string state);
+        void MakeTargetTransition();
 
         DotParser () {
             graph_t graph(0);

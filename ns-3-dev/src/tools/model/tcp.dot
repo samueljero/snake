@@ -1,5 +1,4 @@
 digraph TCP {
-
 CLOSED -> LISTEN [rcvd="A_LISTEN", send="-"];
 ESTAB -> FIN_WAIT_1 [rcvd="A_CLOSE", send="M_FIN"];
 
