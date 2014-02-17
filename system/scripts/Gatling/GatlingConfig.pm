@@ -200,13 +200,13 @@ sub systemSteward()
 sub systemTCP()
 {
 $setupCommand = "mkdir TCP";
-  $server_command = "nc -l 1234 |  ~/perfcollector.pl";
-  $client_command = "cat /dev/zero | fold -w40 | nc 10.1.2.2 1234";
+  $server_command = "nc -q-1 -k -l 1234 |  ~/perfcollector.pl";
+  $client_command = "cat /dev/urandom | hd | nc -q-1 10.1.2.2 1234";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
   $s_parallel = 1;
   $c_parallel = 1;
-  $runTime = 100;
+  $runTime = 10000;
   $watchPort = " -tcp_port 1234";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
@@ -217,6 +217,7 @@ $setupCommand = "mkdir TCP";
   $window_size = 7;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
+  $start_attack = 0;
 }
 
 1;

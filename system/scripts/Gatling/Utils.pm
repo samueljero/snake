@@ -105,7 +105,8 @@ sub getPerfScore()
 {
   open SCORE, "$GatlingConfig::scoreFile" or return 9999;
   my $score = `cat $GatlingConfig::scoreFile | wc -l`;
-  if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug") {
+  if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug"
+		|| $GatlingConfig::systemname eq "TCP") {
     my $lines = `cat $GatlingConfig::scoreFile | wc -l`;
     $score = 9999 - $lines;
   } else {
@@ -115,7 +116,11 @@ sub getPerfScore()
       $count = $count + 1;
       $sum = $sum+$line;
     }
-    $score = $sum/$count;
+    if($count==0){
+		$score=0;
+    }else{
+		$score = $sum/$count;
+    }
   }
   close SCORE;
   return $score;

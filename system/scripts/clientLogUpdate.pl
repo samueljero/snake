@@ -88,6 +88,14 @@ sub Prime_bugPerf {
   }
 }
 
+sub TCP_Perf{
+	my $eachline = shift;
+	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
+	print SCORE "$eachline\n";
+	print "PERF: $eachline\n";
+	close SCORE;
+}
+
 while (1) 
 {
 	#my $sock = $socket->accept();
@@ -100,8 +108,9 @@ while (1)
 	my @lines = split /\n/, $line;
   foreach my $eachline (@lines) {
     #Prime_bugPerf($eachline);
-    # PrimePerf($eachline);
-    BFTPerf($eachline);
+    #PrimePerf($eachline);
+    #BFTPerf($eachline);
     #StewardPerf($eachline);
+    TCP_Perf($eachline);
   }
 }
