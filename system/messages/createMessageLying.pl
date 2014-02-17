@@ -571,6 +571,7 @@ class Message {
 	int FindMsgSize(); 
 	uint8_t* EncMsgOffset();
 	static int StrToType(const char* str);
+	static std::string TypeToStr(int type);
 	void ChangeValue(int field, char* value);
 END
 
@@ -586,6 +587,16 @@ for (my $i = 0; $i <= $#msgName; $i++) {
 
 print DOTC "\t//std::cout << \"Exiting StrToType\" << std::endl;\n";
 print DOTC "\treturn -1;\n}\n\n";
+
+print DOTC "std::string Message::TypeToStr(int type){\n";
+print DOTC "\t//std::cout << \"Entering TypeToStr\" << std::endl;\n";
+for (my $i = 0; $i <= $#msgName; $i++) {
+	my $temp = uc $msgName[$i];
+	print DOTC "\tif (type == $temp ) {\n";
+	print DOTC "\t\treturn \"$msgName[$i]\";\n\t}\n";
+}
+print DOTC "\t//std::cout << \"Exiting TypeToStr\" << std::endl;\n";
+print DOTC "\treturn \"Invalid\";\n}\n\n";
 
 print DOTC "uint8_t* Message::EncMsgOffset() {\n";
 print DOTC "\t//std::cout << \"Entering EncMsgOffset\" << std::endl;\n";
