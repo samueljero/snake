@@ -271,7 +271,7 @@ if ($parsing == 0) {
 							print DOTC "$tabs\tcur->$field = ($type)rand();\n";
 							print DOTC "$tabs";
 							print DOTC "}\n";
-						} elsif($type ne "uint16_t"){
+						} elsif($type eq "uint16_t"){
 							print DOTC "$tabs$type tmp=ntohs(*cur);\n";
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
@@ -294,7 +294,7 @@ if ($parsing == 0) {
 							print DOTC "$tabs";
 							print DOTC "}\n";
 							print DOTC "$tabs *cur=htons(tmp);\n";
-						} elsif($type ne "uint32_t"){
+						} elsif($type eq "uint32_t"){
 							print DOTC "$tabs$type tmp=ntohl(*cur);\n";
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
@@ -449,7 +449,7 @@ if ($parsing == 0) {
 				print DOTC "$tabs\tptr->$field = ($type)rand();\n";
 				print DOTC "$tabs";
 				print DOTC "}\n";
-			} elsif($type ne "uint16_t"){
+			} elsif($type eq "uint16_t"){
 				print DOTC "$tabs$type tmp=ntohs(*cur);\n";
 				print DOTC "$tabs";
 				print DOTC "if (value[0] == '=') {\n";
@@ -472,7 +472,7 @@ if ($parsing == 0) {
 				print DOTC "$tabs";
 				print DOTC "}\n";
 				print DOTC "$tabs *cur=htons(tmp);\n";
-			} elsif($type ne "uint32_t"){
+			} elsif($type eq "uint32_t"){
 				print DOTC "$tabs$type tmp=ntohl(*cur);\n";
 				print DOTC "$tabs";
 				print DOTC "if (value[0] == '=') {\n";
