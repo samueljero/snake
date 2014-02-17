@@ -532,6 +532,7 @@ class Message {
 	int FindMsgSize(); 
 	uint8_t* EncMsgOffset();
 	static int StrToType(const char* str);
+	static std::string TypeToStr(int type);
 	void ChangeValue(int field, char* value);
 	void ChangeBaseMessage(int field, char* value);
 	void ChangeFin(int field, char* value);

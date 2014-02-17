@@ -7363,6 +7363,108 @@ int Message::StrToType(const char *str) {
 	return -1;
 }
 
+std::string Message::TypeToStr(int type){
+	//std::cout << "Entering TypeToStr" << std::endl;
+	if (type == BASEMESSAGE ) {
+		return "BaseMessage";
+	}
+	if (type == FIN ) {
+		return "Fin";
+	}
+	if (type == SYN ) {
+		return "Syn";
+	}
+	if (type == FINSYN ) {
+		return "FinSyn";
+	}
+	if (type == RST ) {
+		return "Rst";
+	}
+	if (type == FINRST ) {
+		return "FinRst";
+	}
+	if (type == SYNRST ) {
+		return "SynRst";
+	}
+	if (type == FINSYNRST ) {
+		return "FinSynRst";
+	}
+	if (type == PSH ) {
+		return "Psh";
+	}
+	if (type == FINPSH ) {
+		return "FinPsh";
+	}
+	if (type == SYNPSH ) {
+		return "SynPsh";
+	}
+	if (type == FINSYNPSH ) {
+		return "FinSynPsh";
+	}
+	if (type == RSTPSH ) {
+		return "RstPsh";
+	}
+	if (type == FINRSTPSH ) {
+		return "FinRstPsh";
+	}
+	if (type == SYNRSTPSH ) {
+		return "SynRstPsh";
+	}
+	if (type == FINSYNRSTPSH ) {
+		return "FinSynRstPsh";
+	}
+	if (type == ACK ) {
+		return "Ack";
+	}
+	if (type == FINACK ) {
+		return "FinAck";
+	}
+	if (type == SYNACK ) {
+		return "SynAck";
+	}
+	if (type == FINSYNACK ) {
+		return "FinSynAck";
+	}
+	if (type == RSTACK ) {
+		return "RstAck";
+	}
+	if (type == FINRSTACK ) {
+		return "FinRstAck";
+	}
+	if (type == SYNRSTACK ) {
+		return "SynRstAck";
+	}
+	if (type == FINSYNRSTACK ) {
+		return "FinSynRstAck";
+	}
+	if (type == PSHACK ) {
+		return "PshAck";
+	}
+	if (type == FINPSHACK ) {
+		return "FinPshAck";
+	}
+	if (type == SYNPSHACK ) {
+		return "SynPshAck";
+	}
+	if (type == FINSYNPSHACK ) {
+		return "FinSynPshAck";
+	}
+	if (type == RSTPSHACK ) {
+		return "RstPshAck";
+	}
+	if (type == FINRSTPSHACK ) {
+		return "FinRstPshAck";
+	}
+	if (type == SYNRSTPSHACK ) {
+		return "SynRstPshAck";
+	}
+	if (type == FINSYNRSTPSHACK ) {
+		return "FinSynRstPshAck";
+	}
+	//std::cout << "Exiting TypeToStr" << std::endl;
+	return "Invalid";
+}
+
 uint8_t* Message::EncMsgOffset() {
 	//std::cout << "Entering EncMsgOffset" << std::endl;
 	if (type == BASEMESSAGE)

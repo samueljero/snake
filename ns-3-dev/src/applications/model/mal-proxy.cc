@@ -572,7 +572,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	m=new Message(packet->PeekDataForMal());
 
 	std::cout << ntohs(((BaseMessage*)m->msg)->src) << "-->" << ntohs(((BaseMessage*)m->msg)->dest) << std::endl;
-	std::cout << "Type: " << m->FindMsgType() << std::endl;
+	std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")"<< std::endl;
 	std::cout << "Size: " << m->FindMsgSize() << std::endl;
 
 	sprintf(tmp,"+%i\n", seq_offset);
