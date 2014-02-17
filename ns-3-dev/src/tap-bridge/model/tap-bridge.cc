@@ -1205,14 +1205,16 @@ int TapBridge::MaliciousProcess
 (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction)
 {
 	uint16_t protocol = 0;
-	int divert = false;
-	int replay = -1; // NO REPLAY
-	double delay = 0.0;
-	int duptimes = 1;
 	Application *ptr;
 	Mac48Address destination = Mac48Address::ConvertFrom (dest);
 	Mac48Address source = Mac48Address::ConvertFrom (src);
 	Ptr<Packet> packet = p->Copy(); // copy one time
+	maloptions res;
+	res.action=NONE;
+	res.divert=false;
+	res.replay=-1;
+	res.delay=0.0;
+	res.duptimes=1;
 
 	// 1. get IP header
 	Ipv4Header ipHeader;
@@ -1252,24 +1254,24 @@ int TapBridge::MaliciousProcess
 		d=TOTAP;
 	}
 	if(protocol==TcpL4Protocol::PROT_NUMBER){
-		action = proxy->MalTCP(packet, ipHeader, d);
+		action = proxy->MalTCP(packet, ipHeader, d, &res);
 	}
 
 
 	//4. Old Malicious Actions (UDP Only)
 	uint8_t *msg = new uint8_t[packet->GetSize()];
-	msg = p->PeekDataForMal();
+	msg = packet->PeekDataForMal();
 	uint32_t offset = 20;
 	if (protocol == TcpL4Protocol::PROT_NUMBER) {
-		offset = 20 + 20;
+		offset += 20;
 	}else{
-		offset = 8 + 20;
+		offset += 8;
 	}
 	Message *m = new Message(msg+offset);
 	if (protocol == UdpL4Protocol::PROT_NUMBER && direction==SENDING){
 #if 0
 		if(proxy->MalMsg(m) == true) {
-			action = proxy->MaliciousStrategyUDP(packet, m, packet->GetSize() - 8 - 20, &divert, &delay, &duptimes, &replay);
+			action = proxy->MaliciousStrategy(m, &res);
 		} else {
 			return 0; // normal processing
 		}
@@ -1280,10 +1282,10 @@ int TapBridge::MaliciousProcess
 	if (action == DROP) {
 		return 1;
 	}
-	for (int i=1; i<= duptimes; i++) {
+	for (int i=1; i<= res.duptimes; i++) {
 		Ptr<Packet> packet_send = packet->Copy();
 		Ipv4Address ipdest, ipsource;
-		if (divert) {
+		if (res.divert) {
 			static int num_nodes = NodeList::GetNNodes();
 			int r = rand()%num_nodes;
 			while (r == m_nodeId) {
@@ -1294,7 +1296,7 @@ int TapBridge::MaliciousProcess
 			dest = targetNode->GetDevice(1)->GetAddress();
 			ipdest = *targetNode->m_ipv4AddressList.begin();
 		}
-		else if (direction == RECEIVING && replay == 1) {
+		else if (direction == RECEIVING && res.replay == 1) {
 			ipdest = ipHeader.GetSource();
 			ipsource = ipHeader.GetDestination();
 			Address swap = dest;
@@ -1306,11 +1308,17 @@ int TapBridge::MaliciousProcess
 			ipsource = ipHeader.GetSource();
 		}
         if (UDP) {
+			packet_send->RemoveHeader(udpHeader);
 			udpHeader.EnableChecksums();
 			udpHeader.InitializeChecksum(ipsource, ipdest, UdpL4Protocol::PROT_NUMBER);
 			udpHeader.SetDestinationPort (destPort);
 			udpHeader.SetSourcePort (srcPort);
 			packet_send->AddHeader(udpHeader);
+        }else {
+			packet_send->RemoveHeader(tcpHeader);
+			tcpHeader.EnableChecksums();
+			tcpHeader.InitializeChecksum(ipsource, ipdest, TcpL4Protocol::PROT_NUMBER);
+			packet_send->AddHeader(tcpHeader);
         }
 		Ipv4Header ipHeadernew = ipHeader;
 		ipHeadernew.EnableChecksum();
@@ -1318,8 +1326,8 @@ int TapBridge::MaliciousProcess
 		ipHeadernew.SetSource(ipsource);
 
 		packet_send->AddHeader(ipHeadernew);
-		if (delay > 0) {
-			Time next(Seconds(delay));
+		if (res.delay > 0) {
+			Time next(Seconds(res.delay));
 			if(direction==SENDING){
 				Simulator::Schedule(next, &TapBridge::PacketSend, this, packet_send, src, dest, type);
 			}else{

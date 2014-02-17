@@ -440,8 +440,7 @@ MalProxy::MalMsg(Message *m) {
 }
 
 int
-MalProxy::MaliciousStrategyUDP(Ptr<Packet> packet, Message *m, uint32_t size,
-int *divert, double *delay, int *duptimes, int *replay) {
+MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 	bool lie = false;
 
   if (global_consult_gatling) { // Controlled by the controller. while to use break. will work like if
@@ -467,6 +466,7 @@ action:
 				double prob = 100*(double)rand()/(double)RAND_MAX;
 				if (prob <= deliveryValues[cur->type][DROP]) {
 					NS_LOG_INFO("MalProxy dropping message");
+					res->action=DROP;
 					return DROP;
 				}
 			} 
@@ -479,31 +479,31 @@ action:
 
 			if (deliveryActions[cur->type][DUP]) {
 				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[cur->type][DUP] << " times");
-				if (*duptimes < (int)deliveryValues[cur->type][DUP]) {
-					*duptimes = (int)deliveryValues[cur->type][DUP];
+				if (res->duptimes < (int)deliveryValues[cur->type][DUP]) {
+					res->duptimes = (int)deliveryValues[cur->type][DUP];
 				}
 			} 
 
 			if (deliveryActions[cur->type][DIVERT]) {
 				NS_LOG_INFO("MalProxy diverting message" << cur->type);
-				*divert = true;
+				res->divert = true;
 			}
 
 			if (deliveryActions[cur->type][DELAY]) {
 
-				if (*delay < deliveryValues[cur->type][DELAY]) {
-					*delay = deliveryValues[cur->type][DELAY];
+				if (res->delay < deliveryValues[cur->type][DELAY]) {
+					res->delay = deliveryValues[cur->type][DELAY];
 				}
 				if (deliveryValues[cur->type][DELAY] < 0) {
-					*delay = -1*deliveryValues[cur->type][DELAY]*(double)rand()/(double)RAND_MAX;
+					res->delay = -1*deliveryValues[cur->type][DELAY]*(double)rand()/(double)RAND_MAX;
 				}
-				NS_LOG_INFO("MalProxy delaying message " << *delay << " seconds");
+				NS_LOG_INFO("MalProxy delaying message " << res->delay << " seconds");
 			}
 
 			if (deliveryActions[cur->type][REPLAY]) {
 				// By default, replay packet will go to the original sender. It can be used with DIVERT/DUP.
 				// If BROADCAST is good, we can work on that as well.
-				*replay = (int)deliveryValues[cur->type][REPLAY];
+				res->replay = (int)deliveryValues[cur->type][REPLAY];
 			}
 
 		}
@@ -525,27 +525,31 @@ action:
 		}
 
 	}
+	res->action=DELAY;
 	return DELAY;
 }
 
-int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir)
+int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res)
 {
 	TcpHeader tcph;
 	connection *c;
 	std::vector<seq_state> *seq_list;
 	std::vector<seq_state> *ack_list;
-	int seq_offset;
-	int ack_offset;
+	int seq_offset=0;
+	int ack_offset=0;
+	Message *m;
+	char tmp[32];
 
 
-	tcph.EnableChecksums();
-	tcph.InitializeChecksum(ip.GetSource(), ip.GetDestination(), TcpL4Protocol::PROT_NUMBER);
-	packet->RemoveHeader(tcph);
+	//tcph.EnableChecksums();
+	//tcph.InitializeChecksum(ip.GetSource(), ip.GetDestination(), TcpL4Protocol::PROT_NUMBER);
+	res->action=NONE;
+	packet->PeekHeader(tcph);
 
 	if((dir==FROMTAP && tcph.GetDestinationPort()!=this->m_tcp_port) ||
 	   (dir==TOTAP && tcph.GetSourcePort()!=this->m_tcp_port)){
 		/*Packet we don't care about*/
-		packet->AddHeader(tcph);
+		res->action=NONE;
 		return NONE;
 	}
 
@@ -564,12 +568,26 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir)
 
 	seq_offset=FindOffset(seq_list,tcph.GetSequenceNumber());
 	ack_offset=FindOffset(ack_list, tcph.GetAckNumber());
-	tcph.SetSequenceNumber(tcph.GetSequenceNumber()+seq_offset);
-	tcph.SetAckNumber(tcph.GetAckNumber()-ack_offset);
 
-	NS_LOG_INFO("TCP Packet: "<< tcph.GetFlags());
+	m=new Message(packet->PeekDataForMal());
 
-	packet->AddHeader(tcph);
+	std::cout << ntohs(((BaseMessage*)m->msg)->src) << "-->" << ntohs(((BaseMessage*)m->msg)->dest) << std::endl;
+	std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")"<< std::endl;
+	std::cout << "Size: " << m->FindMsgSize() << " ("  << m->FindMsgSize()*4 <<")"<< std::endl;
+
+	sprintf(tmp,"+%i\n", seq_offset);
+	m->ChangeBaseMessage(2, tmp);
+	sprintf(tmp,"+%i\n", ack_offset);
+	m->ChangeBaseMessage(3, tmp);
+
+	if(!MalMsg(m)){
+		res->action=NONE;
+		return NONE;
+	}else{
+		return MaliciousStrategy(m,res);
+	}
+	delete(m);
+	/*Checksum will be recomputed as actions are applied... particularly for Divert*/
 	return NONE;
 }
 

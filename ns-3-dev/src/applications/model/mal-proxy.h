@@ -50,17 +50,25 @@ typedef struct {
   uint32_t cur;
 } MessageState;
 
+struct maloptions{
+	int divert;
+	double delay;
+	int duptimes;
+	int replay;
+	int action;
+};
+
 
 class MalProxy : public Application 
 {
 public:
   static TypeId GetTypeId (void);
+
   MalProxy ();
   virtual ~MalProxy ();
 	bool MalMsg(Message *m);
-	int MaliciousStrategyUDP(Ptr<Packet> packet, Message *m, uint32_t size,
-			int *divert, double *delay, int *duptimes, int *replay) ;
-	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir);
+	int MaliciousStrategy(Message *m, maloptions *res) ;
+	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res);
 
 protected:
   virtual void DoDispose (void);

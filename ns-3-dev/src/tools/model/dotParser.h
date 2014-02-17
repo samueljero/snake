@@ -6,6 +6,7 @@
 #include <boost/property_map/property_map.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/unordered_map.hpp>
 #include <iostream>
 #include <string>
 
