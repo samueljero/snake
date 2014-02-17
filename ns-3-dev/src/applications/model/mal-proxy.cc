@@ -535,8 +535,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	connection *c;
 	std::vector<seq_state> *seq_list;
 	std::vector<seq_state> *ack_list;
-	int seq_offset;
-	int ack_offset;
+	int seq_offset=0;
+	int ack_offset=0;
 	Message *m;
 	char tmp[32];
 
@@ -573,7 +573,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 
 	std::cout << ntohs(((BaseMessage*)m->msg)->src) << "-->" << ntohs(((BaseMessage*)m->msg)->dest) << std::endl;
 	std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")"<< std::endl;
-	std::cout << "Size: " << m->FindMsgSize() << std::endl;
+	std::cout << "Size: " << m->FindMsgSize() << " ("  << m->FindMsgSize()*4 <<")"<< std::endl;
 
 	sprintf(tmp,"+%i\n", seq_offset);
 	m->ChangeBaseMessage(2, tmp);
