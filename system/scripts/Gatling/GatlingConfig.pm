@@ -200,8 +200,8 @@ sub systemSteward()
 sub systemTCP()
 {
 $setupCommand = "mkdir TCP";
-  $server_command = "nc -q-1 -k -l 1234 |  ~/perfcollector.pl";
-  $client_command = "cat /dev/urandom | hd | nc -q-1 10.1.2.2 1234";
+  $server_command = "iperf -s -p1234 -i1 -yC -xCMS |  ~/perfcollector.pl";
+  $client_command = "iperf -c 10.1.2.2 -p 1234 -t600";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
   $s_parallel = 1;
@@ -218,6 +218,7 @@ $setupCommand = "mkdir TCP";
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
   $start_attack = 0;
+  $brokenPerf = 99999999;
 }
 
 1;

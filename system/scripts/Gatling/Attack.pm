@@ -302,7 +302,7 @@ ACTION_TEST:
     $perfScore{$curMsgType}[$i] = $curPerf;
     
     #Invalid performance score (may indicate something's broken)
-    if ($curPerf == $GatlingConfig::brokenPerf) {
+    if (0 and $curPerf == $GatlingConfig::brokenPerf) {
       if ($repeat == 0) { 
       	#Try again
         $repeat = 1;

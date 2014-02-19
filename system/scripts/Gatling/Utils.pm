@@ -103,12 +103,17 @@ sub resetPerfScore()
 
 sub getPerfScore()
 {
-  open SCORE, "$GatlingConfig::scoreFile" or return 9999;
+  open SCORE, "$GatlingConfig::scoreFile" or return $GatlingConfig::brokenPerf;
   my $score = `cat $GatlingConfig::scoreFile | wc -l`;
-  if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug"
-		|| $GatlingConfig::systemname eq "TCP") {
+  if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug") {
     my $lines = `cat $GatlingConfig::scoreFile | wc -l`;
-    $score = 9999 - $lines;
+    $score = $GatlingConfig::brokenPerf - $lines;
+  } elsif ($GatlingConfig::systemname eq "TCP") {
+	  my $sum = 0;
+	  while (my $line = <SCORE>) {
+		  $sum = $sum+$line;
+	  }
+	  $score=$GatlingConfig::brokenPerf - $sum;
   } else {
     my $count = 0;
     my $sum = 0;
