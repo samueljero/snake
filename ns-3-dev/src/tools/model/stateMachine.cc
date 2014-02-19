@@ -18,7 +18,7 @@ namespace ns3 {
         TrSet trSet = m_reverseTransitions[to];
         for(TrSet::iterator it = trSet.begin(); it != trSet.end(); ){
             Transition tr = *it;
-            if (tr.From() == m_curState) {
+            if (tr.From() != m_curState) {
                 trSet.erase(it++);
             } else {
                 ++it;
@@ -61,6 +61,9 @@ namespace ns3 {
 
     void StateMachine::Print() {
         cout << "cur state:" << GetCurrentState() << endl;
+    }
+       
+    void StateMachine::PrintRules() {
         cout << "valid transitions" << endl;
         StateSet::iterator iterState;
         for (iterState = m_stateSet.begin(); iterState != m_stateSet.end(); iterState++) {

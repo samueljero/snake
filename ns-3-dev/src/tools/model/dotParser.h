@@ -9,6 +9,7 @@
 #include <boost/unordered_map.hpp>
 #include <iostream>
 #include <string>
+#include "stateMachine.h"
 
 
 namespace ns3 {
@@ -34,32 +35,18 @@ namespace ns3 {
     typedef boost::property < boost::graph_name_t, std::string > graph_p;
     // adjacency_list-based type
     typedef boost::adjacency_list < boost::vecS, boost::vecS, boost::directedS,
-            vertex_p, edge_p, graph_p > graph_t;
+            vertex_p, edge_p, graph_p > StateGraph;
 
-
-    class State 
-    {
-        public:
-            std::string name;
-    };
-
-    class Transition
-    {
-        public:
-            std::string name;
-            State from;
-            State to;
-    };
 
     class DotParser 
     {
         public:
-        graph_t graph;
-        boost::property_map<graph_t, boost::vertex_name_t>::type name;
-        boost::property_map<graph_t, boost::vertex_color_t>::type mass;
-        boost::property_map<graph_t, edge_send_t>::type send;
-        boost::property_map<graph_t, edge_rcvd_t>::type rcvd;
-        boost::unordered_map<std::string, boost::graph_traits < graph_t>::vertex_descriptor> states;
+        StateGraph graph;
+        boost::property_map<StateGraph, boost::vertex_name_t>::type name;
+        boost::property_map<StateGraph, boost::vertex_color_t>::type mass;
+        boost::property_map<StateGraph, edge_send_t>::type send;
+        boost::property_map<StateGraph, edge_rcvd_t>::type rcvd;
+        boost::unordered_map<std::string, boost::graph_traits < StateGraph>::vertex_descriptor> states;
         boost::unordered_multimap<std::string, std::string> valid;
 
         int parseGraph(const char *);
@@ -67,11 +54,13 @@ namespace ns3 {
         int getLegalTransision(std::string cur) ;
         void getInvalidTransitions(std::string state);
         void MakeTargetTransition();
+        void BuildStateMachine(StateMachine *machine);
 
         DotParser () {
-            graph_t graph(0);
+            StateGraph graph(0);
             graph = graph;
         };
+
 
     };
 }

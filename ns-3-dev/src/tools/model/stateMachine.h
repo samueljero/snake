@@ -72,6 +72,7 @@ namespace ns3 {
             TrSet GetInvalidTransitions(State from); // set of transitions not valid in the current state
             TrSet GetTransitionsTo(State to); // set of transitions need to go "to" state from current state
             void Print();
+            void PrintRules();
 
             void AddState(State state);
             void AddTransition(Transition);

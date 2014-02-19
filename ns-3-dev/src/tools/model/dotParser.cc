@@ -9,7 +9,7 @@ int DotParser::parseGraph(const char * filename) {
     boost::dynamic_properties dp;
 
     this->name = get(vertex_name, this->graph);
-    //property_map<graph_t, vertex_name_t>::type name = get(vertex_name, graph);
+    //property_map<StateGraph, vertex_name_t>::type name = get(vertex_name, graph);
     dp.property("node_id",this->name);
 
     this->mass = get(vertex_color, this->graph);
@@ -22,7 +22,7 @@ int DotParser::parseGraph(const char * filename) {
     dp.property("rcvd",this->rcvd);
 
     // Use ref_property_map to turn a graph property into a property map
-    boost::ref_property_map<graph_t*,std::string> gname(get_property(this->graph,graph_name));
+    boost::ref_property_map<StateGraph*,std::string> gname(get_property(this->graph,graph_name));
     dp.property("name",gname);
 
     // Sample graph as an std::istream;
@@ -31,16 +31,16 @@ int DotParser::parseGraph(const char * filename) {
 
     bool status = read_graphviz(ifs,this->graph,dp,"node_id");
 
-    graph_traits < graph_t >::vertex_iterator vi, vi_end;
+    graph_traits < StateGraph >::vertex_iterator vi, vi_end;
     for (boost::tie(vi, vi_end) = vertices(this->graph); vi != vi_end; ++vi) {
-        graph_traits <graph_t>::vertex_descriptor v = *vi;
+        graph_traits <StateGraph>::vertex_descriptor v = *vi;
         this->states.insert(make_pair(this->name[v], v));
     }
 
-    graph_traits < graph_t >::edge_iterator ei, ei_end;
+    graph_traits < StateGraph >::edge_iterator ei, ei_end;
     for (boost::tie(ei, ei_end) = edges(this->graph); ei != ei_end; ++ei) {
-        graph_traits < graph_t >::edge_descriptor e = *ei;
-        graph_traits < graph_t >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
+        graph_traits < StateGraph >::edge_descriptor e = *ei;
+        graph_traits < StateGraph >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
         this->valid.insert(make_pair(this->name[u], this->name[v]));
     }
     
@@ -48,18 +48,29 @@ int DotParser::parseGraph(const char * filename) {
     return status;
 }
 
+void DotParser::BuildStateMachine (StateMachine *machine) {
+    graph_traits < StateGraph >::edge_iterator ei, ei_end;
+    for (boost::tie(ei, ei_end) = edges(this->graph); ei != ei_end; ++ei) {
+        graph_traits < StateGraph >::edge_descriptor e = *ei;
+        graph_traits < StateGraph >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
+        Transition tr = Transition(get(this->rcvd, e), get(this->send, e), this->name[u], this->name[v]);
+        machine->AddTransition(tr);
+    }
+
+}
+
 void DotParser::print_graph () {
-    graph_traits < graph_t >::vertex_iterator vi, vi_end;
+    graph_traits < StateGraph >::vertex_iterator vi, vi_end;
 
     for (boost::tie(vi, vi_end) = vertices(this->graph); vi != vi_end; ++vi) {
-        graph_traits <graph_t>::vertex_descriptor v = *vi;
+        graph_traits <StateGraph>::vertex_descriptor v = *vi;
         std::cout << "state: " << this->name[v] << std::endl;
     }
 
-    graph_traits < graph_t >::edge_iterator ei, ei_end;
+    graph_traits < StateGraph >::edge_iterator ei, ei_end;
     for (boost::tie(ei, ei_end) = edges(this->graph); ei != ei_end; ++ei) {
-        graph_traits < graph_t >::edge_descriptor e = *ei;
-        graph_traits < graph_t >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
+        graph_traits < StateGraph >::edge_descriptor e = *ei;
+        graph_traits < StateGraph >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
         std::cout << this->name[u] << " -> " << this->name[v]
             << "[rcvd=\"" << get (this->rcvd, e) << "\" "
             << "[send=\"" << get (this->send, e) << "\"";
@@ -70,14 +81,14 @@ void DotParser::print_graph () {
 }
 
 int DotParser::getLegalTransision(std::string cur) {
-    boost::unordered_map<std::string, graph_traits < graph_t >::vertex_descriptor>::iterator vi;
-    //graph_traits < graph_t >::vertex_iterator vi;
+    boost::unordered_map<std::string, graph_traits < StateGraph >::vertex_descriptor>::iterator vi;
+    //graph_traits < StateGraph >::vertex_iterator vi;
 
     vi = this->states.find(cur);
 
     if (vi != this->states.end()) {
         std::cout << "found" << std::endl;
-        //graph_traits <graph_t>::vertex_descriptor v = (vi)->second;
+        //graph_traits <StateGraph>::vertex_descriptor v = (vi)->second;
         boost::unordered_multimap<std::string, std::string>::iterator valid_next;
         valid_next = this->valid.find(cur);
         while(valid_next != this->valid.end()) {
