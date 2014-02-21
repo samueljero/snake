@@ -1279,6 +1279,9 @@ int TapBridge::MaliciousProcess
 	}
 
 	//5. Process Actions
+	if(action==RETRY){
+		return -2;
+	}
 	if (action == DROP) {
 		return 1;
 	}
@@ -1391,6 +1394,7 @@ TapBridge::ForwardToBridgedDevice (uint8_t *buf, ssize_t len)
 	//
 	Address src, dst;
 	uint16_t type;
+	int ret;
 
 	NS_LOG_LOGIC ("Received packet from tap device");
 	NS_LOG_INFO ("Packet " << packet->GetUid() << " MAC ADDRESS OF TAP DEVICE: " << GetAddress() << " NODE " << m_nodeId);
@@ -1408,7 +1412,16 @@ TapBridge::ForwardToBridgedDevice (uint8_t *buf, ssize_t len)
 	packetcnt ++;
 	ProfileFunction("ForwardToBridgedDevice", false);
 	if (m_node->IsMalicious() && type == 2048) {
-		if (MaliciousProcess(packet, src, dst, type, SENDING) == 1) {
+		ret=MaliciousProcess(packet, src, dst, type, SENDING);
+		if (ret == 1) {
+			return;
+		}
+		if(ret == -2){
+			Application *ptr;
+			Ptr<Application> app = m_node->GetApplication(0);
+			ptr = GetPointer(app);
+			Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
+			proxy->StoreEvent(MakeSpecialEvent (&TapBridge::ForwardToBridgedDevice, this, buf, len));
 			return;
 		}
 	} else {
@@ -1577,9 +1590,20 @@ TapBridge::ReceiveFromBridgedDevice (
       return true;
     }
 
+   int ret;
+   Ptr<Packet> p=packet->Copy();
 	if (m_node->IsMalicious() && protocol == 2048) {
-		Ptr<Packet> p=packet->Copy();
-		if(MaliciousProcess(p, src, dst, protocol, RECEIVING)==1){
+		ret=MaliciousProcess(p, src, dst, protocol, RECEIVING);
+		if(ret==1){
+			return true;
+		}
+		if(ret==-2){
+			Application *ptr;
+			Ptr<Application> app = m_node->GetApplication(0);
+			ptr = GetPointer(app);
+			Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
+			proxy->StoreEvent(MakeEvent (&TapBridge::ReceiveFromBridgedDevice, this, device,
+					packet, protocol, src,dst, packetType));
 			return true;
 		}
 	}
@@ -1588,7 +1612,6 @@ TapBridge::ReceiveFromBridgedDevice (
   Mac48Address to = Mac48Address::ConvertFrom (dst);
 	NS_LOG_INFO("FROM: " << from << " (" << src << ") TO: " << to << " (" << dst << ")");
 
-  Ptr<Packet> p = packet->Copy ();
   EthernetHeader header = EthernetHeader (false);
   header.SetSource (from);
   header.SetDestination (to);

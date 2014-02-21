@@ -213,6 +213,18 @@ public:
 	virtual bool SendToTap (Ptr<const Packet> packet, uint16_t protocol,const Address &src,
 			  const Address &dst);
 
+	  /*
+	   * \internal
+	   *
+	   * Forward a packet received from the tap device to the bridged ns-3
+	   * device
+	   *
+	   * \param buf A character buffer containing the actual packet bits that were
+	   *            received from the host.
+	   * \param buf The length of the buffer.
+	   */
+	  void ForwardToBridgedDevice (uint8_t *buf, ssize_t len);
+
 protected:
   /**
    * \internal
@@ -262,17 +274,7 @@ private:
    */
   void ReadCallback (uint8_t *buf, ssize_t len);
 
-  /*
-   * \internal
-   *
-   * Forward a packet received from the tap device to the bridged ns-3 
-   * device
-   *
-   * \param buf A character buffer containing the actual packet bits that were
-   *            received from the host.
-   * \param buf The length of the buffer.
-   */
-  void ForwardToBridgedDevice (uint8_t *buf, ssize_t len);
+
 
   /**
    * \internal

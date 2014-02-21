@@ -111,6 +111,20 @@ int Application::Command (std::string command)
 	return 0;
 }
 
+void* Application::Save ()
+{
+	return NULL;
+}
+void Application::Load (void *ptr)
+{
+	return;
+}
+
+void Application::Resume()
+{
+	return;
+}
+
 // StartApp and StopApp will likely be overridden by application subclasses
 void Application::StartApplication ()
 { // Provide null functionality in case subclass is not interested

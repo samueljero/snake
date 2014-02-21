@@ -176,6 +176,9 @@ public:
    */
   void Add (std::string name);
 	int Command(std::string command);
+	void *Save();
+	void Load(void *ptr);
+	void Resume();
 
   /**
    * \brief Arrange for all of the Applications in this container to Start()

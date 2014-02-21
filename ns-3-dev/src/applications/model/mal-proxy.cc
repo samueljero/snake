@@ -34,6 +34,7 @@
 #include "ns3/ipv4-header.h"
 #include "ns3/tcp-header.h"
 #include "ns3/tcp-l4-protocol.h"
+#include "ns3/realtime-simulator-impl.h"
 #include <sys/time.h>
 
 
@@ -184,6 +185,7 @@ MalProxy::MalProxy ()
 {
   NS_LOG_FUNCTION_NOARGS ();
   conn_list.clear();
+  evt_resume=false;
 }
 
 MalProxy::~MalProxy()
@@ -362,22 +364,22 @@ int MalProxy::CommunicateController(Message *m)
 #endif
 }
 
-bool
+int
 MalProxy::MalMsg(Message *m) {
 
   // XXX - this should be where to check LEARNED etc
   if (global_once == 1) {
 	if(app_debug>0){std::cout <<"once executed" << std::endl;}
     global_once = 2;
-    return true;
+    return 1;
   }
 
   if (global_consult_gatling) {
     if (m->type < 0 || m->type >= MSG) {
-      return false;
+      return 0;
     }
     if (m_learned.find(m->type) != m_learned.end()) {
-      return true;
+      return 1;
     }
     if(app_debug>0){std::cout << "MALProxy] " << "Determining Malicious action for type: " << m->type << std::endl;}
     if (m->encMsg != NULL) {
@@ -390,72 +392,69 @@ MalProxy::MalMsg(Message *m) {
     } else {
       CommunicateController(m);
     }
-    return true;
+    /*Pause simulator to wait for response!*/
+    Simulator::ToggleFreeze(true);
+    return 2;
   }
 
 	if (m->encMsg != NULL) {
 		if(app_debug>0){std::cout << "MALProxy] " << "Encapsulated msg type " << m->encMsg->type << std::endl;}
-		if (MalMsg(m->encMsg)) {
-			return true;
-		}
+		return MalMsg(m->encMsg);
 	}
 
 	if (m->type < 0 || m->type >= MSG) {
 		if(app_debug>0){std::cout << "MALProxy] " <<"invalid type " << m->type << ":" << MSG << std::endl;}
-		return false;
+		return 0;
 	}
 
 	if (deliveryActions[m->type][DROP]) {
-		return true;
+		return 1;
 	} 
 
 	for (int i = 0; i < FIELD; i++) {
 		if (lyingValues[m->type][i] != NULL) {
 			if(app_debug>0){std::cout << "MALProxy] " << "will lie for " << m->type << std::endl;}
-			return true;
+			return 1;
 		}
 	}
 
 	if (deliveryActions[m->type][DUP]) {
 		if(app_debug>0){std::cout << "MALProxy] " << "will dup for " << m->type << std::endl;}
-		return true;	
+		return 1;
 	} 
 
 	if (deliveryActions[m->type][DELAY]) {
 		if(app_debug>0){std::cout << "MALProxy] " << "will delay for " << m->type << std::endl;}
-		return true;
+		return 1;
 	} 
 
 	if (deliveryActions[m->type][DIVERT]) {
 		if(app_debug>0){std::cout << "MALProxy] " << "will divert for " << m->type << std::endl;}
-		return true;
+		return 1;
 	}
 
 	if (deliveryActions[m->type][REPLAY]) {
 		if(app_debug>0){std::cout << "MALProxy] " << "will replay for " << m->type << std::endl;}
-		return true;	
+		return 1;
 	} 
 
-	return false;
+	return 0;
 }
 
 int
 MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 	bool lie = false;
 
-  if (global_consult_gatling) { // Controlled by the controller. while to use break. will work like if
+  if (global_consult_gatling) {
     // 1. Learned messages
     if (m_learned.find(m->type) != m_learned.end()) {
-      // XXX learned actions are already parsed
+      //Good action!
     }
     else if (m->type < 0)  {
       std::cout << "MALProxy] " << "invalid" << std::endl;
     }
-    else {
-      //CommunicateController(m);
-    }
-  } else {
   }
+
   if (global_once == 2) global_once = 0;
 action:
 	Message *cur = m;
@@ -580,15 +579,22 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	sprintf(tmp,"+%i\n", ack_offset);
 	m->ChangeBaseMessage(3, tmp);
 
-	if(!MalMsg(m)){
+	int result=MalMsg(m);
+	if(result==0){
 		res->action=NONE;
 		return NONE;
-	}else{
-		return MaliciousStrategy(m,res);
+	}else if(result==2){
+		res->action=RETRY;
+		return RETRY;
 	}
+	MaliciousStrategy(m,res);
+
 	delete(m);
+
+	packet->PeekHeader(tcph);
+	std::cout<<tcph.GetSourcePort() << "!--->"<<tcph.GetDestinationPort()<<std::endl;
 	/*Checksum will be recomputed as actions are applied... particularly for Divert*/
-	return NONE;
+	return res->action;
 }
 
 
@@ -642,6 +648,34 @@ void MalProxy::AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq, int 
 	s.offset=offset;
 	lst->push_back(s);
 	return;
+}
+
+void MalProxy::StoreEvent(EventImpl *event)
+{
+	sav_evt=event;
+}
+
+void* MalProxy::Save()
+{
+	return sav_evt;
+}
+
+void MalProxy::Load(void *ptr)
+{
+	sav_evt=(EventImpl*)ptr;
+	if(ptr!=NULL){
+		evt_resume=true;
+		//Ptr<RealtimeSimulatorImpl> impl = DynamicCast<RealtimeSimulatorImpl> (Simulator::GetImplementation ());
+		//impl->ScheduleRealtimeNow(sav_evt);
+	}
+}
+
+void MalProxy::Resume()
+{
+	if(evt_resume==true && sav_evt!=NULL){
+		sav_evt->Invoke();
+		evt_resume=false;
+	}
 }
 
 } // Namespace ns3

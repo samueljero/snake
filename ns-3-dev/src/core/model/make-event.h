@@ -36,6 +36,11 @@ template <typename MEM, typename OBJ,
 EventImpl * MakeEvent (MEM mem_ptr, OBJ obj,
                        T1 a1, T2 a2, T3 a3, T4 a4, T5 a5);
 
+template <typename MEM, typename OBJ,
+          typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+EventImpl * MakeEvent (MEM mem_ptr, OBJ obj,
+                       T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6);
+
 EventImpl * MakeEvent (void (*f)(void));
 template <typename U1,
           typename T1>
@@ -328,6 +333,48 @@ private:
     typename TypeTraits<T4>::ReferencedType m_a4;
     typename TypeTraits<T5>::ReferencedType m_a5;
   } *ev = new EventMemberImpl5 (obj, mem_ptr, a1, a2, a3, a4, a5);
+  return ev;
+}
+
+template <typename MEM, typename OBJ,
+          typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+EventImpl * MakeEvent (MEM mem_ptr, OBJ obj,
+                       T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
+{
+  // five argument version
+  class EventMemberImpl6 : public EventImpl
+  {
+public:
+    EventMemberImpl6 (OBJ obj, MEM function, T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6)
+      : m_obj (obj),
+        m_function (function),
+        m_a1 (a1),
+        m_a2 (a2),
+        m_a3 (a3),
+        m_a4 (a4),
+        m_a5 (a5),
+		m_a6 (a6)
+    {
+    }
+		EventMemberImpl6* clone() { return new EventMemberImpl6(*this);}
+protected:
+    virtual ~EventMemberImpl6 ()
+    {
+    }
+private:
+    virtual void Notify (void)
+    {
+      (EventMemberImplObjTraits<OBJ>::GetReference (m_obj).*m_function)(m_a1, m_a2, m_a3, m_a4, m_a5, m_a6);
+    }
+    OBJ m_obj;
+    MEM m_function;
+    typename TypeTraits<T1>::ReferencedType m_a1;
+    typename TypeTraits<T2>::ReferencedType m_a2;
+    typename TypeTraits<T3>::ReferencedType m_a3;
+    typename TypeTraits<T4>::ReferencedType m_a4;
+    typename TypeTraits<T5>::ReferencedType m_a5;
+    typename TypeTraits<T6>::ReferencedType m_a6;
+  } *ev = new EventMemberImpl6 (obj, mem_ptr, a1, a2, a3, a4, a5, a6);
   return ev;
 }
 

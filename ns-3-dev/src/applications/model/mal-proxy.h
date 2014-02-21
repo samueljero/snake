@@ -40,7 +40,7 @@ namespace ns3 {
 class Socket;
 class Packet;
 
-enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE};
+enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, RETRY};
 enum MalDirection { TOTAP, FROMTAP };
 #define NUMDELIVERYACTIONS 6
 
@@ -66,13 +66,18 @@ public:
 
   MalProxy ();
   virtual ~MalProxy ();
-	bool MalMsg(Message *m);
+	int MalMsg(Message *m);
 	int MaliciousStrategy(Message *m, maloptions *res) ;
 	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res);
+	void StoreEvent(EventImpl *event);
+
 
 protected:
   virtual void DoDispose (void);
   virtual int Command(std::string cmd);
+  virtual void* Save();
+  virtual void Load(void *ptr);
+  virtual void Resume();
 
 private:
 
@@ -101,6 +106,8 @@ private:
   std::map<Ptr<Socket>, Ptr<Socket> > m_pair;
   std::map<int, std::string> m_learned;
   bool m_if_tcp;
+  EventImpl *sav_evt;
+  bool evt_resume;
 
   std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> > m_udp_conn;
 

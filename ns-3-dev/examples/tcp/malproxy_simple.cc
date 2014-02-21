@@ -218,6 +218,7 @@ void commandListener(void)
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	void * savePtr = NULL;
+	void * appPtr = NULL;
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	NS_ABORT_IF(sockfd < 0);
@@ -256,6 +257,7 @@ void commandListener(void)
 			//save event queue
 			if(debug>1){std::cout << "NS-3: Save" << std::endl;}
 			savePtr = Simulator::Save(NULL);
+			appPtr = apps->Save();
 			if (savePtr != NULL){
 				if(debug>1){std::cout << "NS-3: Saved" << std::endl;}
 			}
@@ -266,9 +268,11 @@ void commandListener(void)
 			//save event queue
 			if(debug>1){std::cout << "NS-3: Load" << std::endl;}
 			out_len = Simulator::Load(savePtr);
+			apps->Load(appPtr);
 			if(debug>1){std::cout << "NS-3: Loaded" << std::endl;}
 		} else if (buffer[0] == 'R') {
 			if(debug>1){std::cout << "NS-3: Resume" << std::endl;}
+			apps->Resume();
 			out_len = Simulator::ToggleFreeze(false);
 			if(debug>1){std::cout << "NS-3: Resumed" << std::endl;}
 		} 

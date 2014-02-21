@@ -92,6 +92,43 @@ ApplicationContainer::Command (std::string command)
 	return res;
 }
 
+void*
+ApplicationContainer::Save ()
+{
+	void *res = NULL;
+  for (Iterator i = Begin (); i != End (); ++i)
+    {
+      Ptr<Application> app = *i;
+      res =app->Save ();
+      if(res!=NULL){
+    	  return res;
+      }
+    }
+	return res;
+}
+
+void
+ApplicationContainer::Load (void *ptr)
+{
+  for (Iterator i = Begin (); i != End (); ++i)
+    {
+      Ptr<Application> app = *i;
+      app->Load (ptr);
+    }
+	return ;
+}
+
+void
+ApplicationContainer::Resume ()
+{
+  for (Iterator i = Begin (); i != End (); ++i)
+    {
+      Ptr<Application> app = *i;
+      app->Resume();
+    }
+	return ;
+}
+
 void 
 ApplicationContainer::Start (Time start)
 {

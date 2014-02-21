@@ -101,6 +101,9 @@ public:
    */
   void SetNode (Ptr<Node> node);
 	virtual int Command(std::string command);
+	virtual void *Save();
+	virtual void Load(void *ptr);
+	virtual void Resume();
 
 private:
   /**
