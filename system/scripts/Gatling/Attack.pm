@@ -408,7 +408,6 @@ sub start_Listener {
   Utils::directTopology("C Gatling Resume"); 
   
   #Main Loop
-  my $once = 0;
   while ($GatlingConfig::watch_ns3) {
   	
   	#Wait for request from NS-3 malproxy
@@ -416,10 +415,6 @@ sub start_Listener {
     print "Waiting to listen\n";
     $Attack::socket->recv($line, 1024);
     Utils::logTime("start do gatling");
-    if ($once == 1) { # $once must be a heuristic to catch some null message after every request 
-      $once = 0;
-      next;
-    }
     print "Got query from malproxy\n";
     Utils::directTopology("C Gatling Pause"); 
     my $com = $line;
@@ -432,7 +427,6 @@ sub start_Listener {
     Attack::decisionMaker($com);
     
     #Resume
-    $once = 1;
     Utils::directTopology("C Gatling Resume"); 
     Utils::logTime("end do gatling");
   }
