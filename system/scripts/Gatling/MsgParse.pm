@@ -6,10 +6,11 @@ my %strategyCount;
 my %strategyList;
 my %msgTypeList;
 my %FlenList;
+my %FlenNumList;
 my %fieldsPerMsg;
 #my @msgName;
 #my @msgType;
-my @msgFlen;
+my %msgFlenList;
 
 sub parseMessage {
   my $maxField = 0;
@@ -112,7 +113,7 @@ sub parseMessage {
 			$field=$tmp[0];
 			$flen=$tmp[1];
 		}
-		push(@msgFlen,$flen);
+		push(@{$msgFlenList{$#msgName}},$flen);
 
       if ($field eq "type") {
         if ($#token >= 3) {
@@ -343,25 +344,33 @@ sub parseMessage {
   $strategyCount{$typenamestr} = $#{$test[0]};
   $strategyCount{"char"} = 0; # we won't lie about char
   
-  $typenamestr= "1";
+  $typenamestr="1";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=1");
-  $typenamestr= "2";
+  @test = $FlenList{$typenamestr};
+  $FlenNumList{$typenamestr}=$#{$test[0]};
+  $typenamestr="2";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=1");
   push(@{$FlenList{$typenamestr}}, "=3");
-  $typenamestr= "3";
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
+  $typenamestr="3";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=2");
   push(@{$FlenList{$typenamestr}}, "=3");
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
   push(@{$FlenList{$typenamestr}}, "=7");
-  $typenamestr= "4";
+  $typenamestr="4";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=2");
   push(@{$FlenList{$typenamestr}}, "=4");
   push(@{$FlenList{$typenamestr}}, "=8");
   push(@{$FlenList{$typenamestr}}, "=15");
-  $typenamestr= "5";
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
+  $typenamestr="5";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=2");
   push(@{$FlenList{$typenamestr}}, "=4");
@@ -369,13 +378,17 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=16");
   push(@{$FlenList{$typenamestr}}, "=9");
   push(@{$FlenList{$typenamestr}}, "=31");
-  $typenamestr= "6";
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
+  $typenamestr="6";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=2");
   push(@{$FlenList{$typenamestr}}, "=4");
   push(@{$FlenList{$typenamestr}}, "=16");
   push(@{$FlenList{$typenamestr}}, "=63");
-  $typenamestr= "7";
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
+  $typenamestr="7";
   push(@{$FlenList{$typenamestr}}, "=0");
   push(@{$FlenList{$typenamestr}}, "=3");
   push(@{$FlenList{$typenamestr}}, "=4");
@@ -383,6 +396,8 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=19");
   push(@{$FlenList{$typenamestr}}, "=64");
   push(@{$FlenList{$typenamestr}}, "=127");
+  @test = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$test[0]};
     return \%fieldsPerMsg;
 }
 
@@ -402,5 +417,16 @@ sub getMsgNameClount{
   return $#msgName;
 }
 
+sub getMsgFlenList{
+	return \%msgFlenList;
+}
+
+sub getFlenList{
+	return \%FlenList;
+}
+
+sub getFlenNumList{
+	return \%FlenNumList;
+}
 
 1;

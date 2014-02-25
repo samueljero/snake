@@ -13,6 +13,9 @@ my $messageCount = MsgParse::getMsgNameClount();
 my $msgTypeRef = $MsgParse::msgType;
 my $typeStrategyRef = MsgParse::getStrategyCount();
 my $typeStrategyListRef = MsgParse::getTypeStrategyList();
+my $msgFlenList = MsgParse::getMsgFlenList();
+my $FlenList = MsgParse::getFlenList();
+my $FlenNumList = MsgParse::getFlenNumList();
 
 print "Total $messageCount message types\n";
 
@@ -74,13 +77,13 @@ sub prepareMessages {
     
     #For each field in this message
     for (my $j = 0; $j  <= $#{$fieldsPerMsgRef->{$i}}; $j++) {
-      if($MsgParse::msgFlen[$j]>0){
+      if($msgFlenList->{$i}[$j]>0){
       	#Bit fields
       	#For each value it makes sense to lie on based on field type
-      	for (my $k = 0; $k <= $MsgParse::FlenList->{$MsgParse::msgFlen[$j]}; $k++) {
+      	for (my $k = 0; $k <= $FlenNumList->{$msgFlenList->{$i}[$j]}; $k++) {
           #Add this lie command for message
-          print "$MsgParse::msgName[$i] LIE $MsgParse::FlenList->{$MsgParse::msgFlen[$j]}[$k] $j";
-          push(@strategyListForMessage, "$MsgParse::msgName[$i] LIE $MsgParse::FlenList->{$MsgParse::msgFlen[$j]}[$k] $j");
+	  #print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
+	  push(@strategyListForMessage, "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
           push(@score, 9999);
           push(@selected, 0);
           push(@excluded, 0); 
