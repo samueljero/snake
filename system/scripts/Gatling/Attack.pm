@@ -74,7 +74,19 @@ sub prepareMessages {
     
     #For each field in this message
     for (my $j = 0; $j  <= $#{$fieldsPerMsgRef->{$i}}; $j++) {
-      if ($typeStrategyRef->{$fieldsPerMsgRef->{$i}[$j]} > 0) {
+      if($MsgParse::FlenList->{$fieldsPerMsgRef->{$i}[$j]}>0){
+      	#Bit fields
+      	#For each value it makes sense to lie on based on field type
+      	for (my $k = 0; $k <= $MsgParse::FlenList->{$fieldsPerMsgRef->{$i}[$j]}; $k++) {
+          #Add this lie command for message
+          print "$MsgParse::msgName[$i] LIE $MsgParse::FlenList->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j";
+          push(@strategyListForMessage, "$MsgParse::msgName[$i] LIE $MsgParse::FlenList->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+          push(@score, 9999);
+          push(@selected, 0);
+          push(@excluded, 0); 
+          $strategyForMessage = $strategyForMessage+1;
+        }
+      }elsif ($typeStrategyRef->{$fieldsPerMsgRef->{$i}[$j]} > 0) {
       	#For each value it makes sense to lie on based on field type
         for (my $k = 0; $k <= $typeStrategyRef->{$fieldsPerMsgRef->{$i}[$j]}; $k++) {
           #Add this lie command for message

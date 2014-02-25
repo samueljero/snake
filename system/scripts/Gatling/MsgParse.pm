@@ -5,9 +5,11 @@ package MsgParse;
 my %strategyCount;
 my %strategyList;
 my %msgTypeList;
+my %FlenList;
 my %fieldsPerMsg;
 #my @msgName;
 #my @msgType;
+my @msgFlen;
 
 sub parseMessage {
   my $maxField = 0;
@@ -26,6 +28,7 @@ sub parseMessage {
   my %struct;
   my $structName;
   my $name;
+  my $flen;
   open FILE, $GatlingConfig::formatFile or die "Can't open format file $GatlingConfig::formatFile\n$!";
 
   while(<FILE>) {
@@ -101,6 +104,15 @@ sub parseMessage {
       } else {
         $field = $token[$j-1];
       }
+      
+		#Handle bitfields
+		$flen=-1;
+		if($field =~ /:/){
+			my @tmp=split(/:/,$field);
+			$field=$tmp[0];
+			$flen=$tmp[1];
+		}
+		push(@msgFlen,$flen);
 
       if ($field eq "type") {
         if ($#token >= 3) {
@@ -330,7 +342,47 @@ sub parseMessage {
   @test = $strategyList{$typenamestr};
   $strategyCount{$typenamestr} = $#{$test[0]};
   $strategyCount{"char"} = 0; # we won't lie about char
-
+  
+  $typenamestr= "1";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=1");
+  $typenamestr= "2";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=1");
+  push(@{$FlenList{$typenamestr}}, "=3");
+  $typenamestr= "3";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=2");
+  push(@{$FlenList{$typenamestr}}, "=3");
+  push(@{$FlenList{$typenamestr}}, "=7");
+  $typenamestr= "4";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=2");
+  push(@{$FlenList{$typenamestr}}, "=4");
+  push(@{$FlenList{$typenamestr}}, "=8");
+  push(@{$FlenList{$typenamestr}}, "=15");
+  $typenamestr= "5";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=2");
+  push(@{$FlenList{$typenamestr}}, "=4");
+  push(@{$FlenList{$typenamestr}}, "=8");
+  push(@{$FlenList{$typenamestr}}, "=16");
+  push(@{$FlenList{$typenamestr}}, "=9");
+  push(@{$FlenList{$typenamestr}}, "=31");
+  $typenamestr= "6";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=2");
+  push(@{$FlenList{$typenamestr}}, "=4");
+  push(@{$FlenList{$typenamestr}}, "=16");
+  push(@{$FlenList{$typenamestr}}, "=63");
+  $typenamestr= "7";
+  push(@{$FlenList{$typenamestr}}, "=0");
+  push(@{$FlenList{$typenamestr}}, "=3");
+  push(@{$FlenList{$typenamestr}}, "=4");
+  push(@{$FlenList{$typenamestr}}, "=8");
+  push(@{$FlenList{$typenamestr}}, "=19");
+  push(@{$FlenList{$typenamestr}}, "=64");
+  push(@{$FlenList{$typenamestr}}, "=127");
     return \%fieldsPerMsg;
 }
 
