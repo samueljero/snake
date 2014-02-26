@@ -7535,3 +7535,24 @@ uint8_t* Message::EncMsgOffset() {
 	return NULL;
 }
 
+void Message::CreateMessage(int type, char *spec){
+	//std::cout<< "Entering CreateMessage"<<std::endl;
+	int field;
+	char fspec[1000];
+	int len, ret;
+
+
+	this->type=type;
+
+
+	fspec[0]='=';
+	ret=sscanf(spec, "%i=%999s%n",&field,&fspec[1],&len);
+	spec+=len;
+	while(ret!=EOF){
+		ChangeValue(field,fspec);
+		ret=sscanf(spec, "%i=%999s%n",&field,&fspec[1],&len);
+		spec+=len;
+	};
+	//std::cout<< "Exiting CreateMessage"<<std::endl;
+};
+

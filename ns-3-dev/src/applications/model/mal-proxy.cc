@@ -44,6 +44,8 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include "ns3/ipv4.h"
+#include "ns3/ipv4-routing-protocol.h"
 
 using namespace std;
 
@@ -676,6 +678,59 @@ void MalProxy::Resume()
 		sav_evt->Invoke();
 		evt_resume=false;
 	}
+}
+
+//type databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=type 6=urg 7=ece 8=cwr 9=window 11=urgptr
+void MalProxy::InjectPacket(char *spec){
+	int databytes;
+	Ptr<Packet> p;
+	TcpHeader tcph;
+	Message *m;
+	int type;
+	int len=0;
+	char ssrc[100];
+	char sdest[100];
+	Ipv4Address src;
+	Ipv4Address dest;
+
+	sscanf(spec,"%i %i %s %s%n",&type,&databytes, ssrc,sdest,&len);
+	src=Ipv4Address(ssrc);
+	dest=Ipv4Address(sdest);
+	spec+=len;
+	p=new Packet(databytes);
+
+
+	tcph.EnableChecksums();
+	tcph.InitializeChecksum(src, dest, TcpL4Protocol::PROT_NUMBER);
+	p->AddHeader(tcph);
+	m=new Message(p->PeekDataForMal());
+	m->CreateMessage(type,spec);
+
+	p->RemoveHeader(tcph);
+	p->AddHeader(tcph); //checksum
+
+	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4> ();
+	if (ipv4 != 0)
+	{
+		Ipv4Header header;
+		header.SetDestination (dest);
+		header.SetProtocol (TcpL4Protocol::PROT_NUMBER);
+		Socket::SocketErrno errno_;
+		Ptr<Ipv4Route> route;
+		Ptr<NetDevice> oif (0); //specify non-zero if bound to a source address
+		if (ipv4->GetRoutingProtocol () != 0)
+		{
+		  route = ipv4->GetRoutingProtocol ()->RouteOutput (p, header, oif, errno_);
+		}
+		else
+		{
+		  NS_LOG_ERROR ("No IPV4 Routing Protocol");
+		  route = 0;
+		}
+		ipv4->Send (p, src, dest, TcpL4Protocol::PROT_NUMBER, route);
+	}
+
+	return;
 }
 
 } // Namespace ns3

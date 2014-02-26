@@ -1,6 +1,7 @@
 #include "ns3/uinteger.h"
 #include <string.h>
 #include <arpa/inet.h>
+#include <stdio.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
 typedef struct {
@@ -566,6 +567,7 @@ class Message {
 	void ChangeFinRstPshAck(int field, char* value);
 	void ChangeSynRstPshAck(int field, char* value);
 	void ChangeFinSynRstPshAck(int field, char* value);
+	void CreateMessage(int type, char *spec);
 };
 #endif
 

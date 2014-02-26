@@ -90,6 +90,7 @@ private:
   void ClearStrategyForMsg(int type);
 
   int CommunicateController(Message *m);
+  void InjectPacket(char *spec);
 
   bool deliveryActions[MSG][NUMDELIVERYACTIONS]; //6
   double deliveryValues[MSG][NUMDELIVERYACTIONS]; //6
