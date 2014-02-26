@@ -19,6 +19,7 @@ print DOTH <<END;
 #include "ns3/uinteger.h"
 #include <string.h>
 #include <arpa/inet.h>
+#include <stdio.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
 END
@@ -614,7 +615,23 @@ for (my $i = 0; $i <= $#msgName; $i++) {
 print DOTC "\t//std::cout << \"Exiting EncMsgOffset\" << std::endl;\n";
 print DOTC "\treturn NULL;\n}\n\n";
 
-
+print DOTH "\tvoid CreateMessage(int type, char *spec);\n";
+print DOTC "void Message::CreateMessage(int type, char *spec){\n";
+print DOTC "\t//std::cout<< \"Entering CreateMessage\"<<std::endl;\n";
+print DOTC "\tint field;\n";
+print DOTC "\tchar fspec[1000];\n";
+print DOTC "\tint len, ret;\n\n\n";
+print DOTC "\tthis->type=type;\n\n\n";
+print DOTC "\tfspec[0]='=';\n";
+print DOTC "\tret=sscanf(spec, \"%i=%999s%n\",&field,&fspec[1],&len);\n";
+print DOTC "\tspec+=len;\n";
+print DOTC "\twhile(ret!=EOF){\n";
+print DOTC "\t\tChangeValue(field,fspec);\n";
+print DOTC "\t\tret=sscanf(spec, \"%i=%999s%n\",&field,&fspec[1],&len);\n";
+print DOTC "\t\tspec+=len;\n";
+print DOTC "\t};\n";
+print DOTC "\t//std::cout<< \"Exiting CreateMessage\"<<std::endl;\n";
+print DOTC "};\n\n";
 
 print DOTH "};\n#endif\n\n";
 
