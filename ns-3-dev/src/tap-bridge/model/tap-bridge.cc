@@ -1299,13 +1299,17 @@ int TapBridge::MaliciousProcess
 			dest = targetNode->GetDevice(1)->GetAddress();
 			ipdest = *targetNode->m_ipv4AddressList.begin();
 		}
-		else if (direction == RECEIVING && res.replay == 1) {
+		else if (res.replay == 1) {
 			ipdest = ipHeader.GetSource();
 			ipsource = ipHeader.GetDestination();
 			Address swap = dest;
 			dest = src;
 			src = swap;
-
+			if(direction==SENDING){
+				direction=RECEIVING;
+			}else{
+				direction=SENDING;
+			}
 		} else {
 			ipdest = ipHeader.GetDestination();
 			ipsource = ipHeader.GetSource();
