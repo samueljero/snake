@@ -72,7 +72,8 @@ public:
 	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res);
 	void StoreEvent(EventImpl *event);
 	void InjectPacket(char *spec);
-	void DoBurst(int type);
+	void Burst(int type);
+	void Window(char *spec);
 
 
 protected:

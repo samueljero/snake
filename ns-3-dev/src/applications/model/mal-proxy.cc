@@ -615,7 +615,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 		burst[m->type].push_back(packet);
 		if(!burst_sched[MSG]){
 			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
-					&MalProxy::DoBurst, this, m->type);
+					&MalProxy::Burst, this, m->type);
 			burst_sched[MSG]=true;
 		}
 		res->action=DROP;
@@ -711,7 +711,8 @@ void MalProxy::Resume()
 }
 
 //type databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=type 6=urg 7=ece 8=cwr 9=window 11=urgptr
-void MalProxy::InjectPacket(char *spec){
+void MalProxy::InjectPacket(char *spec)
+{
 	int databytes;
 	Ptr<Packet> p;
 	TcpHeader tcph;
@@ -743,7 +744,8 @@ void MalProxy::InjectPacket(char *spec){
 	return;
 }
 
-void MalProxy::DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest){
+void MalProxy::DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest)
+{
 	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4> ();
 	if (ipv4 != 0)
 	{
@@ -766,7 +768,8 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest){
 	}
 }
 
-void MalProxy::DoBurst(int type){
+void MalProxy::Burst(int type)
+{
 	Ipv4Header ip;
 
 	if(burst_sched[type]==false){
@@ -779,6 +782,32 @@ void MalProxy::DoBurst(int type){
 	}
 	burst[type].clear();
 	burst_sched[type]=false;
+}
+
+//w=window t=type ip_src ip_dest port_src port_dest
+void MalProxy::Window(char* spec)
+{
+	int window;
+	int type;
+	int len;
+	int seq;
+	int itter;
+	char ip_src[100];
+	char ip_dest[100];
+	char p_src[100];
+	char p_dest[100];
+	char pspec[1000];
+
+	sscanf(spec, "w=%i t=%i %s %s %s %s", &window, &type, ip_src, ip_dest, p_src, p_dest);
+
+	itter=(0xFFFFFFFF)/window;
+
+	seq=0;
+	for(int i=0 ; i < itter;i++){
+		snprintf(pspec,1000, "%i 0 %s %s 0=%s 1=%s 2=%i 5=%i",type,ip_src,ip_dest, p_src,p_dest,seq,type);
+		InjectPacket(pspec);
+		seq+=window;
+	}
 }
 
 } // Namespace ns3

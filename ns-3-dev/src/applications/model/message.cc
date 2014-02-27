@@ -7543,7 +7543,7 @@ void Message::CreateMessage(int type, char *spec){
 
 
 	this->type=type;
-
+	((BaseMessage*)msg)->type=type;
 
 	fspec[0]='=';
 	ret=sscanf(spec, "%i=%999s%n",&field,&fspec[1],&len);
