@@ -64,6 +64,11 @@ void MalProxy::ClearStrategyForMsg(int type) {
   deliveryActions[type][DELAY] = false;
   deliveryActions[type][DIVERT] = false;
   deliveryActions[type][REPLAY] = false;
+  deliveryActions[type][LIE] = false;
+  deliveryActions[type][BURST] = false;
+  deliveryActions[type][INJECT] = false;
+  deliveryActions[type][WINDOW] = false;
+  deliveryActions[type][RETRY] = false;
   for (int j = 0; j < FIELD; j++) {
     if (lyingValues[type][j] != NULL) {
       delete lyingValues[type][j];
@@ -81,6 +86,11 @@ void MalProxy::ClearStrategy() {
 		deliveryActions[i][DELAY] = false;
 		deliveryActions[i][DIVERT] = false;
 		deliveryActions[i][REPLAY] = false;
+		deliveryActions[i][LIE] = false;
+		deliveryActions[i][BURST] = false;
+		deliveryActions[i][INJECT] = false;
+		deliveryActions[i][WINDOW] = false;
+		deliveryActions[i][RETRY] = false;
 		for (int j = 0; j < FIELD; j++) {
 			if (lyingValues[i][j] != NULL) {
 				delete lyingValues[i][j];
@@ -440,6 +450,11 @@ MalProxy::MalMsg(Message *m) {
 		return 1;
 	} 
 
+	if (deliveryActions[m->type][BURST]){
+		if(app_debug>0){std::cout << "MALProxy] " << "will burst for " << m->type << std::endl;}
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -505,6 +520,10 @@ action:
 				// By default, replay packet will go to the original sender. It can be used with DIVERT/DUP.
 				// If BROADCAST is good, we can work on that as well.
 				res->replay = (int)deliveryValues[cur->type][REPLAY];
+			}
+
+			if(deliveryActions[cur->type][BURST]){
+				res->burst=true;
 			}
 
 		}
@@ -590,6 +609,17 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 		return RETRY;
 	}
 	MaliciousStrategy(m,res);
+
+	if(res->burst){
+		packet->AddHeader(ip);
+		burst[m->type].push_back(packet);
+		if(!burst_sched[MSG]){
+			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
+					&MalProxy::DoBurst, this, m->type);
+			burst_sched[MSG]=true;
+		}
+		res->action=DROP;
+	}
 
 	delete(m);
 
@@ -709,6 +739,11 @@ void MalProxy::InjectPacket(char *spec){
 	p->RemoveHeader(tcph);
 	p->AddHeader(tcph); //checksum
 
+	DoInjectPacket(p, src,dest);
+	return;
+}
+
+void MalProxy::DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest){
 	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4> ();
 	if (ipv4 != 0)
 	{
@@ -729,8 +764,21 @@ void MalProxy::InjectPacket(char *spec){
 		}
 		ipv4->Send (p, src, dest, TcpL4Protocol::PROT_NUMBER, route);
 	}
+}
 
-	return;
+void MalProxy::DoBurst(int type){
+	Ipv4Header ip;
+
+	if(burst_sched[type]==false){
+		return;
+	}
+
+	for(int i=0; i < burst[type].size();i++){
+		burst[type][i]->RemoveHeader(ip);
+		DoInjectPacket(burst[type][i], ip.GetSource(), ip.GetDestination());
+	}
+	burst[type].clear();
+	burst_sched[type]=false;
 }
 
 } // Namespace ns3

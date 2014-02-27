@@ -40,9 +40,9 @@ namespace ns3 {
 class Socket;
 class Packet;
 
-enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, RETRY};
+enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, BURST, INJECT, WINDOW, RETRY};
 enum MalDirection { TOTAP, FROMTAP };
-#define NUMDELIVERYACTIONS 6
+#define NUMDELIVERYACTIONS 11
 
 typedef struct {
   uint8_t *buffer;
@@ -56,6 +56,7 @@ struct maloptions{
 	int duptimes;
 	int replay;
 	int action;
+	bool burst;
 };
 
 
@@ -70,6 +71,8 @@ public:
 	int MaliciousStrategy(Message *m, maloptions *res) ;
 	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res);
 	void StoreEvent(EventImpl *event);
+	void InjectPacket(char *spec);
+	void DoBurst(int type);
 
 
 protected:
@@ -88,12 +91,11 @@ private:
   void AddStrategy(std::string line);
   void ClearStrategy();
   void ClearStrategyForMsg(int type);
-
   int CommunicateController(Message *m);
-  void InjectPacket(char *spec);
+  void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
 
-  bool deliveryActions[MSG][NUMDELIVERYACTIONS]; //6
-  double deliveryValues[MSG][NUMDELIVERYACTIONS]; //6
+  bool deliveryActions[MSG][NUMDELIVERYACTIONS]; //10
+  double deliveryValues[MSG][NUMDELIVERYACTIONS]; //10
   char* lyingValues[MSG][FIELD];
 
   uint64_t num_processed;
@@ -111,6 +113,8 @@ private:
   bool evt_resume;
 
   std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> > m_udp_conn;
+  std::vector<Ptr<Packet> > burst[MSG];
+  bool burst_sched[MSG];
 
   class seq_state{
   public:

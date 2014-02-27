@@ -1215,6 +1215,7 @@ int TapBridge::MaliciousProcess
 	res.replay=-1;
 	res.delay=0.0;
 	res.duptimes=1;
+	res.burst=false;
 
 	// 1. get IP header
 	Ipv4Header ipHeader;
