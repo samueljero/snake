@@ -69,7 +69,7 @@ while (1) {
   }
   
   #Begin Attack!
-  my $gatling_thread = threads->create('Attack::start_Listener');
+  my $gatling_thread = threads->create('GreedyAttack::start_Listener');
   while ($GatlingConfig::watch_ns3 == 1 && $GatlingConfig::watch_turret) {
     sleep 1;
   }

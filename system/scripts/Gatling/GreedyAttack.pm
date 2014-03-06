@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Attack;
+package GreedyAttack;
 require MsgParse;
 require Utils;
 require GatlingConfig;
