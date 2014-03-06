@@ -451,6 +451,17 @@ sub start_Listener {
   print "Listener stopped\n";
 }
 
+sub ns3_thread {
+  my @args = @_;
+  print "NS-3 start: [".(join (' ', @args))."]\n";
+  system (join (' ', @args, "\n"));
+  $GatlingConfig::watch_ns3 = 0;
+  system ("pkill serverLog\n");
+  system ("pkill clientLog\n");
+  print "NS3 finished\n";
+  exit();
+}
+
 sub start {
   prepareMessages();
   print "Starting NS-3\n";

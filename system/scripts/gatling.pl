@@ -27,20 +27,10 @@ print "Target system name: $GatlingConfig::systemname\n";
 Utils::useKVM();
 GatlingConfig::setSystem();
 
-require Attack;
+require GreedyAttack;
 
 share ($GatlingConfig::watch_ns3);
 share ($GatlingConfig::watch_turret);
-sub ns3_thread {
-  my @args = @_;
-  print "NS-3 start: [".(join (' ', @args))."]\n";
-  system (join (' ', @args, "\n"));
-  $GatlingConfig::watch_ns3 = 0;
-  system ("pkill serverLog\n");
-  system ("pkill clientLog\n");
-  print "NS3 finished\n";
-  exit();
-}
 
 
 while (1) {
