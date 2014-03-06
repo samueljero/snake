@@ -49,36 +49,9 @@ while (1) {
   
   #Initialize Turret system
   GatlingConfig::movePrevPerf();
-  Attack::prepareMessages();
   GatlingConfig::prepare();
 
-  print "Starting NS-3\n";
-  my $ns3_thread;
-  if ($GatlingConfig::startNS3 == 1) {
-    $GatlingConfig::watch_ns3 = 1;
-    $ns3_thread = threads->create('ns3_thread', "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms 5 -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\"");  
-  }
-  
-  #Verify that VMs and NS-3 are up
-  sleep 3;
-  system("pssh -P -h pssh_all.txt -t 5 \"ping 10.1.2.5 -c 5\"");
-
-  if ($GatlingConfig::watch_ns3 == 0) {
-    print "Gatling suspended due to NS3 termination\n";
-    exit;
-  }
-  
-  #Begin Attack!
-  my $gatling_thread = threads->create('GreedyAttack::start_Listener');
-  while ($GatlingConfig::watch_ns3 == 1 && $GatlingConfig::watch_turret) {
-    sleep 1;
-  }
-  
-  #Sombody died...
-  if ($GatlingConfig::watch_ns3 == 0) {
-    $gatling_thread->kill('SIGTERM');
-  } else {
-    $ns3_thread->kill('SIGTERM');
-  }
+  #Do greedy Attack
+  GreedyAttack::start();
   exit;
 }
