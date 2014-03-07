@@ -37,7 +37,6 @@
 #include "ns3/realtime-simulator-impl.h"
 #include <sys/time.h>
 
-
 #include "mal-proxy.h"
 
 #include <arpa/inet.h>
@@ -51,7 +50,7 @@ using namespace std;
 
 static bool global_consult_gatling = true;
 static short global_once = 0;
-static int app_debug=0;
+static int app_debug = 0;
 
 #define CTRL_IP "127.0.0.1"
 #define CTRL_PORT 8888
@@ -60,31 +59,32 @@ static int app_debug=0;
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("MalProxyApplication");
-NS_OBJECT_ENSURE_REGISTERED (MalProxy);
+NS_LOG_COMPONENT_DEFINE("MalProxyApplication");
+NS_OBJECT_ENSURE_REGISTERED(MalProxy);
 
-void MalProxy::ClearStrategyForMsg(int type) {
-  deliveryActions[type][NONE] = false;
-  deliveryActions[type][DROP] = false;
-  deliveryActions[type][DUP] = false;
-  deliveryActions[type][DELAY] = false;
-  deliveryActions[type][DIVERT] = false;
-  deliveryActions[type][REPLAY] = false;
-  deliveryActions[type][LIE] = false;
-  deliveryActions[type][BURST] = false;
-  deliveryActions[type][INJECT] = false;
-  deliveryActions[type][WINDOW] = false;
-  deliveryActions[type][RETRY] = false;
-  for (int j = 0; j < FIELD; j++) {
-    if (lyingValues[type][j] != NULL) {
-      delete lyingValues[type][j];
-      lyingValues[type][j] = NULL;
-    }
-  }
+void MalProxy::ClearStrategyForMsg(int type)
+{
+	deliveryActions[type][NONE] = false;
+	deliveryActions[type][DROP] = false;
+	deliveryActions[type][DUP] = false;
+	deliveryActions[type][DELAY] = false;
+	deliveryActions[type][DIVERT] = false;
+	deliveryActions[type][REPLAY] = false;
+	deliveryActions[type][LIE] = false;
+	deliveryActions[type][BURST] = false;
+	deliveryActions[type][INJECT] = false;
+	deliveryActions[type][WINDOW] = false;
+	deliveryActions[type][RETRY] = false;
+	for (int j = 0; j < FIELD; j++) {
+		if (lyingValues[type][j] != NULL) {
+			delete lyingValues[type][j];
+			lyingValues[type][j] = NULL;
+		}
+	}
 }
 
-
-void MalProxy::ClearStrategy() {
+void MalProxy::ClearStrategy()
+{
 	for (int i = 0; i < MSG; i++) {
 		deliveryActions[i][NONE] = false;
 		deliveryActions[i][DROP] = false;
@@ -107,44 +107,53 @@ void MalProxy::ClearStrategy() {
 
 }
 
-void MalProxy::ParseStrategy(string line) {
+void MalProxy::ParseStrategy(string line)
+{
 	ClearStrategy();
-  AddStrategy(line);
+	AddStrategy(line);
 }
 
-void MalProxy::AddStrategy(string line) {
+void MalProxy::AddStrategy(string line)
+{
 
 	NS_LOG_DEBUG("Adding new strategy " << line);
-	if(app_debug>0){std::cout << "MALProxy] " << "Adding new strategy " << line << std::endl;}
+	if (app_debug > 0) {
+		std::cout << "MALProxy] " << "Adding new strategy " << line
+				<< std::endl;
+	}
 	while (line.length() > 0) {
 		NS_LOG_DEBUG("left " << line << " " << line.length());
 		int cur = line.find(" ");
-		int msgType = Message::StrToType(line.substr(0,cur).c_str());
-		line = line.substr(cur+1);
-		
+		int msgType = Message::StrToType(line.substr(0, cur).c_str());
+		line = line.substr(cur + 1);
+
 		cur = line.find(" ");
-		string malact = line.substr(0,cur);
-		line = line.substr(cur+1);
+		string malact = line.substr(0, cur);
+		line = line.substr(cur + 1);
 
 		cur = line.find(" ");
 		string value;
 		if (cur != -1) {
-			value = line.substr(0,cur);
-			line = line.substr(cur+1);
+			value = line.substr(0, cur);
+			line = line.substr(cur + 1);
 		} else {
 			value = line;
 			line = "";
 		}
 
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << value);
-		if(app_debug>1){std::cout << "MALProxy] " << "msgType " << msgType << " action " << malact << " value " << value << std::endl;}
+		if (app_debug > 1) {
+			std::cout << "MALProxy] " << "msgType " << msgType << " action "
+					<< malact << " value " << value << std::endl;
+		}
 
 		if (malact == "NONE") {
 			deliveryActions[msgType][NONE] = true;
 			deliveryValues[msgType][NONE] = 0;
 		} else if (malact == "DROP") {
 			deliveryActions[msgType][DROP] = true;
-			deliveryValues[msgType][DROP] = atof(value.c_str());;
+			deliveryValues[msgType][DROP] = atof(value.c_str());
+			;
 		} else if (malact == "DUP") {
 			deliveryActions[msgType][DUP] = true;
 			deliveryValues[msgType][DUP] = atof(value.c_str());
@@ -157,76 +166,69 @@ void MalProxy::AddStrategy(string line) {
 		} else if (malact == "REPLAY") {
 			deliveryActions[msgType][REPLAY] = true;
 			deliveryValues[msgType][REPLAY] = atof(value.c_str());
-		}else if (malact == "BURST") {
+		} else if (malact == "BURST") {
 			deliveryActions[msgType][BURST] = true;
 			deliveryValues[msgType][BURST] = atof(value.c_str());
 		} else if (malact == "LIE") {
 			cur = line.find(" ");
 			int field;
 			if (cur != -1) {
-				field = atoi(line.substr(0,cur).c_str());
-				line = line.substr(cur+1);
+				field = atoi(line.substr(0, cur).c_str());
+				line = line.substr(cur + 1);
 			} else {
 				field = atoi(line.c_str());
 				line = "";
-			}
-			NS_LOG_DEBUG("lying on field " << field);
+			} NS_LOG_DEBUG("lying on field " << field);
 			lyingValues[msgType][field] = strdup(value.c_str());
 		}
 		//INJECT, WINDOW are much more complicated
-			
+
 	}
 
 }
 
-
-
-TypeId
-MalProxy::GetTypeId (void)
+TypeId MalProxy::GetTypeId(void)
 {
-  static TypeId tid = TypeId ("ns3::MalProxy")
-    .SetParent<Application> ()
-    .AddConstructor<MalProxy> ()
-    .AddAttribute ("Local", "The Address on which to Bind the rx socket.",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&MalProxy::m_local),
-                   MakeIpv4AddressChecker ())
-    .AddAttribute ("UDPPort", "Port on which we listen for incoming packets.",
-                   UintegerValue (9),
-                   MakeUintegerAccessor (&MalProxy::m_udp_port),
-                   MakeUintegerChecker<uint16_t> ())
-    .AddAttribute ("TCPPort", "Port on which we listen for incoming packets.",
-                   UintegerValue (9),
-                   MakeUintegerAccessor (&MalProxy::m_tcp_port),
-                   MakeUintegerChecker<uint16_t> ())
-  ;
-  return tid;
+	static TypeId tid =
+			TypeId("ns3::MalProxy").SetParent<Application>().AddConstructor<
+					MalProxy>().AddAttribute("Local",
+					"The Address on which to Bind the rx socket.",
+					Ipv4AddressValue(),
+					MakeIpv4AddressAccessor(&MalProxy::m_local),
+					MakeIpv4AddressChecker()).AddAttribute("UDPPort",
+					"Port on which we listen for incoming packets.",
+					UintegerValue(9),
+					MakeUintegerAccessor(&MalProxy::m_udp_port),
+					MakeUintegerChecker<uint16_t>()).AddAttribute("TCPPort",
+					"Port on which we listen for incoming packets.",
+					UintegerValue(9),
+					MakeUintegerAccessor(&MalProxy::m_tcp_port),
+					MakeUintegerChecker<uint16_t>());
+	return tid;
 }
 
-MalProxy::MalProxy ()
+MalProxy::MalProxy()
 {
-  NS_LOG_FUNCTION_NOARGS ();
-  conn_list.clear();
-  evt_resume=false;
-  ctrltype=STATEBASED;
+	NS_LOG_FUNCTION_NOARGS ();
+	conn_list.clear();
+	evt_resume = false;
+	ctrltype = STATEBASED;
 }
 
 MalProxy::~MalProxy()
 {
-  NS_LOG_FUNCTION_NOARGS ();
-  m_udp_socket = 0;
-  m_tcp_socket = 0;
+	NS_LOG_FUNCTION_NOARGS ();
+	m_udp_socket = 0;
+	m_tcp_socket = 0;
 }
 
-void
-MalProxy::DoDispose (void)
+void MalProxy::DoDispose(void)
 {
-  NS_LOG_FUNCTION_NOARGS ();
-  Application::DoDispose ();
+	NS_LOG_FUNCTION_NOARGS ();
+	Application::DoDispose();
 }
 
-int
-MalProxy::Command(string command)
+int MalProxy::Command(string command)
 {
 	if (command.compare("Gatling Pause\n") == 0) {
 		global_consult_gatling = false;
@@ -236,77 +238,77 @@ MalProxy::Command(string command)
 		global_consult_gatling = true;
 		return 1;
 	}
-  if (command.compare(0, strlen("Learned"), "Learned") == 0) {
-	string line = string(command.c_str() + strlen("Learned")+1);
-	if(app_debug>1){std::cout << "MALProxy] " << "learning " << line << " from " << command << std::endl;}
-	int cur = line.find(" ");
-	int msgType = Message::StrToType(line.substr(0, cur).c_str());
-	m_learned[msgType] = line;
+	if (command.compare(0, strlen("Learned"), "Learned") == 0) {
+		string line = string(command.c_str() + strlen("Learned") + 1);
+		if (app_debug > 1) {
+			std::cout << "MALProxy] " << "learning " << line << " from "
+					<< command << std::endl;
+		}
+		int cur = line.find(" ");
+		int msgType = Message::StrToType(line.substr(0, cur).c_str());
+		m_learned[msgType] = line;
 
-	ClearStrategy();
-	std::map<int,std::string>::iterator it;
-	for(it=m_learned.begin(); it!=m_learned.end();it++){
-		AddStrategy(it->second);
+		ClearStrategy();
+		std::map<int, std::string>::iterator it;
+		for (it = m_learned.begin(); it != m_learned.end(); it++) {
+			AddStrategy(it->second);
+		}
+		return 1;
 	}
-	return 1;
-  }
 	if (command.compare(0, strlen("Once"), "Once") == 0) {
-    string line = string(command.c_str() + strlen("Once")+1);
-    if(app_debug>1){std::cout << "MALProxy] " <<"Once " << line << std::endl;}
+		string line = string(command.c_str() + strlen("Once") + 1);
+		if (app_debug > 1) {
+			std::cout << "MALProxy] " << "Once " << line << std::endl;
+		}
 		ParseStrategy(line.c_str());
-    global_once = 1;
-    return 1;
-  }
-	if(app_debug>1){std::cout << "MALProxy] " <<"command : " <<command << std::endl;}
+		global_once = 1;
+		return 1;
+	}
+	if (app_debug > 1) {
+		std::cout << "MALProxy] " << "command : " << command << std::endl;
+	}
 	ParseStrategy(command);
 	return 1;
 }
 
-void 
-MalProxy::StartApplication (void)
-{
+void MalProxy::StartApplication(void) {
 	NS_LOG_FUNCTION_NOARGS ();
-	
+
 	ClearStrategy();
 	if (m_udp_port != 0) {
-		if (m_udp_socket == 0)
-		{
-			TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
-			m_udp_socket = Socket::CreateSocket (GetNode (), tid);
-			InetSocketAddress local = InetSocketAddress (m_local, m_udp_port);
+		if (m_udp_socket == 0) {
+			TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
+			m_udp_socket = Socket::CreateSocket(GetNode(), tid);
+			InetSocketAddress local = InetSocketAddress(m_local, m_udp_port);
 			//InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), m_udp_port);
-			m_udp_socket->Bind (local);
+			m_udp_socket->Bind(local);
 		}
 	}
 
 	if (m_tcp_port != 0) {
-		if (m_tcp_socket == 0)
-		{
-			TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-			m_tcp_socket = Socket::CreateSocket (GetNode (), tid);
-			InetSocketAddress local = InetSocketAddress (m_local, m_tcp_port);
-			int res = m_tcp_socket->Bind (local);
+		if (m_tcp_socket == 0) {
+			TypeId tid = TypeId::LookupByName("ns3::TcpSocketFactory");
+			m_tcp_socket = Socket::CreateSocket(GetNode(), tid);
+			InetSocketAddress local = InetSocketAddress(m_local, m_tcp_port);
+			int res = m_tcp_socket->Bind(local);
 			m_tcp_socket->Listen();
 			NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_tcp_port << " bind: " << res );
 		}
 	}
-	srand((unsigned)time(0));
+	srand((unsigned) time(0));
 }
 
-void 
-MalProxy::StopApplication ()
+void MalProxy::StopApplication()
 {
-  NS_LOG_FUNCTION_NOARGS ();
+	NS_LOG_FUNCTION_NOARGS ();
 
-  if (m_udp_socket != 0) 
-    {
-      m_udp_socket->Close ();
-    }
+	if (m_udp_socket != 0) {
+		m_udp_socket->Close();
+	}
 
-  if (m_tcp_socket != 0)
-    {
-      m_tcp_socket->Close ();
-    }
+	if (m_tcp_socket != 0) {
+		m_tcp_socket->Close();
+	}
 }
 
 /*Communicate back to the Controller. Currently only used for Greedy Search.*/
@@ -317,17 +319,20 @@ int MalProxy::CommunicateController(Message *m)
 	char read_buffer[256], send_buffer[256];
 	struct sockaddr_in serv_addr;
 	sprintf(send_buffer, "%d", m->type); // send Msg Type
-  std::cout << "MALProxy] " << "Asking Controller about Msg " << m->type << std::endl;
+	std::cout << "MALProxy] " << "Asking Controller about Msg " << m->type
+			<< std::endl;
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(CTRL_IP);
 	serv_addr.sin_port = htons(CTRL_PORT);
-  if (sendto(sockfd, send_buffer, strlen(send_buffer), 0, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1) {
-		std::cout << "MALProxy] " << "Sending to controller failed!!" << std::endl;
-  }
-  close(sockfd);
-  return 0;
+	if (sendto(sockfd, send_buffer, strlen(send_buffer), 0,
+			(struct sockaddr *) &serv_addr, sizeof(serv_addr)) == -1) {
+		std::cout << "MALProxy] " << "Sending to controller failed!!"
+				<< std::endl;
+	}
+	close(sockfd);
+	return 0;
 #else
 #ifdef TCP_CONTROLLER
 	int sockfd, n;
@@ -347,63 +352,69 @@ int MalProxy::CommunicateController(Message *m)
 	write(sockfd, send_buffer, strlen(send_buffer));
 	close(sockfd);
 	n = read(sockfd, read_buffer, 255);
-	if(app_debug>1){std::cout << "MALProxy] " << "READ FROM CTRL: " << read_buffer << "]" <<  std::endl;}
-  // XXX - I should consider to use shorter strings or numbers instead of 
-  // long strings. leave it for now
+	if(app_debug>1) {std::cout << "MALProxy] " << "READ FROM CTRL: " << read_buffer << "]" << std::endl;}
+	// XXX - I should consider to use shorter strings or numbers instead of
+	// long strings. leave it for now
 	if (strncmp(read_buffer, "Learned", strlen("Learned")) == 0) {
 		m_learned[m->type] = string(read_buffer+strlen("Learned")+1);
-    //AddStrategy(m_learned[m->type]);
-    ParseStrategy(m_learned[m->type]);
+		//AddStrategy(m_learned[m->type]);
+		ParseStrategy(m_learned[m->type]);
 		// add this to learned vector
 	}
 	if (strncmp(read_buffer, "Once", strlen("Once")) == 0) {
 		ParseStrategy(read_buffer+strlen("Once")+1);
-    //AddStrategy(m_learned[m->type]);
-    global_once = 1;
-  }
+		//AddStrategy(m_learned[m->type]);
+		global_once = 1;
+	}
 	else {
-    if (strncmp(read_buffer, "Msg NONE", strlen("Msg NONE")) == 0) {
-      // do nothing
-      return 0;
-    }
-    // otherwise we will get a new command // start from C ?
-    if (strncmp(read_buffer, "C ", strlen("C ")) == 0) {
-      ParseStrategy(read_buffer + 2);
-      //ClearStrategyForMsg(m->type);
-      //AddStrategy(read_buffer + 2);
-    }
-    else std::cout << "MALProxy] " << "Something wrong. I don't understand the command" << std::endl;
+		if (strncmp(read_buffer, "Msg NONE", strlen("Msg NONE")) == 0) {
+			// do nothing
+			return 0;
+		}
+		// otherwise we will get a new command // start from C ?
+		if (strncmp(read_buffer, "C ", strlen("C ")) == 0) {
+			ParseStrategy(read_buffer + 2);
+			//ClearStrategyForMsg(m->type);
+			//AddStrategy(read_buffer + 2);
+		}
+		else std::cout << "MALProxy] " << "Something wrong. I don't understand the command" << std::endl;
 	}
 	/* strategy should be processed via command interface
-	else { // otherwise it's a strategy
-	}
-	*/
+	 else { // otherwise it's a strategy
+	 }
+	 */
 	return n;
 #endif
 #endif
 }
 
-int
-MalProxy::MalMsg(Message *m) {
+int MalProxy::MalMsg(Message *m)
+{
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
 		return 0;
 	}
 
 	if (global_once == 1) {
-		if(app_debug>0){std::cout <<"once executed" << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "once executed" << std::endl;
+		}
 		global_once = 2;
 		return 1;
 	}
 
 	/*Greedy Strategy---Check with Controller, if we don't know what
 	 * to do for this message type*/
-	if(ctrltype==GREEDY){
+	if (ctrltype == GREEDY) {
 		if (global_consult_gatling) {
 			if (m_learned.find(m->type) != m_learned.end()) {
 				return 1;
 			}
-			if(app_debug>0){std::cout << "MALProxy] " << "Determining Malicious action for type: " << m->type << std::endl;}
+			if (app_debug > 0) {
+				std::cout << "MALProxy] "
+						<< "Determining Malicious action for type: " << m->type
+						<< std::endl;
+			}
 			if (m->encMsg != NULL) {
 				Message *cur = m->encMsg;
 				if (cur->type > 0 && m->type < MSG) {
@@ -423,56 +434,80 @@ MalProxy::MalMsg(Message *m) {
 	/*See if we should modify this message*/
 
 	if (m->encMsg != NULL) {
-		if(app_debug>0){std::cout << "MALProxy] " << "Encapsulated msg type " << m->encMsg->type << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "Encapsulated msg type "
+					<< m->encMsg->type << std::endl;
+		}
 		return MalMsg(m->encMsg);
 	}
 
 	if (m->type < 0 || m->type >= MSG) {
-		if(app_debug>0){std::cout << "MALProxy] " <<"invalid type " << m->type << ":" << MSG << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "invalid type " << m->type << ":"
+					<< MSG << std::endl;
+		}
 		return 0;
 	}
 
 	if (deliveryActions[m->type][DROP]) {
 		return 1;
-	} 
+	}
 
 	for (int i = 0; i < FIELD; i++) {
 		if (lyingValues[m->type][i] != NULL) {
-			if(app_debug>0){std::cout << "MALProxy] " << "will lie for " << m->type << std::endl;}
+			if (app_debug > 0) {
+				std::cout << "MALProxy] " << "will lie for " << m->type
+						<< std::endl;
+			}
 			return 1;
 		}
 	}
 
 	if (deliveryActions[m->type][DUP]) {
-		if(app_debug>0){std::cout << "MALProxy] " << "will dup for " << m->type << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "will dup for " << m->type
+					<< std::endl;
+		}
 		return 1;
-	} 
+	}
 
 	if (deliveryActions[m->type][DELAY]) {
-		if(app_debug>0){std::cout << "MALProxy] " << "will delay for " << m->type << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "will delay for " << m->type
+					<< std::endl;
+		}
 		return 1;
-	} 
+	}
 
 	if (deliveryActions[m->type][DIVERT]) {
-		if(app_debug>0){std::cout << "MALProxy] " << "will divert for " << m->type << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "will divert for " << m->type
+					<< std::endl;
+		}
 		return 1;
 	}
 
 	if (deliveryActions[m->type][REPLAY]) {
-		if(app_debug>0){std::cout << "MALProxy] " << "will replay for " << m->type << std::endl;}
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "will replay for " << m->type
+					<< std::endl;
+		}
 		return 1;
-	} 
+	}
 
-	if (deliveryActions[m->type][BURST]){
-		if(app_debug>0){std::cout << "MALProxy] " << "will burst for " << m->type << std::endl;}
+	if (deliveryActions[m->type][BURST]) {
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "will burst for " << m->type
+					<< std::endl;
+		}
 		return 1;
 	}
 
 	return 0;
 }
 
-int
-MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
+int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
+{
 	bool lie = false;
 
 	/*Safety Check*/
@@ -480,23 +515,23 @@ MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 		return 0;
 	}
 
-  if (global_once == 2){
-	  global_once = 0;
-  }
+	if (global_once == 2) {
+		global_once = 0;
+	}
 
-  /*Modify Message as indicated by our strategy*/
+	/*Modify Message as indicated by our strategy*/
 	Message *cur = m;
 	while (cur != NULL) {
 		if (cur->type >= 0 && cur->type < MSG) {
 
 			if (deliveryActions[cur->type][DROP]) {
-				double prob = 100*(double)rand()/(double)RAND_MAX;
+				double prob = 100 * (double) rand() / (double) RAND_MAX;
 				if (prob <= deliveryValues[cur->type][DROP]) {
 					NS_LOG_INFO("MalProxy dropping message");
-					res->action=DROP;
+					res->action = DROP;
 					return DROP;
 				}
-			} 
+			}
 
 			for (int i = 0; i < FIELD; i++) {
 				if (lyingValues[cur->type][i] != NULL) {
@@ -506,10 +541,10 @@ MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 
 			if (deliveryActions[cur->type][DUP]) {
 				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[cur->type][DUP] << " times");
-				if (res->duptimes < (int)deliveryValues[cur->type][DUP]) {
-					res->duptimes = (int)deliveryValues[cur->type][DUP];
+				if (res->duptimes < (int) deliveryValues[cur->type][DUP]) {
+					res->duptimes = (int) deliveryValues[cur->type][DUP];
 				}
-			} 
+			}
 
 			if (deliveryActions[cur->type][DIVERT]) {
 				NS_LOG_INFO("MalProxy diverting message" << cur->type);
@@ -522,19 +557,19 @@ MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 					res->delay = deliveryValues[cur->type][DELAY];
 				}
 				if (deliveryValues[cur->type][DELAY] < 0) {
-					res->delay = -1*deliveryValues[cur->type][DELAY]*(double)rand()/(double)RAND_MAX;
-				}
-				NS_LOG_INFO("MalProxy delaying message " << res->delay << " seconds");
+					res->delay = -1 * deliveryValues[cur->type][DELAY]
+							* (double) rand() / (double) RAND_MAX;
+				} NS_LOG_INFO("MalProxy delaying message " << res->delay << " seconds");
 			}
 
 			if (deliveryActions[cur->type][REPLAY]) {
 				// By default, replay packet will go to the original sender. It can be used with DIVERT/DUP.
 				// If BROADCAST is good, we can work on that as well.
-				res->replay = (int)deliveryValues[cur->type][REPLAY];
+				res->replay = (int) deliveryValues[cur->type][REPLAY];
 			}
 
-			if(deliveryActions[cur->type][BURST]){
-				res->burst=true;
+			if (deliveryActions[cur->type][BURST]) {
+				res->burst = true;
 			}
 
 		}
@@ -543,7 +578,7 @@ MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 
 	if (lie == true) {
 		cur = m;
-		while (cur != NULL) {	
+		while (cur != NULL) {
 			if (cur->type >= 0 && cur->type < MSG) {
 
 				for (int i = 0; i < FIELD; i++) {
@@ -556,7 +591,7 @@ MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 		}
 
 	}
-	res->action=DELAY;
+	res->action = DELAY;
 	return DELAY;
 }
 
@@ -566,112 +601,117 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	connection *c;
 	std::vector<seq_state> *seq_list;
 	std::vector<seq_state> *ack_list;
-	int seq_offset=0;
-	int ack_offset=0;
+	int seq_offset = 0;
+	int ack_offset = 0;
 	Message *m;
 	char tmp[32];
 
-
 	//tcph.EnableChecksums();
 	//tcph.InitializeChecksum(ip.GetSource(), ip.GetDestination(), TcpL4Protocol::PROT_NUMBER);
-	res->action=NONE;
+	res->action = NONE;
 	packet->PeekHeader(tcph);
 
-	if((dir==FROMTAP && tcph.GetDestinationPort()!=this->m_tcp_port) ||
-	   (dir==TOTAP && tcph.GetSourcePort()!=this->m_tcp_port)){
+	if ((dir == FROMTAP && tcph.GetDestinationPort() != this->m_tcp_port)
+			|| (dir == TOTAP && tcph.GetSourcePort() != this->m_tcp_port)) {
 		/*Packet we don't care about*/
-		res->action=NONE;
+		res->action = NONE;
 		return NONE;
 	}
 
-	if(dir==FROMTAP){
+	if (dir == FROMTAP) {
 		/*Forward direction, from "malicious" host*/
-		c=FindConnection(ip.GetSource(), ip.GetDestination(), tcph.GetSourcePort(),tcph.GetDestinationPort());
-		seq_list=&(c->d1);
-		ack_list=&(c->d2);
-	}else{
+		c = FindConnection(ip.GetSource(), ip.GetDestination(),
+				tcph.GetSourcePort(), tcph.GetDestinationPort());
+		seq_list = &(c->d1);
+		ack_list = &(c->d2);
+	} else {
 		/*Reverse direction, from a victim*/
-		c=FindConnection(ip.GetDestination(), ip.GetSource(), tcph.GetDestinationPort(),tcph.GetSourcePort());
-		seq_list=&(c->d2);
-		ack_list=&(c->d1);
+		c = FindConnection(ip.GetDestination(), ip.GetSource(),
+				tcph.GetDestinationPort(), tcph.GetSourcePort());
+		seq_list = &(c->d2);
+		ack_list = &(c->d1);
 
 	}
 
-	seq_offset=FindOffset(seq_list,tcph.GetSequenceNumber());
-	ack_offset=FindOffset(ack_list, tcph.GetAckNumber());
+	seq_offset = FindOffset(seq_list, tcph.GetSequenceNumber());
+	ack_offset = FindOffset(ack_list, tcph.GetAckNumber());
 
-	m=new Message(packet->PeekDataForMal());
+	m = new Message(packet->PeekDataForMal());
 
-	std::cout << ntohs(((BaseMessage*)m->msg)->src) << "-->" << ntohs(((BaseMessage*)m->msg)->dest) << std::endl;
-	std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")"<< std::endl;
-	std::cout << "Size: " << m->FindMsgSize() << " ("  << m->FindMsgSize()*4 <<")"<< std::endl;
+	std::cout << ntohs(((BaseMessage*) m->msg)->src) << "-->"
+			<< ntohs(((BaseMessage*) m->msg)->dest) << std::endl;
+	std::cout << "Type: " << m->FindMsgType() << " ("
+			<< m->TypeToStr(m->FindMsgType()) << ")" << std::endl;
+	std::cout << "Size: " << m->FindMsgSize() << " (" << m->FindMsgSize() * 4
+			<< ")" << std::endl;
 
-	sprintf(tmp,"+%i\n", seq_offset);
+	sprintf(tmp, "+%i\n", seq_offset);
 	m->ChangeBaseMessage(2, tmp);
-	sprintf(tmp,"+%i\n", ack_offset);
+	sprintf(tmp, "+%i\n", ack_offset);
 	m->ChangeBaseMessage(3, tmp);
 
-	int result=MalMsg(m);
-	if(result==0){
-		res->action=NONE;
+	int result = MalMsg(m);
+	if (result == 0) {
+		res->action = NONE;
 		return NONE;
-	}else if(result==2){
-		res->action=RETRY;
+	} else if (result == 2) {
+		res->action = RETRY;
 		return RETRY;
 	}
-	MaliciousStrategy(m,res);
+	MaliciousStrategy(m, res);
 
-	if(res->burst){
+	if (res->burst) {
 		packet->AddHeader(ip);
 		burst[m->type].push_back(packet);
-		if(!burst_sched[MSG]){
+		if (!burst_sched[MSG]) {
 			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
 					&MalProxy::Burst, this, m->type);
-			burst_sched[MSG]=true;
+			burst_sched[MSG] = true;
 		}
-		res->action=DROP;
+		res->action = DROP;
 	}
 
-	delete(m);
+	delete (m);
 
 	packet->PeekHeader(tcph);
-	std::cout<<tcph.GetSourcePort() << "!--->"<<tcph.GetDestinationPort()<<std::endl;
+	std::cout << tcph.GetSourcePort() << "!--->" << tcph.GetDestinationPort()
+			<< std::endl;
 	/*Checksum will be recomputed as actions are applied... particularly for Divert*/
 	return res->action;
 }
 
-
-MalProxy::connection* MalProxy::FindConnection(Ipv4Address src, Ipv4Address dest, int sport, int dport){
+MalProxy::connection* MalProxy::FindConnection(Ipv4Address src,	Ipv4Address dest, int sport, int dport)
+{
 	connection c;
 
-	for(int i=0; i < conn_list.size(); i++){
-		if(conn_list[i].ip_dest==dest &&
-		   conn_list[i].ip_src==src &&
-		   conn_list[i].port_dest==dport &&
-		   conn_list[i].port_src==sport){
+	for (int i = 0; i < conn_list.size(); i++) {
+		if (conn_list[i].ip_dest == dest && conn_list[i].ip_src == src
+				&& conn_list[i].port_dest == dport
+				&& conn_list[i].port_src == sport) {
 			return &conn_list[i];
 		}
 	}
 
-	c.ip_dest=dest;
-	c.ip_src=src;
-	c.port_dest=dport;
-	c.port_src=sport;
+	c.ip_dest = dest;
+	c.ip_src = src;
+	c.port_dest = dport;
+	c.port_src = sport;
 	conn_list.push_back(c);
-	return &conn_list[conn_list.size()-1];
+	return &conn_list[conn_list.size() - 1];
 }
 
-int MalProxy::FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq){
-	if(lst->empty()){
+int MalProxy::FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq)
+{
+	if (lst->empty()) {
 		return 0;
 	}
 
-	if(seq >= (*lst)[lst->size()-1].start_seq){
-		return (*lst)[lst->size()-1].offset;
+	if (seq >= (*lst)[lst->size() - 1].start_seq) {
+		return (*lst)[lst->size() - 1].offset;
 	}
 
-	for(int i=lst->size()-2;  i >= 0; i--){
-		if(seq >= (*lst)[i].start_seq){
+	for (int i = lst->size() - 2; i >= 0; i--) {
+		if (seq >= (*lst)[i].start_seq) {
 			return (*lst)[i].offset;
 		}
 	}
@@ -679,23 +719,24 @@ int MalProxy::FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq){
 	return 0;
 }
 
-void MalProxy::AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq, int offset){
+void MalProxy::AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq,int offset)
+{
 	seq_state s;
 
-	if(seq <= (*lst)[lst->size()-1].start_seq){
+	if (seq <= (*lst)[lst->size() - 1].start_seq) {
 		/*WTF?*/
 		return;
 	}
 
-	s.start_seq=seq;
-	s.offset=offset;
+	s.start_seq = seq;
+	s.offset = offset;
 	lst->push_back(s);
 	return;
 }
 
 void MalProxy::StoreEvent(EventImpl *event)
 {
-	sav_evt=event;
+	sav_evt = event;
 }
 
 void* MalProxy::Save()
@@ -705,9 +746,9 @@ void* MalProxy::Save()
 
 void MalProxy::Load(void *ptr)
 {
-	sav_evt=(EventImpl*)ptr;
-	if(ptr!=NULL){
-		evt_resume=true;
+	sav_evt = (EventImpl*) ptr;
+	if (ptr != NULL) {
+		evt_resume = true;
 		//Ptr<RealtimeSimulatorImpl> impl = DynamicCast<RealtimeSimulatorImpl> (Simulator::GetImplementation ());
 		//impl->ScheduleRealtimeNow(sav_evt);
 	}
@@ -715,9 +756,9 @@ void MalProxy::Load(void *ptr)
 
 void MalProxy::Resume()
 {
-	if(evt_resume==true && sav_evt!=NULL){
+	if (evt_resume == true && sav_evt != NULL) {
 		sav_evt->Invoke();
-		evt_resume=false;
+		evt_resume = false;
 	}
 }
 
@@ -729,53 +770,49 @@ void MalProxy::InjectPacket(char *spec)
 	TcpHeader tcph;
 	Message *m;
 	int type;
-	int len=0;
+	int len = 0;
 	char ssrc[100];
 	char sdest[100];
 	Ipv4Address src;
 	Ipv4Address dest;
 
-	sscanf(spec,"%i %i %s %s%n",&type,&databytes, ssrc,sdest,&len);
-	src=Ipv4Address(ssrc);
-	dest=Ipv4Address(sdest);
-	spec+=len;
-	p=new Packet(databytes);
-
+	sscanf(spec, "%i %i %s %s%n", &type, &databytes, ssrc, sdest, &len);
+	src = Ipv4Address(ssrc);
+	dest = Ipv4Address(sdest);
+	spec += len;
+	p = new Packet(databytes);
 
 	tcph.EnableChecksums();
 	tcph.InitializeChecksum(src, dest, TcpL4Protocol::PROT_NUMBER);
 	p->AddHeader(tcph);
-	m=new Message(p->PeekDataForMal());
-	m->CreateMessage(type,spec);
+	m = new Message(p->PeekDataForMal());
+	m->CreateMessage(type, spec);
 
 	p->RemoveHeader(tcph);
 	p->AddHeader(tcph); //checksum
 
-	DoInjectPacket(p, src,dest);
+	DoInjectPacket(p, src, dest);
 	return;
 }
 
-void MalProxy::DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest)
+void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 {
-	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4> ();
-	if (ipv4 != 0)
-	{
+	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
+	if (ipv4 != 0) {
 		Ipv4Header header;
-		header.SetDestination (dest);
-		header.SetProtocol (TcpL4Protocol::PROT_NUMBER);
+		header.SetDestination(dest);
+		header.SetProtocol(TcpL4Protocol::PROT_NUMBER);
 		Socket::SocketErrno errno_;
 		Ptr<Ipv4Route> route;
-		Ptr<NetDevice> oif (0); //specify non-zero if bound to a source address
-		if (ipv4->GetRoutingProtocol () != 0)
-		{
-		  route = ipv4->GetRoutingProtocol ()->RouteOutput (p, header, oif, errno_);
+		Ptr<NetDevice> oif(0); //specify non-zero if bound to a source address
+		if (ipv4->GetRoutingProtocol() != 0) {
+			route = ipv4->GetRoutingProtocol()->RouteOutput(p, header, oif,
+					errno_);
+		} else {
+			NS_LOG_ERROR ("No IPV4 Routing Protocol");
+			route = 0;
 		}
-		else
-		{
-		  NS_LOG_ERROR ("No IPV4 Routing Protocol");
-		  route = 0;
-		}
-		ipv4->Send (p, src, dest, TcpL4Protocol::PROT_NUMBER, route);
+		ipv4->Send(p, src, dest, TcpL4Protocol::PROT_NUMBER, route);
 	}
 }
 
@@ -783,16 +820,16 @@ void MalProxy::Burst(int type)
 {
 	Ipv4Header ip;
 
-	if(burst_sched[type]==false){
+	if (burst_sched[type] == false) {
 		return;
 	}
 
-	for(int i=0; i < burst[type].size();i++){
+	for (int i = 0; i < burst[type].size(); i++) {
 		burst[type][i]->RemoveHeader(ip);
 		DoInjectPacket(burst[type][i], ip.GetSource(), ip.GetDestination());
 	}
 	burst[type].clear();
-	burst_sched[type]=false;
+	burst_sched[type] = false;
 }
 
 //w=window t=type ip_src ip_dest port_src port_dest
@@ -809,18 +846,19 @@ void MalProxy::Window(char* spec)
 	char p_dest[100];
 	char pspec[1000];
 
-	sscanf(spec, "w=%i t=%i %s %s %s %s", &window, &type, ip_src, ip_dest, p_src, p_dest);
+	sscanf(spec, "w=%i t=%i %s %s %s %s", &window, &type, ip_src, ip_dest,
+			p_src, p_dest);
 
-	itter=(0xFFFFFFFF)/window;
+	itter = (0xFFFFFFFF) / window;
 
-	seq=0;
-	for(int i=0 ; i < itter;i++){
-		snprintf(pspec,1000, "%i 0 %s %s 0=%s 1=%s 2=%i 5=%i",type,ip_src,ip_dest, p_src,p_dest,seq,type);
+	seq = 0;
+	for (int i = 0; i < itter; i++) {
+		snprintf(pspec, 1000, "%i 0 %s %s 0=%s 1=%s 2=%i 5=%i", type, ip_src,
+				ip_dest, p_src, p_dest, seq, type);
 		InjectPacket(pspec);
-		seq+=window;
+		seq += window;
 	}
 }
 
 } // Namespace ns3
-
 

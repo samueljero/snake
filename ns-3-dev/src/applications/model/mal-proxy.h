@@ -94,8 +94,8 @@ private:
   int CommunicateController(Message *m);
   void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
 
-  bool deliveryActions[MSG][NUMDELIVERYACTIONS]; //10
-  double deliveryValues[MSG][NUMDELIVERYACTIONS]; //10
+  bool deliveryActions[MSG][NUMDELIVERYACTIONS];
+  double deliveryValues[MSG][NUMDELIVERYACTIONS];
   char* lyingValues[MSG][FIELD];
 
   uint64_t num_processed;
@@ -116,6 +116,7 @@ private:
   bool burst_sched[MSG];
   ControllerType ctrltype;
 
+  /*Sequence number tracking stuff*/
   class seq_state{
   public:
 	  SequenceNumber32 start_seq;
