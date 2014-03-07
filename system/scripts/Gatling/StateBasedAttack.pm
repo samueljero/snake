@@ -75,7 +75,10 @@ sub prepareMessages {
 		$strategyListForMessage[2] = "$MsgParse::msgName[$i] DUP 10";
 		$strategyListForMessage[3] = "$MsgParse::msgName[$i] DELAY 1.0";
 		$strategyListForMessage[4] = "$MsgParse::msgName[$i] DIVERT 1.0";
-		for ( my $j = 0 ; $j < 5 ; $j++ ) {   # dup, delay, divert, benign, drop
+		$strategyListForMessage[5] = "$MsgParse::msgName[$i] REPLAY 1";
+		$strategyListForMessage[6] = "$MsgParse::msgName[$i] BURST 1.0";
+		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 2.0";
+		for ( my $j = 0 ; $j < 8 ; $j++ ) {   # NONE, DROP 100, DROP 40, DUP 10, etc
 			push( @score,    9999 );
 			push( @selected, 0 );
 			push( @excluded, 0 );
