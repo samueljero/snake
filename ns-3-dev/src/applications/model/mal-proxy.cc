@@ -81,6 +81,8 @@ void MalProxy::ClearStrategyForMsg(int type)
 			lyingValues[type][j] = NULL;
 		}
 	}
+	burst_sched[type]=false;
+	burst[type].clear();
 }
 
 void MalProxy::ClearStrategy()
@@ -103,8 +105,9 @@ void MalProxy::ClearStrategy()
 				lyingValues[i][j] = NULL;
 			}
 		}
+		burst_sched[i]=false;
+		burst[i].clear();
 	}
-
 }
 
 void MalProxy::ParseStrategy(string line)
@@ -663,10 +666,10 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	if (res->burst) {
 		packet->AddHeader(ip);
 		burst[m->type].push_back(packet);
-		if (!burst_sched[MSG]) {
+		if (!burst_sched[m->type]) {
 			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
 					&MalProxy::Burst, this, m->type);
-			burst_sched[MSG] = true;
+			burst_sched[m->type] = true;
 		}
 		res->action = DROP;
 	}
