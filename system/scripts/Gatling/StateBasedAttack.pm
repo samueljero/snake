@@ -184,7 +184,6 @@ sub start {
 		
 		#Setup VMs/NS-3	
 		Utils::killVMs();
-#		sleep(2);
 		Utils::restoreVMs(-1);
 		$GatlingConfig::watch_ns3=1;
 		$ns3_thread = threads->create( 'ns3_thread',
@@ -221,6 +220,7 @@ sub start {
 		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i]\n";
 		print PERF_LOG "$i $FullperfScore[$i] $FullStrategyList[$i]\n";
 		Utils::resetPerfScore();
+		GatlingConfig::prepare();
 	}
 }
 

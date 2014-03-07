@@ -201,7 +201,7 @@ sub systemTCP()
 {
 $setupCommand = "mkdir TCP";
   $server_command = "iperf -s -p1234 -i1 -yC -xCMS |  ~/perfcollector.pl";
-  $client_command = "iperf -c 10.1.2.2 -p 1234 -t600";
+  $client_command = "iperf -c 10.1.2.3 -p 1234 -t600";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
   $s_parallel = 1;
