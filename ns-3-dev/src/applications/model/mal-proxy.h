@@ -39,9 +39,9 @@ namespace ns3 {
 
 class Socket;
 class Packet;
-
-enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, BURST, INJECT, WINDOW, RETRY};
+enum ControllerType {GREEDY, STATEBASED};
 enum MalDirection { TOTAP, FROMTAP };
+enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, BURST, INJECT, WINDOW, RETRY};
 #define NUMDELIVERYACTIONS 11
 
 typedef struct {
@@ -58,7 +58,6 @@ struct maloptions{
 	int action;
 	bool burst;
 };
-
 
 class MalProxy : public Application 
 {
@@ -112,10 +111,10 @@ private:
   bool m_if_tcp;
   EventImpl *sav_evt;
   bool evt_resume;
-
   std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> > m_udp_conn;
   std::vector<Ptr<Packet> > burst[MSG];
   bool burst_sched[MSG];
+  ControllerType ctrltype;
 
   class seq_state{
   public:

@@ -52,6 +52,12 @@ using namespace std;
 static bool global_consult_gatling = true;
 static short global_once = 0;
 static int app_debug=0;
+
+#define CTRL_IP "127.0.0.1"
+#define CTRL_PORT 8888
+//#define TCP_CONTROLLER 1
+#define UDP_CONTROLLER 1
+
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("MalProxyApplication");
@@ -151,6 +157,9 @@ void MalProxy::AddStrategy(string line) {
 		} else if (malact == "REPLAY") {
 			deliveryActions[msgType][REPLAY] = true;
 			deliveryValues[msgType][REPLAY] = atof(value.c_str());
+		}else if (malact == "BURST") {
+			deliveryActions[msgType][BURST] = true;
+			deliveryValues[msgType][BURST] = atof(value.c_str());
 		} else if (malact == "LIE") {
 			cur = line.find(" ");
 			int field;
@@ -164,6 +173,7 @@ void MalProxy::AddStrategy(string line) {
 			NS_LOG_DEBUG("lying on field " << field);
 			lyingValues[msgType][field] = strdup(value.c_str());
 		}
+		//INJECT, WINDOW are much more complicated
 			
 	}
 
@@ -198,6 +208,7 @@ MalProxy::MalProxy ()
   NS_LOG_FUNCTION_NOARGS ();
   conn_list.clear();
   evt_resume=false;
+  ctrltype=STATEBASED;
 }
 
 MalProxy::~MalProxy()
@@ -298,11 +309,7 @@ MalProxy::StopApplication ()
     }
 }
 
-#define CTRL_IP "127.0.0.1"
-#define CTRL_PORT 8888
-//#define TCP_CONTROLLER 1
-#define UDP_CONTROLLER 1
-
+/*Communicate back to the Controller. Currently only used for Greedy Search.*/
 int MalProxy::CommunicateController(Message *m)
 {
 #ifdef UDP_CONTROLLER
@@ -378,36 +385,42 @@ int MalProxy::CommunicateController(Message *m)
 
 int
 MalProxy::MalMsg(Message *m) {
+	/*Safety Check*/
+	if (m->type < 0 || m->type >= MSG) {
+		return 0;
+	}
 
-  // XXX - this should be where to check LEARNED etc
-  if (global_once == 1) {
-	if(app_debug>0){std::cout <<"once executed" << std::endl;}
-    global_once = 2;
-    return 1;
-  }
+	if (global_once == 1) {
+		if(app_debug>0){std::cout <<"once executed" << std::endl;}
+		global_once = 2;
+		return 1;
+	}
 
-  if (global_consult_gatling) {
-    if (m->type < 0 || m->type >= MSG) {
-      return 0;
-    }
-    if (m_learned.find(m->type) != m_learned.end()) {
-      return 1;
-    }
-    if(app_debug>0){std::cout << "MALProxy] " << "Determining Malicious action for type: " << m->type << std::endl;}
-    if (m->encMsg != NULL) {
-      Message *cur = m->encMsg;
-      if (cur->type > 0 && m->type < MSG) {
-        CommunicateController(cur);
-      } else {
-        CommunicateController(m);
-      }
-    } else {
-      CommunicateController(m);
-    }
-    /*Pause simulator to wait for response!*/
-    Simulator::ToggleFreeze(true);
-    return 2;
-  }
+	/*Greedy Strategy---Check with Controller, if we don't know what
+	 * to do for this message type*/
+	if(ctrltype==GREEDY){
+		if (global_consult_gatling) {
+			if (m_learned.find(m->type) != m_learned.end()) {
+				return 1;
+			}
+			if(app_debug>0){std::cout << "MALProxy] " << "Determining Malicious action for type: " << m->type << std::endl;}
+			if (m->encMsg != NULL) {
+				Message *cur = m->encMsg;
+				if (cur->type > 0 && m->type < MSG) {
+					CommunicateController(cur);
+				} else {
+					CommunicateController(m);
+				}
+			} else {
+				CommunicateController(m);
+			}
+			/*Pause simulator to wait for response!*/
+			Simulator::ToggleFreeze(true);
+			return 2;
+		}
+	}
+
+	/*See if we should modify this message*/
 
 	if (m->encMsg != NULL) {
 		if(app_debug>0){std::cout << "MALProxy] " << "Encapsulated msg type " << m->encMsg->type << std::endl;}
@@ -462,20 +475,18 @@ int
 MalProxy::MaliciousStrategy(Message *m, maloptions *res) {
 	bool lie = false;
 
-  if (global_consult_gatling) {
-    // 1. Learned messages
-    if (m_learned.find(m->type) != m_learned.end()) {
-      //Good action!
-    }
-    else if (m->type < 0)  {
-      std::cout << "MALProxy] " << "invalid" << std::endl;
-    }
+	/*Safety Check*/
+	if (m->type < 0 || m->type >= MSG) {
+		return 0;
+	}
+
+  if (global_once == 2){
+	  global_once = 0;
   }
 
-  if (global_once == 2) global_once = 0;
-action:
+  /*Modify Message as indicated by our strategy*/
 	Message *cur = m;
-	while (cur != NULL) {	
+	while (cur != NULL) {
 		if (cur->type >= 0 && cur->type < MSG) {
 
 			if (deliveryActions[cur->type][DROP]) {
