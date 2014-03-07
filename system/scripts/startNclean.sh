@@ -1,6 +1,6 @@
 #!/bin/sh
-./kvm_scripts/CloneManager.pl start 1 2
-./kvm_scripts/SnapshotManager.pl resume 1 2
+./kvm_scripts/CloneManager.pl start 1 4
+./kvm_scripts/SnapshotManager.pl resume 1 4
 echo "Waiting for VMs to start..."
 sleep 30
 echo "killing server"
