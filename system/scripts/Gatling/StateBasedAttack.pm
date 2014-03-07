@@ -176,6 +176,7 @@ sub ns3_thread {
 
 sub start {
 	CreateStrategyList();
+	Utils::updateSnapshot(-1);
 	Utils::pauseVMs();
 	Utils::snapshotVMs();
 	
@@ -183,6 +184,7 @@ sub start {
 		
 		#Setup VMs/NS-3	
 		Utils::killVMs();
+#		sleep(2);
 		Utils::restoreVMs(-1);
 		$GatlingConfig::watch_ns3=1;
 		$ns3_thread = threads->create( 'ns3_thread',
