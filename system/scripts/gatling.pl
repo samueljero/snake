@@ -1,14 +1,15 @@
 #!/usr/bin/perl -w
-
-# PERF SCORE - BIGGER IS WORSE
+# FYI, PERF SCORE IS MEASURED SO THAT BIGGER IS WORSE
 
 use strict;
-use IO::Socket; 
+use IO::Socket;
 use Time::Local;
-use threads ('yield',
-     'stack_size' => 64*4096,
-     'exit' => 'threads_only',
-     'stringify');
+use threads (
+	'yield',
+	'stack_size' => 64 * 4096,
+	'exit'       => 'threads_only',
+	'stringify'
+);
 use threads::shared;
 use lib ("./Gatling/");
 
@@ -19,29 +20,27 @@ require GatlingConfig;
 no warnings 'once';
 
 $GatlingConfig::systemname = "TCP";
-if ($#ARGV != -1) {
-  $GatlingConfig::systemname = $ARGV[0];
+if ( $#ARGV != -1 ) {
+	$GatlingConfig::systemname = $ARGV[0];
 }
 print "Target system name: $GatlingConfig::systemname\n";
 
 Utils::useKVM();
 GatlingConfig::setSystem();
+share($GatlingConfig::watch_ns3);
+share($GatlingConfig::watch_turret);
 
-require GreedyAttack;
+#require GreedyAttack;
+require StateBasedAttack;
 
-share ($GatlingConfig::watch_ns3);
-share ($GatlingConfig::watch_turret);
+#Start VMs
+system("./startNclean.sh");
 
+#Initialize Turret system
+GatlingConfig::movePrevPerf();
+GatlingConfig::prepare();
 
-while (1) {
-  #Start VMs
-  system("./startNclean.sh");
-  
-  #Initialize Turret system
-  GatlingConfig::movePrevPerf();
-  GatlingConfig::prepare();
-
-  #Do greedy Attack
-  GreedyAttack::start();
-  exit;
-}
+#Do Attack
+#GreedyAttack::start();
+StateBasedAttack::start();
+exit;

@@ -206,7 +206,7 @@ $setupCommand = "mkdir TCP";
   $clientList = "pssh_clients.txt";
   $s_parallel = 1;
   $c_parallel = 1;
-  $runTime = 10000;
+  $runTime = 30;
   $watchPort = " -tcp_port 1234";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
@@ -217,7 +217,7 @@ $setupCommand = "mkdir TCP";
   $window_size = 7;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
-  $start_attack = 0;
+  $start_attack = 1;
   $brokenPerf = 99999999;
 }
 

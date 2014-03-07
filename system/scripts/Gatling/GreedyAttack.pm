@@ -33,7 +33,7 @@ $SIG{KILL} = 'term_handler';
 
 sub term_handler {
   print "term_handler\n";
-  close $Attack::socket;
+  close $GreedyAttack::socket;
   print "socket closed\n";
   $GatlingConfig::watch_ns3 = 2;
   exit;
@@ -468,7 +468,7 @@ sub start {
   my $ns3_thread;
   if ($GatlingConfig::startNS3 == 1) {
     $GatlingConfig::watch_ns3 = 1;
-    $ns3_thread = threads->create('ns3_thread', "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms 5 -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\"");  
+    $ns3_thread = threads->create('ns3_thread', "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms $GatlingConfig::num_vms -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\"");  
   }
   
   #Verify that VMs and NS-3 are up
