@@ -826,6 +826,7 @@ void MalProxy::Burst(int type)
 	}
 
 	for (int i = 0; i < burst[type].size(); i++) {
+		burst[type][i].second.iph.EnableChecksum();
 		burst[type][i].first->AddHeader(burst[type][i].second.iph);
 		((TapBridge*)(burst[type][i].second.obj))->SendPacket(burst[type][i].first,burst[type][i].second);
 	}
