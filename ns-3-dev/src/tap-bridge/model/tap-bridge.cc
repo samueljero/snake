@@ -1209,6 +1209,7 @@ int TapBridge::MaliciousProcess
 	Mac48Address destination = Mac48Address::ConvertFrom (dest);
 	Mac48Address source = Mac48Address::ConvertFrom (src);
 	Ptr<Packet> packet = p->Copy(); // copy one time
+	lowerLayers ll;
 	maloptions res;
 	res.action=NONE;
 	res.divert=false;
@@ -1248,14 +1249,18 @@ int TapBridge::MaliciousProcess
 	ptr = GetPointer(app);
 	Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
 	int action = NONE;
-	MalDirection d=TOTAP;
 	if(direction==SENDING){
-		d=FROMTAP;
+		ll.dir=FROMTAP;
 	}else{
-		d=TOTAP;
+		ll.dir=TOTAP;
 	}
+	ll.iph=ipHeader;
+	ll.ethdest=dest;
+	ll.ethsrc=src;
+	ll.ethtype=type;
+	ll.obj=this;
 	if(protocol==TcpL4Protocol::PROT_NUMBER){
-		action = proxy->MalTCP(packet, ipHeader, d, &res);
+		action = proxy->MalTCP(packet, ll, &res);
 	}
 
 
@@ -1677,6 +1682,16 @@ TapBridge::SendToTap (
 	  NS_LOG_LOGIC ("End of receive packet handling on node " << m_node->GetId ());
 	  ProfileFunction("Tap:Receive", false);
 	  return true;
+}
+
+void
+TapBridge::SendPacket(Ptr<Packet> packet, lowerLayers ll)
+{
+	if(ll.dir==FROMTAP){
+		PacketSend(packet, ll.ethsrc, ll.ethdest, ll.ethtype);
+	}else{
+		SendToTap(packet, ll.ethtype, ll.ethsrc, ll.ethdest);
+	}
 }
 
 void 

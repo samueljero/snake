@@ -45,6 +45,7 @@
 #include <sys/socket.h>
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-routing-protocol.h"
+#include "ns3/tap-bridge.h"
 
 using namespace std;
 
@@ -598,7 +599,7 @@ int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
 	return DELAY;
 }
 
-int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res)
+int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 {
 	TcpHeader tcph;
 	connection *c;
@@ -614,22 +615,22 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	res->action = NONE;
 	packet->PeekHeader(tcph);
 
-	if ((dir == FROMTAP && tcph.GetDestinationPort() != this->m_tcp_port)
-			|| (dir == TOTAP && tcph.GetSourcePort() != this->m_tcp_port)) {
+	if ((ll.dir == FROMTAP && tcph.GetDestinationPort() != this->m_tcp_port)
+			|| (ll.dir == TOTAP && tcph.GetSourcePort() != this->m_tcp_port)) {
 		/*Packet we don't care about*/
 		res->action = NONE;
 		return NONE;
 	}
 
-	if (dir == FROMTAP) {
+	if (ll.dir == FROMTAP) {
 		/*Forward direction, from "malicious" host*/
-		c = FindConnection(ip.GetSource(), ip.GetDestination(),
+		c = FindConnection(ll.iph.GetSource(), ll.iph.GetDestination(),
 				tcph.GetSourcePort(), tcph.GetDestinationPort());
 		seq_list = &(c->d1);
 		ack_list = &(c->d2);
 	} else {
 		/*Reverse direction, from a victim*/
-		c = FindConnection(ip.GetDestination(), ip.GetSource(),
+		c = FindConnection(ll.iph.GetDestination(), ll.iph.GetSource(),
 				tcph.GetDestinationPort(), tcph.GetSourcePort());
 		seq_list = &(c->d2);
 		ack_list = &(c->d1);
@@ -663,9 +664,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, malopt
 	}
 	MaliciousStrategy(m, res);
 
-	if (res->burst) {
-		packet->AddHeader(ip);
-		burst[m->type].push_back(packet);
+	if (res->burst){
+		burst[m->type].push_back(std::make_pair(packet,ll));
 		if (!burst_sched[m->type]) {
 			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
 					&MalProxy::Burst, this, m->type);
@@ -821,15 +821,13 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 
 void MalProxy::Burst(int type)
 {
-	Ipv4Header ip;
-
 	if (burst_sched[type] == false) {
 		return;
 	}
 
 	for (int i = 0; i < burst[type].size(); i++) {
-		burst[type][i]->RemoveHeader(ip);
-		DoInjectPacket(burst[type][i], ip.GetSource(), ip.GetDestination());
+		burst[type][i].first->AddHeader(burst[type][i].second.iph);
+		((TapBridge*)(burst[type][i].second.obj))->SendPacket(burst[type][i].first,burst[type][i].second);
 	}
 	burst[type].clear();
 	burst_sched[type] = false;

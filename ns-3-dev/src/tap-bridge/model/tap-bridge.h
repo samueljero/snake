@@ -208,22 +208,11 @@ public:
   virtual void SetPromiscReceiveCallback (NetDevice::PromiscReceiveCallback cb);
   virtual bool SupportsSendFrom () const;
   virtual Address GetMulticast (Ipv6Address addr) const;
-	virtual void PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type);
-	virtual int MaliciousProcess (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction);
-	virtual bool SendToTap (Ptr<const Packet> packet, uint16_t protocol,const Address &src,
-			  const Address &dst);
-
-	  /*
-	   * \internal
-	   *
-	   * Forward a packet received from the tap device to the bridged ns-3
-	   * device
-	   *
-	   * \param buf A character buffer containing the actual packet bits that were
-	   *            received from the host.
-	   * \param buf The length of the buffer.
-	   */
-	  void ForwardToBridgedDevice (uint8_t *buf, ssize_t len);
+  virtual void PacketSend(Ptr<Packet> packet, Address src, Address dst, uint16_t type);
+  virtual int MaliciousProcess (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction);
+  virtual bool SendToTap (Ptr<const Packet> packet, uint16_t protocol,const Address &src, const Address &dst);
+  void ForwardToBridgedDevice (uint8_t *buf, ssize_t len);
+  void SendPacket(Ptr<Packet> packet, lowerLayers ll);
 
 protected:
   /**

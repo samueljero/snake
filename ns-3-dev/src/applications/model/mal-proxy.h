@@ -44,12 +44,6 @@ enum MalDirection { TOTAP, FROMTAP };
 enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, BURST, INJECT, WINDOW, RETRY};
 #define NUMDELIVERYACTIONS 11
 
-typedef struct {
-  uint8_t *buffer;
-  uint32_t size;
-  uint32_t cur;
-} MessageState;
-
 struct maloptions{
 	int divert;
 	double delay;
@@ -57,6 +51,16 @@ struct maloptions{
 	int replay;
 	int action;
 	bool burst;
+};
+
+class lowerLayers {
+public:
+	Address ethsrc;
+	Address ethdest;
+	int		ethtype;
+	Ipv4Header iph;
+	MalDirection dir;
+	void *obj;
 };
 
 class MalProxy : public Application 
@@ -68,7 +72,7 @@ public:
   virtual ~MalProxy ();
 	int MalMsg(Message *m);
 	int MaliciousStrategy(Message *m, maloptions *res) ;
-	int MalTCP(Ptr<Packet> packet, Ipv4Header ip, MalDirection dir, maloptions *res);
+	int MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
 	void StoreEvent(EventImpl *event);
 	void InjectPacket(char *spec);
 	void Burst(int type);
@@ -104,7 +108,6 @@ private:
   Ptr<Socket> m_udp_socket;
   Ptr<Socket> m_tcp_socket;
   Ipv4Address m_local;
-  std::map<Ptr<Socket>, MessageState> m_state;
   std::map<Ptr<Socket>, Ipv4Address> m_tcp_conn;
   std::map<Ptr<Socket>, Ptr<Socket> > m_pair;
   std::map<int, std::string> m_learned;
@@ -112,7 +115,7 @@ private:
   EventImpl *sav_evt;
   bool evt_resume;
   std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> > m_udp_conn;
-  std::vector<Ptr<Packet> > burst[MSG];
+  std::vector<std::pair<Ptr<Packet>,lowerLayers> > burst[MSG];
   bool burst_sched[MSG];
   ControllerType ctrltype;
 
