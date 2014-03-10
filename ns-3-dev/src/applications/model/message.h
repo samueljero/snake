@@ -567,7 +567,7 @@ class Message {
 	void ChangeFinRstPshAck(int field, char* value);
 	void ChangeSynRstPshAck(int field, char* value);
 	void ChangeFinSynRstPshAck(int field, char* value);
-	void CreateMessage(int type, char *spec);
+	void CreateMessage(int type, const char *spec);
 };
 #endif
 

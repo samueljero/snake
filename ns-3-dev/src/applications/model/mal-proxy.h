@@ -74,9 +74,9 @@ public:
 	int MaliciousStrategy(Message *m, maloptions *res) ;
 	int MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
 	void StoreEvent(EventImpl *event);
-	void InjectPacket(char *spec);
+	void InjectPacket(int type, const char *spec);
 	void Burst(int type);
-	void Window(char *spec);
+	void Window(int type, const char *spec);
 
 
 protected:

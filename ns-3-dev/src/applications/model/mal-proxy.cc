@@ -119,6 +119,8 @@ void MalProxy::ParseStrategy(string line)
 
 void MalProxy::AddStrategy(string line)
 {
+	string actstr;
+	int cur;
 
 	NS_LOG_DEBUG("Adding new strategy " << line);
 	if (app_debug > 0) {
@@ -126,23 +128,36 @@ void MalProxy::AddStrategy(string line)
 				<< std::endl;
 	}
 	while (line.length() > 0) {
-		NS_LOG_DEBUG("left " << line << " " << line.length());
-		int cur = line.find(" ");
-		int msgType = Message::StrToType(line.substr(0, cur).c_str());
-		line = line.substr(cur + 1);
+		/*Split out this action*/
+		cur=line.find(",");
+		if(cur==-1){
+			actstr=line;
+			line="";
+		}else{
+			actstr=line.substr(0,cur-1);
+			line=line.substr(cur+1);
+		}
 
-		cur = line.find(" ");
-		string malact = line.substr(0, cur);
-		line = line.substr(cur + 1);
+		/*Parse Message Type*/
+		cur = actstr.find(" ");
+		int msgType = Message::StrToType(actstr.substr(0, cur).c_str());
+		actstr = actstr.substr(cur + 1);
 
-		cur = line.find(" ");
-		string value;
-		if (cur != -1) {
-			value = line.substr(0, cur);
-			line = line.substr(cur + 1);
-		} else {
-			value = line;
-			line = "";
+		/*Parse malicious action*/
+		cur = actstr.find(" ");
+		string malact = actstr.substr(0, cur);
+		actstr = actstr.substr(cur + 1);
+
+		string value="";
+		if(malact!="INJECT" && malact!="WINDOW"){
+			cur = actstr.find(" ");
+			if (cur != -1) {
+				value = actstr.substr(0, cur);
+				actstr = actstr.substr(cur + 1);
+			} else {
+				value = actstr;
+				actstr = "";
+			}
 		}
 
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << value);
@@ -173,15 +188,21 @@ void MalProxy::AddStrategy(string line)
 		} else if (malact == "BURST") {
 			deliveryActions[msgType][BURST] = true;
 			deliveryValues[msgType][BURST] = atof(value.c_str());
+		} else if (malact=="INJECT") {
+			deliveryActions[msgType][INJECT] = true;
+			InjectPacket(msgType, actstr.c_str());
+		} else if (malact=="WINDOW") {
+			deliveryActions[msgType][WINDOW] = true;
+			Window(msgType, actstr.c_str());
 		} else if (malact == "LIE") {
-			cur = line.find(" ");
+			cur = actstr.find(" ");
 			int field;
 			if (cur != -1) {
-				field = atoi(line.substr(0, cur).c_str());
-				line = line.substr(cur + 1);
+				field = atoi(actstr.substr(0, cur).c_str());
+				actstr = actstr.substr(cur + 1);
 			} else {
-				field = atoi(line.c_str());
-				line = "";
+				field = atoi(actstr.c_str());
+				actstr = "";
 			} NS_LOG_DEBUG("lying on field " << field);
 			lyingValues[msgType][field] = strdup(value.c_str());
 		}
@@ -765,21 +786,21 @@ void MalProxy::Resume()
 	}
 }
 
-//type databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=type 6=urg 7=ece 8=cwr 9=window 11=urgptr
-void MalProxy::InjectPacket(char *spec)
+//t=time databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=type 6=urg 7=ece 8=cwr 9=window 11=urgptr
+void MalProxy::InjectPacket(int type, const char *spec)
 {
 	int databytes;
 	Ptr<Packet> p;
 	TcpHeader tcph;
 	Message *m;
-	int type;
+	double sec;
 	int len = 0;
 	char ssrc[100];
 	char sdest[100];
 	Ipv4Address src;
 	Ipv4Address dest;
 
-	sscanf(spec, "%i %i %s %s%n", &type, &databytes, ssrc, sdest, &len);
+	sscanf(spec, "t=%lf %i %99s %99s%n", &sec, &databytes, ssrc, sdest, &len);
 	src = Ipv4Address(ssrc);
 	dest = Ipv4Address(sdest);
 	spec += len;
@@ -794,7 +815,10 @@ void MalProxy::InjectPacket(char *spec)
 	p->RemoveHeader(tcph);
 	p->AddHeader(tcph); //checksum
 
-	DoInjectPacket(p, src, dest);
+
+	Simulator::Schedule(Time(Seconds(sec)),
+						&MalProxy::DoInjectPacket, this, p, src,dest);
+	//DoInjectPacket(p, src, dest);
 	return;
 }
 
@@ -834,11 +858,11 @@ void MalProxy::Burst(int type)
 	burst_sched[type] = false;
 }
 
-//w=window t=type ip_src ip_dest port_src port_dest
-void MalProxy::Window(char* spec)
+//w=window t=time ip_src ip_dest port_src port_dest
+void MalProxy::Window(int type, const char* spec)
 {
 	int window;
-	int type;
+	double sec;
 	int len;
 	int seq;
 	int itter;
@@ -847,18 +871,20 @@ void MalProxy::Window(char* spec)
 	char p_src[100];
 	char p_dest[100];
 	char pspec[1000];
+	double inc=0.00001;
 
-	sscanf(spec, "w=%i t=%i %s %s %s %s", &window, &type, ip_src, ip_dest,
+	sscanf(spec, "w=%i t=%lf %99s %99s %99s %99s", &window, &sec, ip_src, ip_dest,
 			p_src, p_dest);
 
 	itter = (0xFFFFFFFF) / window;
 
 	seq = 0;
 	for (int i = 0; i < itter; i++) {
-		snprintf(pspec, 1000, "%i 0 %s %s 0=%s 1=%s 2=%i 5=%i", type, ip_src,
+		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i", sec, ip_src,
 				ip_dest, p_src, p_dest, seq, type);
-		InjectPacket(pspec);
+		InjectPacket(type,pspec);
 		seq += window;
+		sec+=inc;
 	}
 }
 

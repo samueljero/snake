@@ -7535,7 +7535,7 @@ uint8_t* Message::EncMsgOffset() {
 	return NULL;
 }
 
-void Message::CreateMessage(int type, char *spec){
+void Message::CreateMessage(int type, const char *spec){
 	//std::cout<< "Entering CreateMessage"<<std::endl;
 	int field;
 	char fspec[1000];
