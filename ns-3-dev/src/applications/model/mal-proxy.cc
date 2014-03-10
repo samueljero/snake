@@ -786,7 +786,7 @@ void MalProxy::Resume()
 	}
 }
 
-//t=time databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=type 6=urg 7=ece 8=cwr 9=window 11=urgptr
+//t=time databytes ip_src ip_dest 0=port_src 1=port_dest 2=seq 3=ack 4=reserved 5=size 6=type 7=urg 8=ece 9=cwr 10=window 12=urgptr
 void MalProxy::InjectPacket(int type, const char *spec)
 {
 	int databytes;
@@ -858,7 +858,7 @@ void MalProxy::Burst(int type)
 	burst_sched[type] = false;
 }
 
-//w=window t=time ip_src ip_dest port_src port_dest
+//w=window t=time ip_src ip_dest port_src port_dest size
 void MalProxy::Window(int type, const char* spec)
 {
 	int window;
@@ -872,16 +872,17 @@ void MalProxy::Window(int type, const char* spec)
 	char p_dest[100];
 	char pspec[1000];
 	double inc=0.00001;
+	int size;
 
-	sscanf(spec, "w=%i t=%lf %99s %99s %99s %99s", &window, &sec, ip_src, ip_dest,
-			p_src, p_dest);
+	sscanf(spec, "w=%i t=%lf %99s %99s %99s %99s %i", &window, &sec, ip_src, ip_dest,
+			p_src, p_dest, &size);
 
 	itter = (0xFFFFFFFF) / window;
 
 	seq = 0;
 	for (int i = 0; i < itter; i++) {
-		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i", sec, ip_src,
-				ip_dest, p_src, p_dest, seq, type);
+		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i 6=%i", sec, ip_src,
+				ip_dest, p_src, p_dest, seq, size, type);
 		InjectPacket(type,pspec);
 		seq += window;
 		sec+=inc;
