@@ -199,7 +199,7 @@ sub systemSteward()
 
 sub systemTCP()
 {
-$setupCommand = "mkdir TCP";
+  $setupCommand = "mkdir TCP";
   $server_command = "iperf -s -p1234 -i1 -yC -xCMS |  ~/perfcollector.pl";
   $client_command = "iperf -c 10.1.2.3 -p 1234 -t600";
   $serverList = "pssh_servers.txt";
