@@ -173,8 +173,7 @@ void setAddressStrings(int num, char *ip_base, char* tap_base) {
 		ip_addrs.push_back(string(ip_addr_str));
 		sprintf(tap_name, "%s%d", tap_base, i+1);
 		tap_names.push_back(string(tap_name));
-		sprintf(mac_addr, "00:16:3e:00:01:%02d", i+1);
-		//sprintf(mac_addr, "%02x:ff:ff:ff:ff:ff", i+1);
+		sprintf(mac_addr, "00:00:00:02:00:%02d", i+1);
 		mac_addresses.push_back(string(mac_addr));
 	}
 }
