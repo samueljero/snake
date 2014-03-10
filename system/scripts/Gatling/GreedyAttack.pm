@@ -217,7 +217,7 @@ sub learnAction {
   
   $learned[$curMsgType] = $actionIndex;
   my $curMsgName=$MsgParse::msgName[$curMsgType];
-  $learnedStrategyString = $learnedStrategyString.$strategy." ";
+  $learnedStrategyString = $learnedStrategyString.",".$strategy;
   print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
   
   if ($now == 1) {
@@ -288,7 +288,7 @@ ACTION_TEST:
     print "Trying strategy $strategyList{$curMsgType}[$i]...\n";
     
     #Load strategy into NS-3 malproxy
-    my $command = "C $learnedStrategyString$strategyList{$curMsgType}[$i]";
+    my $command = "C $learnedStrategyString,$strategyList{$curMsgType}[$i]";
     Utils::logTime("command $command");
     Utils::directTopology($command);
     Utils::logTime("end do gatling");

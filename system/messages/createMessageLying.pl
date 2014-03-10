@@ -615,8 +615,8 @@ for (my $i = 0; $i <= $#msgName; $i++) {
 print DOTC "\t//std::cout << \"Exiting EncMsgOffset\" << std::endl;\n";
 print DOTC "\treturn NULL;\n}\n\n";
 
-print DOTH "\tvoid CreateMessage(int type, char *spec);\n";
-print DOTC "void Message::CreateMessage(int type, char *spec){\n";
+print DOTH "\tvoid CreateMessage(int type, const char *spec);\n";
+print DOTC "void Message::CreateMessage(int type, const char *spec){\n";
 print DOTC "\t//std::cout<< \"Entering CreateMessage\"<<std::endl;\n";
 print DOTC "\tint field;\n";
 print DOTC "\tchar fspec[1000];\n";
