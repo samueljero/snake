@@ -31,16 +31,17 @@
 #include "ns3/ipv4-nix-vector-helper.h"
 #include <pthread.h>
 
-// Network topology (default)
-//
-//     n1--- n0---n2            .
-//
-
+// Network topology
+//     n0        n2
+//      \       /
+//       n4----n5
+//      /       \
+//     n1        n3
 
 using namespace ns3;
 using namespace std;
 
-NS_LOG_COMPONENT_DEFINE ("MalSimple");
+NS_LOG_COMPONENT_DEFINE("MalSimple");
 
 NodeContainer terminals;
 NetDeviceContainer terminalDevices;
@@ -54,62 +55,55 @@ std::vector<string> mac_addresses_2;
 ifstream topology;
 ApplicationContainer* apps;
 map<int, int> delayMap;
-int debug=0;
+int debug = 0;
 
-void 
-PopulateArpCache () 
-{ 
-	Ptr<ArpCache> arp = CreateObject<ArpCache> (); 
-	arp->SetAliveTimeout (Seconds(3600 * 24 * 365)); 
-	for (NodeList::Iterator i = NodeList::Begin(); i != NodeList::End(); ++i) 
-	{ 
-		Ptr<Ipv4L3Protocol> ip = (*i)->GetObject<Ipv4L3Protocol> (); 
+void PopulateArpCache() {
+	Ptr<ArpCache> arp = CreateObject<ArpCache>();
+	arp->SetAliveTimeout(Seconds(3600 * 24 * 365));
+	for (NodeList::Iterator i = NodeList::Begin(); i != NodeList::End(); ++i) {
+		Ptr<Ipv4L3Protocol> ip = (*i)->GetObject<Ipv4L3Protocol>();
 		if (ip == 0) {
-			std::cout << "no ip for " << (*i)->GetId() << std::endl;
+			if(debug>0){std::cout << "no ip for " << (*i)->GetId() << std::endl;}
 			continue;
 		}
-		//NS_ASSERT(ip !=0); 
-		ObjectVectorValue interfaces; 
-		ip->GetAttribute("InterfaceList", interfaces); 
-		for(ObjectVectorValue::Iterator j = interfaces.Begin(); j != 
-				interfaces.End (); j ++) 
-		{ 
-			Ptr<Ipv4Interface> ipIface = (*j)->GetObject<Ipv4Interface> (); 
-			NS_ASSERT(ipIface != 0); 
-			Ptr<NetDevice> device = ipIface->GetDevice(); 
-			NS_ASSERT(device != 0); 
-			Mac48Address addr = Mac48Address::ConvertFrom(device->GetAddress ()); 
-			for(uint32_t k = 0; k < ipIface->GetNAddresses (); k ++) 
-			{ 
-				Ipv4Address ipAddr = ipIface->GetAddress (k).GetLocal(); 
-				if(ipAddr == Ipv4Address::GetLoopback()) 
-					continue; 
-				ArpCache::Entry * entry = arp->Add(ipAddr); 
-				entry->MarkWaitReply(0); 
-				entry->MarkAlive(addr); 
-			} 
-		} 
-	} 
-	for (NodeList::Iterator i = NodeList::Begin(); i != NodeList::End(); ++i) 
-	{ 
-		Ptr<Ipv4L3Protocol> ip = (*i)->GetObject<Ipv4L3Protocol> (); 
-		//NS_ASSERT(ip !=0); 
+		ObjectVectorValue interfaces;
+		ip->GetAttribute("InterfaceList", interfaces);
+		for (ObjectVectorValue::Iterator j = interfaces.Begin();
+				j != interfaces.End(); j++) {
+			Ptr<Ipv4Interface> ipIface = (*j)->GetObject<Ipv4Interface>();
+			NS_ASSERT(ipIface != 0);
+			Ptr<NetDevice> device = ipIface->GetDevice();
+			NS_ASSERT(device != 0);
+			Mac48Address addr = Mac48Address::ConvertFrom(device->GetAddress());
+			for (uint32_t k = 0; k < ipIface->GetNAddresses(); k++) {
+				Ipv4Address ipAddr = ipIface->GetAddress(k).GetLocal();
+				if (ipAddr == Ipv4Address::GetLoopback())
+					continue;
+				ArpCache::Entry * entry = arp->Add(ipAddr);
+				entry->MarkWaitReply(0);
+				entry->MarkAlive(addr);
+			}
+		}
+	}
+	for (NodeList::Iterator i = NodeList::Begin(); i != NodeList::End(); ++i) {
+		Ptr<Ipv4L3Protocol> ip = (*i)->GetObject<Ipv4L3Protocol>();
 		if (ip == 0) {
-			std::cout << "no ip for " << (*i)->GetId() << std::endl;
+			if(debug>0){std::cout << "no ip for " << (*i)->GetId() << std::endl;}
 			continue;
 		}
-		ObjectVectorValue interfaces; 
-		ip->GetAttribute("InterfaceList", interfaces); 
-		for(ObjectVectorValue::Iterator j = interfaces.Begin(); j != 
-				interfaces.End (); j ++) 
-		{ 
-			Ptr<Ipv4Interface> ipIface = (*j)->GetObject<Ipv4Interface> (); 
-			ipIface->SetAttribute("ArpCache", PointerValue(arp)); 
-		} 
-	} 
-} 
-void readDelay()
-{
+		ObjectVectorValue interfaces;
+		ip->GetAttribute("InterfaceList", interfaces);
+		for (ObjectVectorValue::Iterator j = interfaces.Begin();
+				j != interfaces.End(); j++) {
+			Ptr<Ipv4Interface> ipIface = (*j)->GetObject<Ipv4Interface>();
+			ipIface->SetAttribute("ArpCache", PointerValue(arp));
+		}
+	}
+}
+
+
+void readDelay() {
+	/*I believe this is dead code---Samuel Jero--3/10/2014*/
 	topology.open("delay");
 	if (!topology.is_open()) {
 		std::cout << "can not open delay file" << std::endl;
@@ -120,13 +114,12 @@ void readDelay()
 		string line;
 		int idx, delay;
 
-		while (!topology.eof ())
-		{
-			line.clear ();
-			lineBuffer.clear ();
+		while (!topology.eof()) {
+			line.clear();
+			lineBuffer.clear();
 
-			getline (topology,line);
-			lineBuffer.str (line);
+			getline(topology, line);
+			lineBuffer.str(line);
 			lineBuffer >> idx;
 			lineBuffer >> delay;
 			delayMap[idx] = delay;
@@ -135,8 +128,8 @@ void readDelay()
 	return;
 }
 
-bool readKingTopology(uint32_t* src, uint32_t* dest, uint64_t *delay, uint32_t num_terminal)
-{
+bool readKingTopology(uint32_t* src, uint32_t* dest, uint64_t *delay, uint32_t num_terminal) {
+	/*I believe this is dead code---Samuel Jero--3/10/2014*/
 	if (!topology.is_open()) {
 		std::cout << "network topology file not open\n";
 		return false;
@@ -145,17 +138,18 @@ bool readKingTopology(uint32_t* src, uint32_t* dest, uint64_t *delay, uint32_t n
 		istringstream lineBuffer;
 		string line;
 
-		while (!topology.eof ())
-		{
-			line.clear ();
-			lineBuffer.clear ();
+		while (!topology.eof()) {
+			line.clear();
+			lineBuffer.clear();
 
-			getline (topology,line);
-			lineBuffer.str (line);
+			getline(topology, line);
+			lineBuffer.str(line);
 			lineBuffer >> *src;
-			if (*src > num_terminal) continue;
+			if (*src > num_terminal)
+				continue;
 			lineBuffer >> *dest;
-			if (*dest > num_terminal) continue;
+			if (*dest > num_terminal)
+				continue;
 			lineBuffer >> *delay;
 			*src = *src - 1;
 			*dest = *dest - 1; // zero base
@@ -170,124 +164,161 @@ void setAddressStrings(int num, char *ip_base, char* tap_base) {
 	char tap_name[100];
 	char mac_addr[20];
 	int i;
-	for (i=0; i<num; i++) {
-		sprintf(ip_addr_str, "%s.%d", ip_base, i+1);
+
+	for (i = 0; i < num; i++) {
+		sprintf(ip_addr_str, "%s.%d", ip_base, i + 1);
 		ip_addrs.push_back(string(ip_addr_str));
-		sprintf(tap_name, "%s%d", tap_base, i+1);
+		sprintf(tap_name, "%s%d", tap_base, i + 1);
 		tap_names.push_back(string(tap_name));
-		sprintf(mac_addr, "00:00:00:02:00:%02d", i+1);
+		sprintf(mac_addr, "00:00:00:02:00:%02d", i + 1);
 		mac_addresses.push_back(string(mac_addr));
-		sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+		sprintf(mac_addr, "00:00:00:03:00:%02d", i + 1);
 		mac_addresses_2.push_back(string(mac_addr));
 	}
 	i++;
-	sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+	sprintf(mac_addr, "00:00:00:03:00:%02d", i + 1);
 	mac_addresses_2.push_back(string(mac_addr));
 	i++;
-	sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+	sprintf(mac_addr, "00:00:00:03:00:%02d", i + 1);
 	mac_addresses_2.push_back(string(mac_addr));
 }
 
-void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int runtime)
-{
+void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int runtime) {
 	const char * ip_addr_str = ip_addrs[i].c_str();
 	string mac_addr = mac_addresses[i];
 	string tap_name = tap_names[i];
 
+	/*Configure mal-proxy, if this node needs one*/
 	if (ifMalicious) {
-		for (set<int>::iterator pi=udp_ports.begin(); pi!= udp_ports.end(); pi++) {
-			MalProxyHelper server (Ipv4Address(ip_addr_str), *pi, 0);
-			apps->Add(server.Install (terminals.Get(i)));
-			if (i == 0) NS_LOG_INFO(" UDP port : " << *pi);
+		for (set<int>::iterator pi = udp_ports.begin(); pi != udp_ports.end(); pi++) {
+			MalProxyHelper server(Ipv4Address(ip_addr_str), *pi, 0);
+			apps->Add(server.Install(terminals.Get(i)));
+			if (i == 0)
+				NS_LOG_INFO(" UDP port : " << *pi);
 		}
-		for (set<int>::iterator pi=tcp_ports.begin(); pi!= tcp_ports.end(); pi++) {
-			MalProxyHelper server (Ipv4Address(ip_addr_str), 0, *pi);
-			apps->Add(server.Install (terminals.Get(i)));
-			if (i == 0) NS_LOG_INFO(" TCP port : " << *pi);
+		for (set<int>::iterator pi = tcp_ports.begin(); pi != tcp_ports.end(); pi++) {
+			MalProxyHelper server(Ipv4Address(ip_addr_str), 0, *pi);
+			apps->Add(server.Install(terminals.Get(i)));
+			if (i == 0)
+				NS_LOG_INFO(" TCP port : " << *pi);
 		}
 	}
 
-	TapBridgeHelper tapBridge;tapBridge.SetAttribute ("Mode", StringValue ("UseBridge"));
-	// TapBridgeHelper tapBridge;tapBridge.SetAttribute ("Mode", StringValue ("UseLocal"));
-  tapBridge.SetAttribute ("DeviceName", StringValue (tap_name));
-	tapBridge.SetAttribute ("MacAddress", StringValue (mac_addr));
-  tapBridge.Install (terminals.Get (i), terminalDevices.Get (i));
-	if (ifMalicious) terminals.Get(i)->SetMalicious(); // this is how we set a node to be malicious
+	/*Setup TAP bridge*/
+	TapBridgeHelper tapBridge;
+	tapBridge.SetAttribute("Mode", StringValue("UseBridge"));
+	//TapBridgeHelper tapBridge;tapBridge.SetAttribute ("Mode", StringValue ("UseLocal"));
+	tapBridge.SetAttribute("DeviceName", StringValue(tap_name));
+	tapBridge.SetAttribute("MacAddress", StringValue(mac_addr));
+	tapBridge.Install(terminals.Get(i), terminalDevices.Get(i));
+	if (ifMalicious)
+		terminals.Get(i)->SetMalicious();
 }
-
 
 #ifndef CMD_PORT
 #define CMD_PORT 8000
 #endif
 
-void commandListener(void)
-{
-	int sockfd, n, newsockfd, tr=1;
+/*Entry point for controller commands!*/
+void commandListener(void) {
+	int sockfd, n, newsockfd, tr = 1;
 	socklen_t clilen;
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	void * savePtr = NULL;
 	void * appPtr = NULL;
 
+	/*setup socket*/
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	NS_ABORT_IF(sockfd < 0);
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(CMD_PORT);
-  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &tr, sizeof(int))) {
-    perror("setsockopt");
-    exit(1);
-  }
-	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &tr, sizeof(int))) {
+		perror("setsockopt");
+		exit(1);
+	}
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
 		NS_ABORT_MSG("ERROR on binding");
+		exit(1);
+	}
+
+	/*Read loop*/
 	while (1) {
 		string outbuffer;
 		int out_len = 0;
-		listen(sockfd,5);
+		listen(sockfd, 5);
 		clilen = sizeof(cli_addr);
 		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-		if (newsockfd < 0) 
+		if (newsockfd < 0){
 			NS_ABORT_MSG("ERROR on accept");
-		bzero(buffer,256);
-		n = read(newsockfd,buffer,255);
+			exit(1);
+		}
+		bzero(buffer, 256);
+		n = read(newsockfd, buffer, 255);
 
-		if (n < 0) NS_ABORT_MSG("ERROR reading from socket");
+		if (n < 0)
+			NS_ABORT_MSG("ERROR reading from socket");
 
+		/*Process message*/
 		if (buffer[0] == 'C') {
-			int i = apps->Command(string(buffer+2));
-			if (i) outbuffer = "command received\n";
-			else outbuffer = "command fail\n";
+			//send command to Mal-Proxy
+			int i = apps->Command(string(buffer + 2));
+			if (i)
+				outbuffer = "command received\n";
+			else
+				outbuffer = "command fail\n";
 		} else if (buffer[0] == 'F') {
-			if(debug>1){std::cout << "NS-3: Pause" << std::endl;}
+			//pause execution
+			if (debug > 1) {
+				std::cout << "NS-3: Pause" << std::endl;
+			}
 			out_len = Simulator::ToggleFreeze(true);
-			if(debug>1){std::cout << "NS-3: Paused" << std::endl;}
+			if (debug > 1) {
+				std::cout << "NS-3: Paused" << std::endl;
+			}
 		} else if (buffer[0] == 'S') {
-			//save event queue
-			if(debug>1){std::cout << "NS-3: Save" << std::endl;}
+			//save state
+			if (debug > 1) {
+				std::cout << "NS-3: Save" << std::endl;
+			}
 			savePtr = Simulator::Save(NULL);
 			appPtr = apps->Save();
-			if (savePtr != NULL){
-				if(debug>1){std::cout << "NS-3: Saved" << std::endl;}
-			}
-			else{
+			if (savePtr != NULL) {
+				if (debug > 1) {
+					std::cout << "NS-3: Saved" << std::endl;
+				}
+			} else {
 				std::cout << "NS-3: Save Failed" << std::endl;
 			}
 		} else if (buffer[0] == 'L') {
-			//save event queue
-			if(debug>1){std::cout << "NS-3: Load" << std::endl;}
+			//load state
+			if (debug > 1) {
+				std::cout << "NS-3: Load" << std::endl;
+			}
 			out_len = Simulator::Load(savePtr);
 			apps->Load(appPtr);
-			if(debug>1){std::cout << "NS-3: Loaded" << std::endl;}
+			if (debug > 1) {
+				std::cout << "NS-3: Loaded" << std::endl;
+			}
 		} else if (buffer[0] == 'R') {
-			if(debug>1){std::cout << "NS-3: Resume" << std::endl;}
+			//resume execution
+			if (debug > 1) {
+				std::cout << "NS-3: Resume" << std::endl;
+			}
 			apps->Resume();
 			out_len = Simulator::ToggleFreeze(false);
-			if(debug>1){std::cout << "NS-3: Resumed" << std::endl;}
-		} 
+			if (debug > 1) {
+				std::cout << "NS-3: Resumed" << std::endl;
+			}
+		}
+
+		/*Send response*/
 		if (out_len) {
 			n = write(newsockfd, outbuffer.c_str(), outbuffer.length());
-			if (n < 0) NS_ABORT_MSG("ERROR writing to socket");
+			if (n < 0)
+				NS_ABORT_MSG("ERROR writing to socket");
 		}
 		close(newsockfd);
 	}
@@ -295,25 +326,33 @@ void commandListener(void)
 	return;
 }
 
-	int 
-main (int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	//
 	// Set up some default values for the simulation.
 	//
-	GlobalValue::Bind ("SimulatorImplementationType", StringValue ("ns3::RealtimeSimulatorImpl"));
-	GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
+	GlobalValue::Bind("SimulatorImplementationType", StringValue("ns3::RealtimeSimulatorImpl"));
+	GlobalValue::Bind("ChecksumEnabled", BooleanValue(true));
+
+	/*Logging switches*/
+	LogComponentEnableAll(LOG_PREFIX_NODE);
+	LogComponentEnableAll(LOG_PREFIX_FUNC);
+
 	LogComponentEnable("MalProxyApplication", LOG_INFO);
 	//LogComponentEnable("MalProxyApplication", LOG_LOGIC);
 	//LogComponentEnable("MalSimple", LOG_INFO);
 	//LogComponentEnable("SimpleNetDevice", LOG_INFO);
 	//LogComponentEnable("SimpleNetDevice", LOG_FUNCTION);
 	//LogComponentEnable("Icmpv4L4Protocol", LOG_INFO);
+
 	//LogComponentEnable("TapBridge", LOG_INFO);
 	//LogComponentEnable("TapBridge", LOG_FUNCTION);
 	//LogComponentEnable("TapBridge", LOG_LOGIC);
-	LogComponentEnableAll(LOG_PREFIX_NODE);
-	LogComponentEnableAll(LOG_PREFIX_FUNC);
+
+	//LogComponentEnable("BridgeNetDevice", LOG_INFO);
+	//LogComponentEnable("BridgeNetDevice", LOG_LOGIC);
+	//LogComponentEnable("BridgeNetDevice", LOG_FUNCTION);
+	//LogComponentEnable("BridgeNetDevice", LOG_DEBUG);
+
 	//LogComponentEnable("Ipv4Interface", LOG_FUNCTION);
 	//LogComponentEnable("Ipv4Interface", LOG_INFO);
 
@@ -325,7 +364,7 @@ main (int argc, char *argv[])
 	//LogComponentEnable("Ipv4EndPointDemux", LOG_FUNCTION);
 	//LogComponentEnable("Ipv4EndPointDemux", LOG_DEBUG);
 	//LogComponentEnable("Ipv4EndPointDemux", LOG_LOGIC);
-//
+
 	//LogComponentEnable("Ipv4EndPoint", LOG_FUNCTION);
 	//LogComponentEnable("Ipv4EndPoint", LOG_DEBUG);
 	//LogComponentEnable("Ipv4EndPoint", LOG_LOGIC);
@@ -334,12 +373,10 @@ main (int argc, char *argv[])
 	//LogComponentEnable("UdpL4Protocol", LOG_FUNCTION);
 	//LogComponentEnable("UdpL4Protocol", LOG_LOGIC);
 
-  CommandLine cmd;
-  //cmd.Parse (argc, argv);
-	int num_terminal =4;
-  //uint16_t port = 300;
-  uint16_t tcp_port = 22;
-  uint16_t udp_port = 5377;
+	CommandLine cmd;
+	int num_terminal = 4;
+	uint16_t tcp_port = 22;
+	uint16_t udp_port = 5377;
 	set<int> malNodes;
 	char *ip_base = "10.1.1";
 	char ip_base_str[20];
@@ -347,53 +384,47 @@ main (int argc, char *argv[])
 	int runtime = 600;
 	std::string network = "default";
 	bool globalRouting = true;
-	int m1=0;
-	int m2=0;
+	int m1 = 0;
+	int m2 = 0;
 
-	// command processing
-
-	SystemThread commandProcessor = SystemThread(MakeCallback (&commandListener));
+	/*Process command line args*/
+	SystemThread commandProcessor = SystemThread(MakeCallback(&commandListener));
 	commandProcessor.Start();
-
-	for (int i=0; i<argc; i++) {
+	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-tcp_port") == 0) {
 			i++;
 			tcp_port = atoi(argv[i]);
 			tcp_ports.insert(tcp_port);
-		}
-		else if (strcmp(argv[i], "-udp_port") == 0) {
+		} else if (strcmp(argv[i], "-udp_port") == 0) {
 			i++;
 			udp_port = atoi(argv[i]);
 			udp_ports.insert(udp_port);
-		}
-		else if (strcmp(argv[i], "-mal") == 0) {
+		} else if (strcmp(argv[i], "-mal") == 0) {
 			i++;
 			malNodes.insert(atoi(argv[i]));
-		}
-		else if (strcmp(argv[i], "-num_vms") == 0) {
+		} else if (strcmp(argv[i], "-num_vms") == 0) {
 			i++;
 			num_terminal = atoi(argv[i]);
-		}
-		else if (strcmp(argv[i], "-runtime") == 0) {
+		} else if (strcmp(argv[i], "-runtime") == 0) {
 			i++;
 			runtime = atoi(argv[i]);
-		}
-		else if (strcmp(argv[i], "-ip_base") == 0) {
+		} else if (strcmp(argv[i], "-ip_base") == 0) {
 			i++;
 			ip_base = strdup(argv[i]);
-		}
-		else if (strcmp(argv[i], "-tap_base") == 0) {
+		} else if (strcmp(argv[i], "-tap_base") == 0) {
 			i++;
 			tap_base = strdup(argv[i]);
-		}
-		else if (strcmp(argv[i], "-network") == 0) {
+		} else if (strcmp(argv[i], "-network") == 0) {
 			i++;
 			network = string(argv[i]);
 		}
 	}
+
+	/*Set IP base*/
 	sprintf(ip_base_str, "%s.0", ip_base);
 	NS_LOG_INFO ("Build MalProxy topology.");
 
+	/*Create topology---create nodes for VMs*/
 	terminals.Create(num_terminal);
 	InternetStackHelper internet;
 	setAddressStrings(num_terminal, ip_base, tap_base);
@@ -404,54 +435,57 @@ main (int argc, char *argv[])
 		dev = CreateObject<SimpleNetDevice>();
 		terminals.Get(i)->AddDevice(dev);
 		dev->SetAddress(Mac48Address(mac_addresses[i].c_str()));
-		terminalDevices.Add (dev);
+		terminalDevices.Add(dev);
 		simpleDevices.push_back(dev);
 	}
 
+	/*Create topology---setup switches*/
+	NodeContainer m_routers;
+	NetDeviceContainer m_routerDevices;
+	NetDeviceContainer m_leftRouterDevices;
+	NetDeviceContainer m_rightRouterDevices;
+	m_routers.Create(2);
 
-  	//
-	NodeContainer          m_routers;
-	NetDeviceContainer     m_routerDevices;
-	NetDeviceContainer     m_leftRouterDevices;
-	NetDeviceContainer     m_rightRouterDevices;
+	/*Create topology---switch 1*/
+	channel = CreateObject<SimpleChannel>();
+	dev = CreateObject<SimpleNetDevice>();
+	dev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
+	m_routers.Get(0)->AddDevice(dev);
+	m_routerDevices.Add(dev);
+	dev->AddChannel(channel, mac_addresses_2[1].c_str());
 
-    m_routers.Create (2);
+	/*Create topology---switch 2*/
+	dev = CreateObject<SimpleNetDevice>();
+	dev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));
+	m_routers.Get(1)->AddDevice(dev);
+	m_routerDevices.Add(dev);
+	dev->AddChannel(channel, Mac48Address(mac_addresses_2[0].c_str()));
+	m2 = 2;
 
-    channel = CreateObject<SimpleChannel>();
-    dev = CreateObject<SimpleNetDevice>();
-    dev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
-    m_routers.Get(0)->AddDevice(dev);
-    m_routerDevices.Add(dev);
-    dev->AddChannel(channel,mac_addresses_2[1].c_str());
+	/*Create topology---Create left links/devices*/
+	for (uint32_t i = 0; i < num_terminal / 2; ++i) {
+		channel = CreateObject<SimpleChannel>();
+		dev = CreateObject<SimpleNetDevice>();
+		dev->SetAddress(Mac48Address(mac_addresses_2[m2].c_str()));
+		dev->AddChannel(channel, Mac48Address(mac_addresses[m1].c_str()));
+		m_routers.Get(0)->AddDevice(dev);
+		m_leftRouterDevices.Add(dev);
 
-    dev = CreateObject<SimpleNetDevice>();
-    dev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));
-    m_routers.Get(1)->AddDevice(dev);
-    m_routerDevices.Add(dev);
-    dev->AddChannel(channel,Mac48Address(mac_addresses_2[0].c_str()));
-    m2=2;
+		simpleDevices[i]->AddChannel(channel,
+				Mac48Address(mac_addresses_2[m2].c_str()));
+		m1++;
+		m2++;
+	}
 
-    // Add the left side links
-    for (uint32_t i = 0; i < num_terminal/2; ++i)
-      {
-      channel = CreateObject<SimpleChannel>();
-  	  dev = CreateObject<SimpleNetDevice>();
-  	  dev->SetAddress(Mac48Address(mac_addresses_2[m2].c_str()));
-  	  dev->AddChannel(channel, Mac48Address(mac_addresses[m1].c_str()));
-  	  m_routers.Get(0)->AddDevice(dev);
-      m_leftRouterDevices.Add(dev);
+	/*Create topology---connect left switch*/
+	NetDeviceContainer ndc = m_leftRouterDevices;
+	ndc.Add(m_routerDevices.Get(0));
+	BridgeHelper bh;
+	bh.Install(m_routers.Get(0), ndc);
 
-      simpleDevices[i]->AddChannel(channel,Mac48Address(mac_addresses_2[m2].c_str()));
-      m1++;
-      m2++;
-      }
-    NetDeviceContainer ndc=m_leftRouterDevices;
-    ndc.Add(m_routerDevices.Get(0));
-    BridgeHelper bh;
-    bh.Install(m_routers.Get(0),ndc);
-    // Add the right side links
-    for (uint32_t i = num_terminal/2; i < num_terminal; ++i)
-      {
+
+	/*Create topology---Create right links/devices*/
+	for (uint32_t i = num_terminal / 2; i < num_terminal; ++i) {
 		channel = CreateObject<SimpleChannel>();
 		dev = CreateObject<SimpleNetDevice>();
 		dev->SetAddress(Mac48Address(mac_addresses_2[m2].c_str()));
@@ -459,48 +493,53 @@ main (int argc, char *argv[])
 		m_routers.Get(1)->AddDevice(dev);
 		m_rightRouterDevices.Add(dev);
 
-		simpleDevices[i]->AddChannel(channel,Mac48Address(mac_addresses_2[m2].c_str()));
+		simpleDevices[i]->AddChannel(channel,
+				Mac48Address(mac_addresses_2[m2].c_str()));
 		m1++;
 		m2++;
-      }
-    ndc=m_rightRouterDevices;
-    ndc.Add(m_routerDevices.Get(1));
-    bh=BridgeHelper();
-    bh.Install(m_routers.Get(1),ndc);
+	}
 
+	/*Create topology---connect right switch*/
+	ndc = m_rightRouterDevices;
+	ndc.Add(m_routerDevices.Get(1));
+	bh = BridgeHelper();
+	bh.Install(m_routers.Get(1), ndc);
+
+	/*Assign IP addresses*/
 	Ipv4AddressHelper ipv4;
-	ipv4.SetBase (ip_base_str, "255.255.255.0");
-	ipv4.Assign (terminalDevices);
+	ipv4.SetBase(ip_base_str, "255.255.255.0");
+	ipv4.Assign(terminalDevices);
 	PopulateArpCache();
 
-
-	NS_LOG_INFO("====================================");
-	for (set<int>::iterator it=malNodes.begin(); it != malNodes.end(); it++) {
-	NS_LOG_INFO(" mal : " << *it);
-	}
-	NS_LOG_INFO(" number of vms : " << num_terminal);
-	NS_LOG_INFO(" IP base : " << ip_base_str);
-	NS_LOG_INFO(" Tap base : " << tap_base);
-	NS_LOG_INFO(" Network : " << network);
-	ApplicationContainer appCon = ApplicationContainer();
-	apps = &appCon;
-	for (int i=0; i<num_terminal; i++) {
+	/*Setup TAP devices*/
+	for (int i = 0; i < num_terminal; i++) {
 		bool ifMalicious = false;
-		if (malNodes.find(i) != malNodes.end()) ifMalicious = true;
+		if (malNodes.find(i) != malNodes.end())
+			ifMalicious = true;
 		MalProxyTap(i, ip_base, ifMalicious, tap_base, runtime);
 	}
-	apps->Start (Seconds (0.0));
-	apps->Stop (Seconds (runtime));
-	NS_LOG_INFO("APPS: " << apps->GetN());
 
+	/*Start Mal-proxy application*/
+	ApplicationContainer appCon = ApplicationContainer();
+	apps = &appCon;
+	apps->Start(Seconds(0.0));
+	apps->Stop(Seconds(runtime));
+
+	/*Setup routing tables*/
+	if (globalRouting)
+		Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+
+	/*Pretty output summary*/
 	NS_LOG_INFO("====================================");
-	
+	for (set<int>::iterator it = malNodes.begin(); it != malNodes.end(); it++) {
+		NS_LOG_INFO(" mal : " << *it);
+	} NS_LOG_INFO(" number of vms : " << num_terminal); NS_LOG_INFO(" IP base : " << ip_base_str); NS_LOG_INFO(" Tap base : " << tap_base); NS_LOG_INFO(" Network : " << network);
+	NS_LOG_INFO("APPS: " << apps->GetN());
+	NS_LOG_INFO("====================================");
 
-  if (globalRouting) Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
-  Simulator::Stop (Seconds (runtime));
-  Simulator::Run ();
-  Simulator::Destroy ();
-
-  return 0;
+	/*Start simulation*/
+	Simulator::Stop(Seconds(runtime));
+	Simulator::Run();
+	Simulator::Destroy();
+	return 0;
 }
