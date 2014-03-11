@@ -50,6 +50,7 @@ set<int> tcp_ports;
 std::vector<string> ip_addrs;
 std::vector<string> tap_names;
 std::vector<string> mac_addresses;
+std::vector<string> mac_addresses_2;
 ifstream topology;
 ApplicationContainer* apps;
 map<int, int> delayMap;
@@ -168,14 +169,23 @@ void setAddressStrings(int num, char *ip_base, char* tap_base) {
 	char ip_addr_str[20];
 	char tap_name[100];
 	char mac_addr[20];
-	for (int i=0; i<num; i++) {
+	int i;
+	for (i=0; i<num; i++) {
 		sprintf(ip_addr_str, "%s.%d", ip_base, i+1);
 		ip_addrs.push_back(string(ip_addr_str));
 		sprintf(tap_name, "%s%d", tap_base, i+1);
 		tap_names.push_back(string(tap_name));
 		sprintf(mac_addr, "00:00:00:02:00:%02d", i+1);
 		mac_addresses.push_back(string(mac_addr));
+		sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+		mac_addresses_2.push_back(string(mac_addr));
 	}
+	i++;
+	sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+	mac_addresses_2.push_back(string(mac_addr));
+	i++;
+	sprintf(mac_addr, "00:00:00:03:00:%02d", i+1);
+	mac_addresses_2.push_back(string(mac_addr));
 }
 
 void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int runtime)
@@ -337,6 +347,8 @@ main (int argc, char *argv[])
 	int runtime = 600;
 	std::string network = "default";
 	bool globalRouting = true;
+	int m1=0;
+	int m2=0;
 
 	// command processing
 
@@ -380,39 +392,86 @@ main (int argc, char *argv[])
 		}
 	}
 	sprintf(ip_base_str, "%s.0", ip_base);
-  NS_LOG_INFO ("Build MalProxy topology.");
+	NS_LOG_INFO ("Build MalProxy topology.");
 
-  terminals.Create (num_terminal);
-  InternetStackHelper internet;
-	setAddressStrings(num_terminal, ip_base, tap_base); // prepare address strings
-  internet.Install (terminals);
+	terminals.Create(num_terminal);
+	InternetStackHelper internet;
+	setAddressStrings(num_terminal, ip_base, tap_base);
+	internet.Install(terminals);
+	Ptr<SimpleNetDevice> dev;
+	Ptr<SimpleChannel> channel;
+	for (int i = 0; i < num_terminal; i++) {
+		dev = CreateObject<SimpleNetDevice>();
+		terminals.Get(i)->AddDevice(dev);
+		dev->SetAddress(Mac48Address(mac_addresses[i].c_str()));
+		terminalDevices.Add (dev);
+		simpleDevices.push_back(dev);
+	}
 
 
-	{
-		for (int i = 0; i < num_terminal; i++) {
-			Ptr<SimpleNetDevice> dev = CreateObject<SimpleNetDevice>(); 
-			terminals.Get(i)->AddDevice(dev);
-			dev->SetAddress(Mac48Address(mac_addresses[i].c_str()));
-			terminalDevices.Add (dev);
-			simpleDevices.push_back(dev);
-		}
-		Ipv4AddressHelper ipv4;
-		ipv4.SetBase (ip_base_str, "255.255.255.0");
-		ipv4.Assign (terminalDevices);
-		PopulateArpCache();
-		for (int i = 0; i < num_terminal; i++) {
-			// let the device remember the pair of channel and IP
-			for (int j = i+1; j < num_terminal; j++) {
-				Ptr<SimpleNetDevice> devI = simpleDevices[i];
-				Ptr<SimpleNetDevice> devJ = simpleDevices[j];
-				Ptr<SimpleChannel> channel = CreateObject<SimpleChannel>();
-				channel->SetDelay(1000);
-				devI->AddChannel(channel, Mac48Address::ConvertFrom(devJ->GetAddress()));
-				devJ->AddChannel(channel, Mac48Address::ConvertFrom(devI->GetAddress()));
-			}
-		}
+  	//
+	NodeContainer          m_routers;
+	NetDeviceContainer     m_routerDevices;
+	NetDeviceContainer     m_leftRouterDevices;
+	NetDeviceContainer     m_rightRouterDevices;
 
-	} 
+    m_routers.Create (2);
+
+    channel = CreateObject<SimpleChannel>();
+    dev = CreateObject<SimpleNetDevice>();
+    dev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
+    m_routers.Get(0)->AddDevice(dev);
+    m_routerDevices.Add(dev);
+    dev->AddChannel(channel,mac_addresses_2[1].c_str());
+
+    dev = CreateObject<SimpleNetDevice>();
+    dev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));
+    m_routers.Get(1)->AddDevice(dev);
+    m_routerDevices.Add(dev);
+    dev->AddChannel(channel,Mac48Address(mac_addresses_2[0].c_str()));
+    m2=2;
+
+    // Add the left side links
+    for (uint32_t i = 0; i < num_terminal/2; ++i)
+      {
+      channel = CreateObject<SimpleChannel>();
+  	  dev = CreateObject<SimpleNetDevice>();
+  	  dev->SetAddress(Mac48Address(mac_addresses_2[m2].c_str()));
+  	  dev->AddChannel(channel, Mac48Address(mac_addresses[m1].c_str()));
+  	  m_routers.Get(0)->AddDevice(dev);
+      m_leftRouterDevices.Add(dev);
+
+      simpleDevices[i]->AddChannel(channel,Mac48Address(mac_addresses_2[m2].c_str()));
+      m1++;
+      m2++;
+      }
+    NetDeviceContainer ndc=m_leftRouterDevices;
+    ndc.Add(m_routerDevices.Get(0));
+    BridgeHelper bh;
+    bh.Install(m_routers.Get(0),ndc);
+    // Add the right side links
+    for (uint32_t i = num_terminal/2; i < num_terminal; ++i)
+      {
+		channel = CreateObject<SimpleChannel>();
+		dev = CreateObject<SimpleNetDevice>();
+		dev->SetAddress(Mac48Address(mac_addresses_2[m2].c_str()));
+		dev->AddChannel(channel, Mac48Address(mac_addresses[m1].c_str()));
+		m_routers.Get(1)->AddDevice(dev);
+		m_rightRouterDevices.Add(dev);
+
+		simpleDevices[i]->AddChannel(channel,Mac48Address(mac_addresses_2[m2].c_str()));
+		m1++;
+		m2++;
+      }
+    ndc=m_rightRouterDevices;
+    ndc.Add(m_routerDevices.Get(1));
+    bh=BridgeHelper();
+    bh.Install(m_routers.Get(1),ndc);
+
+	Ipv4AddressHelper ipv4;
+	ipv4.SetBase (ip_base_str, "255.255.255.0");
+	ipv4.Assign (terminalDevices);
+	PopulateArpCache();
 
 
 	NS_LOG_INFO("====================================");
@@ -438,13 +497,6 @@ main (int argc, char *argv[])
 	
 
   if (globalRouting) Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
-	/* Logging
-  NS_LOG_INFO ("Enable pcap tracing.");
-  csma.EnablePcapAll ("twonodes");
-	AsciiTraceHelper ascii;
-	csma.EnableAsciiAll(ascii.CreateFileStream("trace"));
-	*/
 
   Simulator::Stop (Seconds (runtime));
   Simulator::Run ();

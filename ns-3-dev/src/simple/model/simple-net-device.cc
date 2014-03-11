@@ -147,7 +147,7 @@ SimpleNetDevice::GhostIntercept(Ptr<Packet> packet_received, bool sending, bool 
 	MaliciousTag mtag;
 	int protocol;
 	packet_received->PeekPacketTag(mtag);
-  Ptr<Packet> packet = packet_received->Copy ();
+	Ptr<Packet> packet = packet_received->Copy ();
 	Ipv4Header ipHeader;
 	packet->PeekHeader(ipHeader);
 	//uint32_t size = packet->PeekHeader(ipHeader);
@@ -161,9 +161,10 @@ SimpleNetDevice::GhostIntercept(Ptr<Packet> packet_received, bool sending, bool 
 		ProfileFunction("GhostIntercept", false);
 		return false;
 	}
-  // don't process UDP packets that you are receiving
+
+	// don't process UDP packets that you are receiving
 	/* // REPLAY requires to look at packets being received
-  if (protocol == UdpL4Protocol::PROT_NUMBER && !sending) {
+  	  if (protocol == UdpL4Protocol::PROT_NUMBER && !sending) {
 		 return false;
 	}
 	*/
@@ -172,7 +173,6 @@ SimpleNetDevice::GhostIntercept(Ptr<Packet> packet_received, bool sending, bool 
 	if (sending) {
 		if (mtag.GetMalStatus() == MaliciousTag::FROMPROXY && mtag.GetSrcNode() == m_node->GetId()) {
 			ProfileFunction("GhostIntercept", false);
-      std::cout << "...\n";
 			return false;
 			// if sending, and from my proxy, no point to intercept, but possibly to write tap...?
 		}
@@ -196,10 +196,9 @@ SimpleNetDevice::GhostIntercept(Ptr<Packet> packet_received, bool sending, bool 
 		}
 
 		//see if the malicious proxy cares about this message type
-		  /* XXX - Now this is done at TapDevice
+		/* XXX - Now this is done at TapDevice
 		Ptr<Application> app = m_node->GetApplication(0);
 		uint8_t *msg = new uint8_t[pcopy->GetSize()];
-		//TODO: change to PeekData
 		pcopy->CopyData(msg, pcopy->GetSize());
 		uint32_t offset = 8; //size of udp header
 		Message *m = new Message(msg+offset);
@@ -217,20 +216,16 @@ SimpleNetDevice::GhostIntercept(Ptr<Packet> packet_received, bool sending, bool 
 		delete m;
 		delete msg;	
     */
-	
-
 	}
 	if (protocol == TcpL4Protocol::PROT_NUMBER) {
 		TcpHeader tcpHeader;
 		pcopy->PeekHeader (tcpHeader);
 		destPort = tcpHeader.GetDestinationPort() ;
 		if (!m_node->IsLocalPort(true, destPort)) {
-			//std::cout << "PACKET GOES TO TCP port " << destPort << std::endl;
 			ProfileFunction("GhostIntercept", false);
 			return false;
 		}
 	}
-	//NS_LOG_LOGIC("DEST PORT : " << destPort);
 	
 	packet->RemovePacketTag(mtag);
 	mtag.StartTimer();
@@ -275,12 +270,10 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 	NS_LOG_FUNCTION (m_node->GetId() << " pcaket: " << packet->GetUid() << protocol << to << from);
 	NetDevice::PacketType packetType;
 	
-		//std::cout << "arrived at " << m_node->GetId() << " packet: " << packet->GetUid() << " proto: " << protocol << " " << from << " > " << to << std::endl;
 	if (m_receiveErrorModel && m_receiveErrorModel->IsCorrupt (packet) )
 	{
 		m_phyRxDropTrace (packet);
-		//std::cout << "drop packet error" << std::endl;
-	ProfileFunction("SimpleReceive", false);
+		ProfileFunction("SimpleReceive", false);
 		return;
 	}
 
@@ -298,7 +291,6 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 	if (!crcGood)
 	{
 		NS_LOG_INFO ("CRC error on originalPacket " << originalPacket);
-		//std::cout << "CRC error on originalPacket " << std::endl;
 		m_phyRxDropTrace (originalPacket);
 	ProfileFunction("SimpleReceive", false);
 		return;
@@ -321,7 +313,6 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 		NS_ASSERT (originalPacket->GetSize () >= header.GetLengthType ());
 		uint32_t padlen = originalPacket->GetSize () - header.GetLengthType ();
 		if (padlen > 46) return;
-		//NS_ASSERT (padlen <= 46);
 		if (padlen > 0)
 		{
 			originalPacket->RemoveAtEnd (padlen);
@@ -338,8 +329,8 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 	bool writeToTap = false;
 	
 	if (m_node->IsMalicious() && protocol == 2048) {
-		NS_LOG_INFO("try intercept while receiving at node " << m_node->GetId());
-		//if (GhostIntercept(originalPacket, false, &writeToTap, from)) return; // this should be receiving a pcket expect tag 3
+		//NS_LOG_INFO("try intercept while receiving at node " << m_node->GetId());
+		//if (GhostIntercept(originalPacket, false, &writeToTap, from)) return;
 	}
 
 
@@ -349,7 +340,7 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 	}
 	else if (to.IsBroadcast ())
 	{
-		packetType = NetDevice::PACKET_HOST;
+		packetType = NetDevice::PACKET_BROADCAST;
 	}
 	else if (to.IsGroup ())
 	{
@@ -372,12 +363,10 @@ SimpleNetDevice::Receive (Ptr<Packet> packet, uint16_t protocol,
 		m_promiscCallback (this, originalPacket, protocol, from, to, packetType); // this writes to tap
 	} 
 	ProfileFunction("SimpleReceive", false);
-	return;
-	/*
-		 if (writeToTap) return;
-		 if (packetType != PACKET_OTHERHOST) 
+
+	 /*if (writeToTap) return;*/
+	 if (packetType != PACKET_OTHERHOST)
 		 m_rxCallback (this, packet, protocol_new, from); // local up
-	 */
 }
 
 void
@@ -386,9 +375,7 @@ SimpleNetDevice::AddChannel (Ptr<SimpleChannel> channel, Mac48Address dest_addr)
 	uint64_t mac = 0;
 	dest_addr.CopyTo((uint8_t*)&mac);
 	m_channels[mac] = channel;
-	//m_channels.push_back(channel);
   channel->Add (this);
-	//m_channelAddresses.push_back(dest_addr);
 }
 
 uint32_t
@@ -529,7 +516,6 @@ SimpleNetDevice::SendFrom (Ptr<Packet> packet, const Address& source, const Addr
 	to.CopyTo((uint8_t*)&mac);
 	__gnu_cxx::hash_map<uint64_t, Ptr<SimpleChannel> >::iterator ch = m_channels.find(mac);
 	ProfileFunction("SimpleSendFrom", false);
-	//std::cout << "Sending packet" << std::endl;
 	if (ch != m_channels.end()) {
 		(ch->second)->Send (packet, protocolNumber, to, from, this);
 	} else {
