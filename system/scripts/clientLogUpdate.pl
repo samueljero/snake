@@ -91,9 +91,9 @@ sub Prime_bugPerf {
 sub TCP_Perf{
 	my $eachline = shift;
 	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
-	my @fields = split(',', $eachline); 
-	print SCORE "$fields[7]\n";
-	print "PERF: @fields\n";
+	my $cnt= $eachline =~ tr/.//;
+	print SCORE "$cnt\n";
+	print "PERF: $cnt\n";
 	close SCORE;
 }
 

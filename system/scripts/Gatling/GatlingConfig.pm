@@ -61,10 +61,8 @@ sub prepare()
 
 sub runSystem()
 {
-  #system("./serverLog.pl & ");
-  #system("./serverLog.pl & ");
-	system("pssh -p $s_parallel -h $serverList \"pkill server\"  &");
-	system("pssh -p $s_parallel -h $clientList \"pkill client\"  &");
+	system("pssh -p $s_parallel -h $serverList \"pkill server\"");
+	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
 	print "About to execute server command: $server_command\n";
 	system("pssh -p $s_parallel -h $serverList -t $runTime \"$server_command\"  &");
 }
@@ -72,8 +70,8 @@ sub runSystem()
 sub runClient()
 {
 	print "About to execute client command: $client_command\n";
-	system("pssh -p $s_parallel -h $clientList \"pkill client\"  &");
-	system("pssh -p $c_parallel -h $clientList -t $runTime \"$client_command &\"  &");
+	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
+	system("pssh -p $c_parallel -h $clientList -t $runTime \"$client_command &\" &");
 }
 
 sub setSystem() 
@@ -200,14 +198,12 @@ sub systemSteward()
 sub systemTCP()
 {
   $setupCommand = "mkdir TCP";
-  $server_command = "iperf -s -p1234 -i1 -yC -xCMS |  ~/perfcollector.pl";
-  $client_command = "iperf -c 10.1.2.3 -p 1234 -t600";
+  $server_command = "";
+  $client_command = "/root/TCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
-  $s_parallel = 1;
-  $c_parallel = 1;
   $runTime = 30;
-  $watchPort = " -tcp_port 1234";
+  $watchPort = " -tcp_port 80";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
   $prePerf = "TCP/pre_perf.txt";
@@ -219,6 +215,8 @@ sub systemTCP()
   $formatFile = "$format_dir/tcp.format";
   $start_attack = 1;
   $brokenPerf = 99999999;
+  $s_parallel = 2;
+  $c_parallel = 2;
 }
 
 1;
