@@ -512,6 +512,8 @@ int main(int argc, char *argv[]) {
 	PopulateArpCache();
 
 	/*Setup TAP devices*/
+	ApplicationContainer appCon = ApplicationContainer();
+	apps = &appCon;
 	for (int i = 0; i < num_terminal; i++) {
 		bool ifMalicious = false;
 		if (malNodes.find(i) != malNodes.end())
@@ -520,8 +522,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	/*Start Mal-proxy application*/
-	ApplicationContainer appCon = ApplicationContainer();
-	apps = &appCon;
 	apps->Start(Seconds(0.0));
 	apps->Stop(Seconds(runtime));
 
