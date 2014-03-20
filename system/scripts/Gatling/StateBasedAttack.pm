@@ -13,6 +13,7 @@ my $malip = "10.1.2.1";
 my $clientport= 5555;
 my $serverport= 80;
 my $malport = 5556;
+my $defaultwindow=20000;
 
 
 my $fieldsPerMsgRef 	= MsgParse::parseMessage();
@@ -89,7 +90,7 @@ sub prepareMessages {
 		$strategyListForMessage[6] = "$MsgParse::msgName[$i] BURST 1.0";
 		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 2.0";
 		$strategyListForMessage[8] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$strategyListForMessage[9] = "$MsgParse::msgName[$i] WINDOW w=65535 t=5 $clientip $serverip $clientport $serverport 5";
+		$strategyListForMessage[9] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
 		for ( my $j = 0 ; $j < 10 ; $j++ ) {   # NONE, DROP 100, DROP 40, DUP 10, etc
 			push( @score,    9999 );
 			push( @selected, 0 );
