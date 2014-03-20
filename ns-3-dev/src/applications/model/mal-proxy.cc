@@ -622,7 +622,6 @@ int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
 
 int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 {
-	TcpHeader tcph;
 	connection *c;
 	std::vector<seq_state> *seq_list;
 	std::vector<seq_state> *ack_list;
@@ -631,50 +630,49 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	Message *m;
 	char tmp[32];
 
-	//tcph.EnableChecksums();
-	//tcph.InitializeChecksum(ip.GetSource(), ip.GetDestination(), TcpL4Protocol::PROT_NUMBER);
 	res->action = NONE;
-	packet->PeekHeader(tcph);
 
-	if ((ll.dir == FROMTAP && tcph.GetDestinationPort() != this->m_tcp_port)
-			|| (ll.dir == TOTAP && tcph.GetSourcePort() != this->m_tcp_port)) {
+	m = new Message(packet->PeekDataForMal());
+
+	/*Check ports*/
+#if (defined SOURCE_PORT_FIELD) && (defined DEST_PORT_FIELD)
+	if ((ll.dir == FROMTAP && m->GetSourcePort() != this->m_tcp_port)
+			|| (ll.dir == TOTAP && m->GetDestPort() != this->m_tcp_port)) {
 		/*Packet we don't care about*/
 		res->action = NONE;
 		return NONE;
 	}
+#endif
 
+	/*Debug output to display packet*/
+	//std::cout << ntohs(((BaseMessage*) m->msg)->src) << "-->"<< ntohs(((BaseMessage*) m->msg)->dest) << std::endl;
+	//std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")" << std::endl;
+	//std::cout << "Size: " << m->FindMsgSize() << " (" << m->FindMsgSize() * 4 << ")" << std::endl;
+
+	/*Adjust Sequence Numbers*/
+#if (defined SEQUENCE_FIELD) && (defined ACKNOWLEDGEMENT_FIELD)
 	if (ll.dir == FROMTAP) {
 		/*Forward direction, from "malicious" host*/
 		c = FindConnection(ll.iph.GetSource(), ll.iph.GetDestination(),
-				tcph.GetSourcePort(), tcph.GetDestinationPort());
+				m->GetSourcePort(), m->GetDestPort());
 		seq_list = &(c->d1);
 		ack_list = &(c->d2);
 	} else {
 		/*Reverse direction, from a victim*/
 		c = FindConnection(ll.iph.GetDestination(), ll.iph.GetSource(),
-				tcph.GetDestinationPort(), tcph.GetSourcePort());
+				m->GetDestPort(), m->GetDestPort());
 		seq_list = &(c->d2);
 		ack_list = &(c->d1);
 
 	}
+	seq_offset = FindOffset(seq_list, SequenceNumber32(m->GetSequenceNumber()));
+	ack_offset = FindOffset(ack_list, SequenceNumber32(m->GetAcknowledgementNumber()));
 
-	seq_offset = FindOffset(seq_list, tcph.GetSequenceNumber());
-	ack_offset = FindOffset(ack_list, tcph.GetAckNumber());
+	m->SetSequenceNumber(m->GetSequenceNumber()+seq_offset);
+	m->SetAcknowledgementNumber(m->GetAcknowledgementNumber()+ack_offset);
+#endif
 
-	m = new Message(packet->PeekDataForMal());
-
-	std::cout << ntohs(((BaseMessage*) m->msg)->src) << "-->"
-			<< ntohs(((BaseMessage*) m->msg)->dest) << std::endl;
-	std::cout << "Type: " << m->FindMsgType() << " ("
-			<< m->TypeToStr(m->FindMsgType()) << ")" << std::endl;
-	std::cout << "Size: " << m->FindMsgSize() << " (" << m->FindMsgSize() * 4
-			<< ")" << std::endl;
-
-	sprintf(tmp, "+%i\n", seq_offset);
-	m->ChangeBaseMessage(2, tmp);
-	sprintf(tmp, "+%i\n", ack_offset);
-	m->ChangeBaseMessage(3, tmp);
-
+	/*Check for Malicious Actions and Do them!*/
 	int result = MalMsg(m);
 	if (result == 0) {
 		res->action = NONE;
@@ -685,6 +683,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	}
 	MaliciousStrategy(m, res);
 
+	/*Handle Burst action*/
 	if (res->burst){
 		burst[m->type].push_back(std::make_pair(packet,ll));
 		if (!burst_sched[m->type]) {
@@ -695,12 +694,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 		res->action = DROP;
 	}
 
-	delete (m);
-
-	packet->PeekHeader(tcph);
-	std::cout << tcph.GetSourcePort() << "!--->" << tcph.GetDestinationPort()
-			<< std::endl;
 	/*Checksum will be recomputed as actions are applied... particularly for Divert*/
+	delete (m);
 	return res->action;
 }
 
@@ -804,21 +799,16 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	src = Ipv4Address(ssrc);
 	dest = Ipv4Address(sdest);
 	spec += len;
-	p = new Packet(databytes);
-
-	tcph.EnableChecksums();
-	tcph.InitializeChecksum(src, dest, TcpL4Protocol::PROT_NUMBER);
-	p->AddHeader(tcph);
+	uint8_t *buf=(uint8_t*)malloc(sizeof(BaseMessage));
+	p = new Packet(buf,sizeof(BaseMessage));
+	free(buf);
 	m = new Message(p->PeekDataForMal());
 	m->CreateMessage(type, spec);
-
-	p->RemoveHeader(tcph);
-	p->AddHeader(tcph); //checksum
+	m->DoChecksum(m->FindMsgSize()+databytes,src,dest,TcpL4Protocol::PROT_NUMBER);
 
 
 	Simulator::Schedule(Time(Seconds(sec)),
 						&MalProxy::DoInjectPacket, this, p, src,dest);
-	//DoInjectPacket(p, src, dest);
 	return;
 }
 

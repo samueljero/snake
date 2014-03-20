@@ -19,7 +19,11 @@ int Message::FindMsgType() {
 }
 
 int Message::FindMsgSize() {
-	return ((BaseMessage*)msg)->size + 0;	
+#ifdef SIZE_MULT
+	return ((BaseMessage*)msg)->size*SIZE_MULT + 0;
+#else
+	return ((BaseMessage*)msg)->size + 0;
+#endif
 }
 
 void Message::ChangeBaseMessage(int field, char* value) {
@@ -7555,6 +7559,56 @@ void Message::CreateMessage(int type, const char *spec){
 	};
 	//std::cout<< "Exiting CreateMessage"<<std::endl;
 };
+
+
+uint16_t Message::GetSourcePort()
+{
+#ifdef SOURCE_PORT_FIELD
+	return ntohs(((BaseMessage*)msg)->SOURCE_PORT_FIELD);
+#else
+	return 0;
+#endif
+}
+
+uint16_t Message::GetDestPort()
+{
+#ifdef DEST_PORT_FIELD
+	return ntohs(((BaseMessage*)msg)->DEST_PORT_FIELD);
+#else
+	return 0;
+#endif
+}
+
+uint32_t Message::GetSequenceNumber()
+{
+#ifdef SEQUENCE_FIELD
+	return ntohl(((BaseMessage*)msg)->SEQUENCE_FIELD);
+#else
+	return 0;
+#endif
+}
+
+uint32_t Message::GetAcknowledgementNumber(){
+#ifdef ACKNOWLEDGEMENT_FIELD
+	return ntohl(((BaseMessage*)msg)->ACKNOWLEDGEMENT_FIELD);
+#else
+	return 0;
+#endif
+}
+
+void Message::SetSequenceNumber(uint32_t seq)
+{
+#ifdef SEQUENCE_FIELD
+	((BaseMessage*)msg)->SEQUENCE_FIELD=htonl(seq);
+#endif
+}
+
+void Message::SetAcknowledgementNumber(uint32_t ack)
+{
+#ifdef ACKNOWLEDGEMENT_FIELD
+	((BaseMessage*)msg)->ACKNOWLEDGEMENT_FIELD=htonl(ack);
+#endif
+}
 
 
 /*Checksumming Code pulled from dccp2tcp (https://github.com/samueljero/dccp2tcp) by Samuel Jero

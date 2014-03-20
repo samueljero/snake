@@ -585,6 +585,12 @@ class Message {
 	void ChangeSynRstPshAck(int field, char* value);
 	void ChangeFinSynRstPshAck(int field, char* value);
 	void CreateMessage(int type, const char *spec);
+	uint16_t GetSourcePort();
+	uint16_t GetDestPort();
+	uint32_t GetSequenceNumber();
+	uint32_t GetAcknowledgementNumber();
+	void SetSequenceNumber(uint32_t seq);
+	void SetAcknowledgementNumber(uint32_t ack);
 	void DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, int proto);
 
 	private:
