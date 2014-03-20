@@ -1,10 +1,18 @@
 #include <stdlib.h>
 #include <iostream>
 #include "stateMachine.h"
+#include "stateMetric.h"
 
 using namespace std;
 
 namespace ns3 {
+
+    ostream& operator<<(ostream& os, const State& s) { os << s.m_name; return os ;}
+    bool operator== (const State &l, const State &r) {return (l.m_name == r.m_name); }
+    bool operator!= (const State &l, const State &r) {return !(l == r);}
+    bool operator>  (const State &l, const State &r) {return l.m_name > r.m_name; }
+    bool operator<  (const State& l, const State& r) {return l.m_name < r.m_name; }
+
 
     void StateMachine::AddState(State state) {
         m_stateSet.insert(state);
@@ -15,10 +23,12 @@ namespace ns3 {
     }
 
     TrSet StateMachine::GetTransitionsTo(State to) {
-        TrSet trSet = m_reverseTransitions[to];
+        TrSet trSet;
+        trSet = m_reverseTransitions[to];
         for(TrSet::iterator it = trSet.begin(); it != trSet.end(); ){
             Transition tr = *it;
-            if (tr.From() != m_curState) {
+            State from = tr.From();
+            if (from.compare(m_curState) == false) {
                 trSet.erase(it++);
             } else {
                 ++it;
@@ -29,7 +39,8 @@ namespace ns3 {
 
     TrSet StateMachine::GetInvalidTransitions(State from) {
         TrSet invalid;
-        TrSet valid = m_validTransitions[from];
+        TrSet valid;
+        valid = m_validTransitions[from];
         for(TrSet::iterator it = m_trSet.begin(); it != m_trSet.end(); it++) {
             if (valid.find(*it) == valid.end()) invalid.insert(*it);
         }
@@ -38,8 +49,8 @@ namespace ns3 {
 
     void StateMachine::AddTransition(Transition transition) {
         m_trSet.insert(transition);
-        State from = transition.From();
-        State to = transition.To();
+        State from = (transition.From());
+        State to = (transition.To());
         if (m_stateSet.find(from) == m_stateSet.end()) m_stateSet.insert(from);
         if (m_stateSet.find(to) == m_stateSet.end()) m_stateSet.insert(to);
 
@@ -67,7 +78,8 @@ namespace ns3 {
         cout << "valid transitions" << endl;
         StateSet::iterator iterState;
         for (iterState = m_stateSet.begin(); iterState != m_stateSet.end(); iterState++) {
-            TrSet fromSet = m_validTransitions[*iterState];
+          State st = *iterState;
+            TrSet fromSet = m_validTransitions[st];
             for (TrSet::iterator iter = fromSet.begin(); iter != fromSet.end(); iter++) {
                 Transition tr = *iter;
                 cout << " from " << tr.From() << " to " << tr.To() << " rcvd " << tr.Rcvd() << " send " << tr.Send() << endl;
@@ -75,7 +87,8 @@ namespace ns3 {
         }
         cout << "reverse transitions" << endl;
         for (iterState = m_stateSet.begin(); iterState != m_stateSet.end(); iterState++) {
-            TrSet tset = m_reverseTransitions[*iterState];
+          State st = *iterState;
+            TrSet tset = m_reverseTransitions[st];
             for (TrSet::iterator iter = tset.begin(); iter != tset.end(); iter++) {
                 Transition tr = *iter;
                 cout << " to " << tr.To() << " from " << tr.From() << " rcvd " << tr.Rcvd() << " send " << tr.Send() << endl;
@@ -84,7 +97,7 @@ namespace ns3 {
         
     }
 
-    std::ostream& operator << (std::ostream& os, const ns3::Transition& tr) {
+    ostream& operator<< (std::ostream& os, const Transition& tr) {
         os << " from: " << tr.m_from << " to: " << tr.m_to << " rcvd: " << tr.m_rcvd << " send: " << tr.m_send;
     }
 
@@ -93,7 +106,7 @@ namespace ns3 {
         // if valid - move
         TrSet fromSet = m_validTransitions[m_curState];
         m_prevState = m_curState;
-        m_curState = "UNDEFINED";
+        m_curState = State("UNDEFINED");
         for (TrSet::iterator iter = fromSet.begin(); iter != fromSet.end(); iter++) {
             Transition curTr = *iter;
             if (curTr.compare(tr) == 0) {

@@ -24,6 +24,9 @@ def build(bld):
         'model/gnuplot.h',
         'model/delay-jitter-estimation.h',
         'model/dotParser.h',
+        'model/state.h',
+        'model/transition.h',
+        'model/stateMetric.h',
         'model/stateMachine.h',
         ]
 

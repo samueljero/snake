@@ -1,0 +1,1 @@
+./waf --run "DotParser tcp.dot"
