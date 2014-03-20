@@ -447,19 +447,28 @@ int main(int argc, char *argv[]) {
 	m_routers.Create(2);
 
 	/*Create topology---switch 1*/
-	channel = CreateObject<SimpleChannel>();
-	dev = CreateObject<SimpleNetDevice>();
-	dev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
-	m_routers.Get(0)->AddDevice(dev);
-	m_routerDevices.Add(dev);
-	dev->AddChannel(channel, mac_addresses_2[1].c_str());
+	Ptr<DropTailQueue> q;
+	Ptr<CsmaNetDevice> cdev;
+	Ptr<CsmaChannel> cchannel;
+	q=CreateObject<DropTailQueue>();
+	cchannel = CreateObject<CsmaChannel>();
+	cchannel->SetAttribute("DataRate",DataRateValue(string("100Mbps")));
+	cchannel->SetAttribute("Delay",TimeValue(Seconds(0.010)));
+	cdev = CreateObject<CsmaNetDevice>();
+	cdev->SetQueue(q);
+	cdev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
+	m_routers.Get(0)->AddDevice(cdev);
+	m_routerDevices.Add(cdev);
+	cdev->Attach(cchannel);
 
 	/*Create topology---switch 2*/
-	dev = CreateObject<SimpleNetDevice>();
-	dev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));
-	m_routers.Get(1)->AddDevice(dev);
-	m_routerDevices.Add(dev);
-	dev->AddChannel(channel, Mac48Address(mac_addresses_2[0].c_str()));
+	q=CreateObject<DropTailQueue>();
+	cdev = CreateObject<CsmaNetDevice>();
+	cdev->SetQueue(q);
+	cdev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));
+	m_routers.Get(1)->AddDevice(cdev);
+	m_routerDevices.Add(cdev);
+	cdev->Attach(cchannel);
 	m2 = 2;
 
 	/*Create topology---Create left links/devices*/
