@@ -51,7 +51,7 @@ using namespace std;
 
 static bool global_consult_gatling = true;
 static short global_once = 0;
-static int app_debug = 0;
+static int app_debug = 2;
 
 #define CTRL_IP "127.0.0.1"
 #define CTRL_PORT 8888
@@ -636,8 +636,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 
 	/*Check ports*/
 #if (defined SOURCE_PORT_FIELD) && (defined DEST_PORT_FIELD)
-	if ((ll.dir == FROMTAP && m->GetSourcePort() != this->m_tcp_port)
-			|| (ll.dir == TOTAP && m->GetDestPort() != this->m_tcp_port)) {
+	if ((ll.dir == FROMTAP && m->GetDestPort() != this->m_tcp_port)
+			|| (ll.dir == TOTAP && m->GetSourcePort() != this->m_tcp_port)) {
 		/*Packet we don't care about*/
 		res->action = NONE;
 		return NONE;
@@ -647,7 +647,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	/*Debug output to display packet*/
 	//std::cout << ntohs(((BaseMessage*) m->msg)->src) << "-->"<< ntohs(((BaseMessage*) m->msg)->dest) << std::endl;
 	//std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")" << std::endl;
-	//std::cout << "Size: " << m->FindMsgSize() << " (" << m->FindMsgSize() * 4 << ")" << std::endl;
+	//std::cout << "Size: " << m->FindMsgSize() << std::endl;
 
 	/*Adjust Sequence Numbers*/
 #if (defined SEQUENCE_FIELD) && (defined ACKNOWLEDGEMENT_FIELD)
