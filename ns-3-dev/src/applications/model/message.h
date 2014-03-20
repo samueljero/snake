@@ -2,6 +2,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <ns3/ipv4-address.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
 typedef struct {
@@ -19,6 +20,22 @@ typedef struct {
 	uint16_t chk;
 	uint16_t urgptr;
 } BaseMessage;
+
+#define CHECKSUM_FIELD chk
+
+#define SEQUENCE_FIELD seq
+
+#define ACKNOWLEDGEMENT_FIELD ack
+
+#define TYPE_FIELD type
+
+#define SIZE_FIELD size
+
+#define SIZE_MULT 4
+
+#define SOURCE_PORT_FIELD src
+
+#define DEST_PORT_FIELD dest
 
 typedef struct {
 	uint16_t src;
@@ -568,6 +585,11 @@ class Message {
 	void ChangeSynRstPshAck(int field, char* value);
 	void ChangeFinSynRstPshAck(int field, char* value);
 	void CreateMessage(int type, const char *spec);
+	void DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, int proto);
+
+	private:
+	uint32_t checksum(u_char *buf, unsigned nbytes, uint32_t sum);
+	uint32_t wrapsum(uint32_t sum);
 };
 #endif
 

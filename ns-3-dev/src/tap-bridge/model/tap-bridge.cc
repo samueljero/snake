@@ -1328,10 +1328,9 @@ int TapBridge::MaliciousProcess
 			udpHeader.SetSourcePort (srcPort);
 			packet_send->AddHeader(udpHeader);
         }else {
-			packet_send->RemoveHeader(tcpHeader);
-			tcpHeader.EnableChecksums();
-			tcpHeader.InitializeChecksum(ipsource, ipdest, TcpL4Protocol::PROT_NUMBER);
-			packet_send->AddHeader(tcpHeader);
+			msg = packet->PeekDataForMal();
+			m = new Message(msg);
+			m->DoChecksum(ipHeader.GetPayloadSize(),ipsource,ipdest,TcpL4Protocol::PROT_NUMBER);
         }
 		Ipv4Header ipHeadernew = ipHeader;
 		ipHeadernew.EnableChecksum();

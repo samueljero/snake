@@ -7556,3 +7556,62 @@ void Message::CreateMessage(int type, const char *spec){
 	//std::cout<< "Exiting CreateMessage"<<std::endl;
 };
 
+
+/*Checksumming Code pulled from dccp2tcp (https://github.com/samueljero/dccp2tcp) by Samuel Jero
+ * --- Code is under GNU GPL */
+struct ip4_pseudo_hdr{
+	uint32_t 	src;
+	uint32_t 	dest;
+	uint32_t	len;
+	char		zero[3];
+	char		nxt;
+};
+
+/*From http://gitorious.org/freebsd/freebsd/blobs/HEAD/sbin/dhclient/packet.c
+ * under GNU GPL*/
+uint32_t Message::checksum(u_char *buf, unsigned nbytes, uint32_t sum)
+{
+	int i;
+	/* Checksum all the pairs of bytes first... */
+	for (i = 0; i < (nbytes & ~1U); i += 2) {
+		sum += (u_int16_t)ntohs(*((u_int16_t *)(buf + i)));
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+	}
+	/*
+	 * If there's a single byte left over, checksum it, too.
+	 * Network byte order is big-endian, so the remaining byte is
+	 * the high byte.
+	 */
+	if (i < nbytes) {
+		sum += buf[i] << 8;
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+	}
+	return (sum);
+}
+
+/*From http://gitorious.org/freebsd/freebsd/blobs/HEAD/sbin/dhclient/packet.c
+ * under GNU GPL*/
+uint32_t Message::wrapsum(uint32_t sum)
+{
+	sum = ~sum & 0xFFFF;
+	return (htons(sum));
+}
+
+void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, int proto){
+	struct ip4_pseudo_hdr hdr;
+
+#ifdef CHECKSUM_FIELD
+	//create pseudo header
+	memset(&hdr, 0, sizeof(struct ip4_pseudo_hdr));
+	hdr.src=htonl(src.Get());
+	hdr.dest=htonl(dest.Get());
+	hdr.nxt=proto;
+	hdr.len=htonl(len);
+
+	//calculate total checksum
+	((BaseMessage*)msg)->CHECKSUM_FIELD=0;
+	((BaseMessage*)msg)->CHECKSUM_FIELD=wrapsum(checksum((u_char*)&hdr,sizeof(struct ip4_pseudo_hdr),checksum(msg,len,0)));
+#endif
+}
