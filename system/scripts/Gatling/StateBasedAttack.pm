@@ -5,6 +5,16 @@ require MsgParse;
 require Utils;
 require GatlingConfig;
 
+
+#Attack topology/connection details
+my $serverip = "10.1.2.3";
+my $clientip = "10.1.2.2";
+my $malip = "10.1.2.1";
+my $clientport= 5555;
+my $serverport= 80;
+my $malport = 5556;
+
+
 my $fieldsPerMsgRef 	= MsgParse::parseMessage();
 my $msgNameRef      	= $MsgParse::msgNameRef;
 my $messageCount        = MsgParse::getMsgNameClount();
@@ -78,8 +88,8 @@ sub prepareMessages {
 		$strategyListForMessage[5] = "$MsgParse::msgName[$i] REPLAY 1";
 		$strategyListForMessage[6] = "$MsgParse::msgName[$i] BURST 1.0";
 		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 2.0";
-		$strategyListForMessage[8] = "$MsgParse::msgName[$i] INJECT t=5 0 10.1.2.2 10.1.2.3 0=9876 1=1234 2=111 5=5";
-		$strategyListForMessage[9] = "$MsgParse::msgName[$i] WINDOW w=65535 t=5 10.1.2.2 10.1.2.3 9876 1234 5";
+		$strategyListForMessage[8] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
+		$strategyListForMessage[9] = "$MsgParse::msgName[$i] WINDOW w=65535 t=5 $clientip $serverip $clientport $serverport 5";
 		for ( my $j = 0 ; $j < 10 ; $j++ ) {   # NONE, DROP 100, DROP 40, DUP 10, etc
 			push( @score,    9999 );
 			push( @selected, 0 );
