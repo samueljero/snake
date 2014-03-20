@@ -130,4 +130,18 @@ sub getPerfScore()
   close SCORE;
   return $score;
 }
+
+sub getNumConnections()
+{
+	my $host=shift;
+	system("ssh $host \"netstat --inet -n\" > $GatlingConfig::tmpFile");
+	my $lines = `cat $GatlingConfig::tmpFile | wc -l`;
+	system("rm -f $GatlingConfig::tmpFile");
+	if($lines==0){
+		#Error, couldn't connect!
+		return -1;
+	}else{
+		return $lines;
+	}
+}
 1;

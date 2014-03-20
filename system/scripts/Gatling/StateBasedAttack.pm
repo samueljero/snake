@@ -34,6 +34,7 @@ my %excludeStrategy;    # actions to exclude
 my %perfScore;          # latest performance recorded
 my @FullStrategyList;
 my @FullPerfScore;
+my @FullResourceUsage;
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -50,6 +51,7 @@ sub CreateStrategyList{
 		for(my $j=0; $j < $strategyCount{$i};$j++){
 			push(@FullStrategyList,$strategyList{$i}[$j]);
 			push(@FullperfScore, $perfScore{$i}[$j]);
+			push(@FullResourceUsage, -1);
 		}
 	}
 }
@@ -231,13 +233,18 @@ sub start {
 		while($GatlingConfig::watch_ns3 !=0){
 			sleep(1);
 		}
-		
+
 		#Measure perf
 		$FullperfScore[$i] = Utils::getPerfScore();
-		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i]\n";
-		print PERF_LOG "$i $FullperfScore[$i] $FullStrategyList[$i]\n";
 		Utils::resetPerfScore();
 		GatlingConfig::prepare();
+
+		#Measure Resource Utilization
+		$FullResourceUsage[$i] = Utils::getNumConnections("root@$serverip");
+
+		#Print results
+		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i] used $FullResourceUsage[$i]\n";
+		print PERF_LOG "$i $FullperfScore[$i] $FullResourceUsage[$i] $FullStrategyList[$i]\n";
 	}
 }
 

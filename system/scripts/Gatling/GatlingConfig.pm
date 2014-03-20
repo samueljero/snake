@@ -25,6 +25,7 @@ $brokenPerf = 9999;
 $debug = 1;
 $formatFile = "";
 $scoreFile = "$basedir/score.client";
+$tmpFile = "$basedir/tmp";
 $format_dir = "$basedir/../../messages";
 #$formatFile = "$format_dir/steward.format";
 $window_size = 7;
@@ -202,7 +203,7 @@ sub systemTCP()
   $client_command = "/root/TCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
-  $runTime = 30;
+  $runTime = 60;
   $watchPort = " -tcp_port 80";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
