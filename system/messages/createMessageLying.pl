@@ -20,6 +20,7 @@ print DOTH <<END;
 #include <string.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <ns3/ipv4-address.h>
 #ifndef MESSAGE_H
 #define MESSAGE_H
 END
@@ -103,7 +104,9 @@ if ($parsing == 0) {
 		$structName = $token[1];
 		print DOTH "$token[0] $token[1] {\n";
 
-	} else {
+	}elsif($token[0] eq "DEFINE"){
+		print DOTH "#define $token[1] $token[2]\n\n";
+	}else {
 		push(@msgName, $token[0]);
 		$name = $token[0];
 		$parsing = 2;
@@ -615,6 +618,7 @@ for (my $i = 0; $i <= $#msgName; $i++) {
 print DOTC "\t//std::cout << \"Exiting EncMsgOffset\" << std::endl;\n";
 print DOTC "\treturn NULL;\n}\n\n";
 
+#Create Message
 print DOTH "\tvoid CreateMessage(int type, const char *spec);\n";
 print DOTC "void Message::CreateMessage(int type, const char *spec){\n";
 print DOTC "\t//std::cout<< \"Entering CreateMessage\"<<std::endl;\n";
@@ -633,6 +637,76 @@ print DOTC "\t\tspec+=len;\n";
 print DOTC "\t};\n";
 print DOTC "\t//std::cout<< \"Exiting CreateMessage\"<<std::endl;\n";
 print DOTC "};\n\n";
+
+#Checksumming
+print DOTH <<END;
+	void DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, int proto);
+
+	private:
+	uint32_t checksum(u_char *buf, unsigned nbytes, uint32_t sum);
+	uint32_t wrapsum(uint32_t sum);
+END
+print DOTC <<END;
+
+/*Checksumming Code pulled from dccp2tcp (https://github.com/samueljero/dccp2tcp) by Samuel Jero
+ * --- Code is under GNU GPL */
+struct ip4_pseudo_hdr{
+	uint32_t 	src;
+	uint32_t 	dest;
+	uint32_t	len;
+	char		zero[3];
+	char		nxt;
+};
+
+/*From http://gitorious.org/freebsd/freebsd/blobs/HEAD/sbin/dhclient/packet.c
+ * under GNU GPL*/
+uint32_t Message::checksum(u_char *buf, unsigned nbytes, uint32_t sum)
+{
+	int i;
+	/* Checksum all the pairs of bytes first... */
+	for (i = 0; i < (nbytes & ~1U); i += 2) {
+		sum += (u_int16_t)ntohs(*((u_int16_t *)(buf + i)));
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+	}
+	/*
+	 * If there's a single byte left over, checksum it, too.
+	 * Network byte order is big-endian, so the remaining byte is
+	 * the high byte.
+	 */
+	if (i < nbytes) {
+		sum += buf[i] << 8;
+		if (sum > 0xFFFF)
+			sum -= 0xFFFF;
+	}
+	return (sum);
+}
+
+/*From http://gitorious.org/freebsd/freebsd/blobs/HEAD/sbin/dhclient/packet.c
+ * under GNU GPL*/
+uint32_t Message::wrapsum(uint32_t sum)
+{
+	sum = ~sum & 0xFFFF;
+	return (htons(sum));
+}
+
+void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, int proto){
+	struct ip4_pseudo_hdr hdr;
+
+#ifdef CHECKSUM_FIELD
+	//create pseudo header
+	memset(&hdr, 0, sizeof(struct ip4_pseudo_hdr));
+	hdr.src=htonl(src.Get());
+	hdr.dest=htonl(dest.Get());
+	hdr.nxt=proto;
+	hdr.len=htonl(len);
+
+	//calculate total checksum
+	((BaseMessage*)msg)->CHECKSUM_FIELD=0;
+	((BaseMessage*)msg)->CHECKSUM_FIELD=wrapsum(checksum((u_char*)&hdr,sizeof(struct ip4_pseudo_hdr),checksum(msg,len,0)));
+#endif
+}
+END
 
 print DOTH "};\n#endif\n\n";
 
