@@ -52,8 +52,9 @@ sub parseMessage {
     if ($token[0] eq "struct") {
       $parsing = 1;
       $structName = $token[1];
-
-    } else {
+    }elsif($token[0] eq "DEFINE"){
+		#ignore
+    }else {
       push(@msgName, $token[0]);
       $name = $token[0];
       $parsing = 2;
