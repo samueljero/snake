@@ -1,30 +1,42 @@
 #ifndef STATE_METRIC_H
 #define STATE_METRIC_H
 
+#include <list>
+
 using namespace std;
 namespace ns3 {
-    // TO THINK: is it better to make metric only be double or to make it polymorphic?
-    typedef pair <State, class T> StateValuePair;
-    template <class T> class StateMetric {
+    // All metrics are double - just the way Gatling performance metric was
+
+    class StateMetric {
         string m_name;
-        map<State, StateValuePair> m_mapStateValue;
-        StateMetric(string name) {m_name = name;}
-    };
-
-    template <typename T> class CompareMetric
-    {
+        map<State, double> m_mapStateValue;
         public:
-            inline bool operator() (StateMetric<T> l, StateMetric<T> r)
-            {
-                return (l.m_name < r.m_name);
-            }
+        void UpdateValue(State st, double newvalue) { m_mapStateValue[st] = newvalue; }
+        void UpdateValueDelta(State st, double delta) { m_mapStateValue[st] += delta; }
+        double GetValue(State st) { return m_mapStateValue[st]; }
+        friend ostream& operator<<(ostream& os, const StateMetric& s);
+        friend bool operator== (const StateMetric& l, const StateMetric& r);
+        friend bool operator!= (const StateMetric& l, const StateMetric& r);
+        friend bool operator< (const StateMetric& l, const StateMetric& r);
+        friend bool operator> (const StateMetric& l, const StateMetric& r);
+        size_t GetCount() {return m_mapStateValue.size();}
+        list<State> GetStates();
     };
 
+
+    // Want to way to update and get metric values
+    // How often would they be called?
     class StateMetricTracker {
-        map <string, StateMetric<T>, CompareMetric<T> > m_mapStateMetric;
-        StateMetricTracker();
-        void UpdateMetric(string name, State st, T newvalue);
-        void AddMetric(string name, State st, T delta);
+        // map of state matrics key by name
+        map <string, StateMetric> m_mapStateMetric;
+        public:
+        StateMetricTracker() {}
+        void UpdateMetric(string name, State st, double newvalue);
+        void UpdateByDelta(string name, State st, double delta);
+        double GetMetricValue(string name, State st);
+        StateMetric GetMetric(string name, State st);
+        list<string> GetMetrics();
+        void PrintAll();
     };
 }
 
