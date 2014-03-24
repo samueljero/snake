@@ -27,6 +27,7 @@ $formatFile = "";
 $scoreFile = "$basedir/score.client";
 $tmpFile = "$basedir/tmp";
 $format_dir = "$basedir/../../messages";
+$statediagramFile = "diagram.dot";
 #$formatFile = "$format_dir/steward.format";
 $window_size = 7;
 $learning_threashold = 2;
@@ -218,6 +219,7 @@ sub systemTCP()
   $brokenPerf = 99999999;
   $s_parallel = 2;
   $c_parallel = 2;
+  $statediagramFile = "$format_dir/tcp.dot";
 }
 
 1;

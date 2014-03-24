@@ -4,6 +4,7 @@ package StateBasedAttack;
 require MsgParse;
 require Utils;
 require GatlingConfig;
+use Cwd;
 
 
 #Attack topology/connection details
@@ -216,7 +217,11 @@ sub start {
 		
 		#Load Strategy
 		print "Trying strategy $FullStrategyList[$i]...\n";
-		my $command = "C $FullStrategyList[$i]";
+		my $fullpath = abs_path($statediagramFile);
+		my $command = "C GatlingLoadStateDiagram $fullpath";
+		Utils::logTime("command $command");
+		Utils::directTopology($command);
+		$command = "C $FullStrategyList[$i]";
 		Utils::logTime("command $command");
 		Utils::directTopology($command);
 		Utils::directTopology("C Gatling Resume");
