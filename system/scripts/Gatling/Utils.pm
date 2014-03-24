@@ -131,7 +131,7 @@ sub getPerfScore()
   return $score;
 }
 
-sub getNumConnections()
+sub getNumConnections
 {
 	my $host=shift;
 	system("ssh $host \"netstat --inet -n\" > $GatlingConfig::tmpFile");
