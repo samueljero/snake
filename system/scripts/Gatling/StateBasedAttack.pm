@@ -240,7 +240,7 @@ sub start {
 		GatlingConfig::prepare();
 
 		#Measure Resource Utilization
-		$FullResourceUsage[$i] = Utils::getNumConnections("root@$serverip");
+		$FullResourceUsage[$i] = Utils::getNumConnections("root\@$serverip");
 
 		#Print results
 		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i] used $FullResourceUsage[$i]\n";
