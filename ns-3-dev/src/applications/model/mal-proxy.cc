@@ -274,6 +274,17 @@ int MalProxy::Command(string command)
 		sm_client.Start(State("CLOSED"), Simulator::Now().GetInteger());
 		return 1;
 	}
+	if(command.compare("GatlingSendStateStats\n")==0){
+		/* TODO: Return to controller! */
+		sm_server.GetStateMetricTracker()->PrintAll(std::cout);
+		sm_client.GetStateMetricTracker()->PrintAll(std::cout);
+		return 1;
+	}
+	if(command.compare("GatlingClearStateStats\n")==0){
+		sm_server.GetStateMetricTracker()->Reset();
+		sm_client.GetStateMetricTracker()->Reset();
+		return 1;
+	}
 	if (command.compare(0, strlen("Learned"), "Learned") == 0) {
 		string line = string(command.c_str() + strlen("Learned") + 1);
 		if (app_debug > 1) {
@@ -693,12 +704,14 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	int result = MalMsg(m);
 	if (result == 0) {
 		res->action = NONE;
+		RunStateMachines(m,&ll, res);
 		return NONE;
 	} else if (result == 2) {
 		res->action = RETRY;
 		return RETRY;
 	}
 	MaliciousStrategy(m, res);
+	RunStateMachines(m,&ll, res);
 
 	/*Handle Burst action*/
 	if (res->burst){
@@ -833,6 +846,22 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 {
 	Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
 	if (ipv4 != 0) {
+
+		/*Handle state machine*/
+		Message *m;
+		m=new Message(p->PeekDataForMal());
+		lowerLayers ll;
+		ll.dir=FROMTAP;
+		maloptions res;
+		res.action=NONE;
+		res.burst=false;
+		res.delay=0;
+		res.divert=1;
+		res.duptimes=1;
+		res.replay=0;
+		RunStateMachines(m, &ll, &res);
+		delete(m);
+
 		Ipv4Header header;
 		header.SetDestination(dest);
 		header.SetProtocol(TcpL4Protocol::PROT_NUMBER);
@@ -895,6 +924,48 @@ void MalProxy::Window(int type, const char* spec)
 		sec+=inc;
 	}
 }
+
+void MalProxy::RunStateMachines(Message *m, lowerLayers *ll, maloptions *res)
+{
+	if(res->action==BURST){
+		/*Handled elsewhere*/
+		return;
+	}
+
+	for(int i=0 ; i < res->duptimes;i++){
+       if(ll->dir==FROMTAP){
+    	   	  if(res->replay==1){
+    	   		sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   		if(res->action!=DROP){
+    	   		sm_client.MakeTransition(sm_client.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+    	   		}
+    	   	  }else if(res->divert==1){
+    	   		sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   	  }else{
+               sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+               if(res->action!=DROP){
+               sm_server.MakeTransition(sm_server.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+               }
+    	   	  }
+       }else{
+    	   if(res->replay==1){
+    		   sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    		   if(res->action!=DROP){
+    		   sm_server.MakeTransition(sm_server.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+    		   }
+    	   }else if(res->divert==1){
+    		   sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   }else{
+               sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+               if(res->action!=DROP){
+               sm_client.MakeTransition(sm_client.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+               }
+    	   }
+       }
+	}
+}
+
+
 
 } // Namespace ns3
 

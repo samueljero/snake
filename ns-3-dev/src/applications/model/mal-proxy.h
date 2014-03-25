@@ -98,6 +98,7 @@ private:
   void ClearStrategyForMsg(int type);
   int CommunicateController(Message *m);
   void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
+  void RunStateMachines(Message *m, lowerLayers *ll,maloptions *res);
 
   bool deliveryActions[MSG][NUMDELIVERYACTIONS];
   double deliveryValues[MSG][NUMDELIVERYACTIONS];
