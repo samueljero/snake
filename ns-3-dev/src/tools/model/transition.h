@@ -7,7 +7,10 @@ namespace ns3 {
         string m_rcvd;
         string m_send;
         int m_type;
+        int m_triggerMesage;
         public:
+        void SetTriggerMsg(int msgType) {m_triggerMesage = msgType; }
+        int GetTriggerMsg() { return m_triggerMesage;}
         int GetType() {return m_type;}
         inline string Rcvd() { return m_rcvd; }
         inline string Send() { return m_send; }

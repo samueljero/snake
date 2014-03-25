@@ -48,8 +48,15 @@ int main(int argc, char **argv) {
     cout << "prop1: " << smt->GetMetricValue("prop1", m->GetCurrentState()) << endl;
     NextMap valid = m->GetValidTransitions(m->GetCurrentState());
     if (!valid.empty()) {
-        std::cout << "valid" << std::endl;
-        m->MakeTransition(valid.begin()->first, GetNow());
+        Transition t = m->GetTransition(valid.begin()->first);
+        std::cout << "valid " << t << std::endl;
+        if (t.Rcvd().compare(0, 2, "M_") == 0) {
+            string name = t.Rcvd().substr(1, t.Rcvd().size() - 2);
+            std::cout << "NAME: " << name;
+            m->MakeTransition(name, GetNow());
+        } else {
+            m->MakeTransition(t, GetNow());
+        }
         m->Print();
     } else {
         std::cout << "No possible Transition from " << initState << std::endl;
@@ -57,8 +64,15 @@ int main(int argc, char **argv) {
 
     valid = m->GetValidTransitions(m->GetCurrentState());
     if (!valid.empty()) {
-        std::cout << "valid" << std::endl;
-        m->MakeTransition(valid.begin()->first, GetNow());
+        Transition t = m->GetTransition(valid.begin()->first);
+        std::cout << "valid " << t << std::endl;
+        if (t.Rcvd().compare(0, 2, "M_") == 0) {
+            string name = t.Rcvd().substr(1, t.Rcvd().size() - 2);
+            std::cout << "NAME: " << name;
+            m->MakeTransition(name, GetNow());
+        } else {
+            m->MakeTransition(t, GetNow());
+        }
         m->Print();
     } else {
         std::cout << "No possible Transition from " << initState << std::endl;
@@ -66,13 +80,21 @@ int main(int argc, char **argv) {
 
     valid = m->GetValidTransitions(m->GetCurrentState());
     if (!valid.empty()) {
-        std::cout << "valid" << std::endl;
-        m->MakeTransition(valid.begin()->first, GetNow());
+        Transition transition = m->GetTransition(valid.begin()->first);
+        std::cout << "valid " << transition << std::endl;
+        if (transition.Rcvd().compare(0, 2, "M_") == 0) {
+           string name = transition.Rcvd().substr(2, transition.Rcvd().size() - 2);
+           //std::cout << "---> name: " << name;
+            m->MakeTransition(name, GetNow());
+        } else {
+            m->MakeTransition(transition, GetNow());
+        }
+        cout << "done" << endl;
         m->Print();
     } else {
         std::cout << "No possible Transition from " << initState << std::endl;
     }
-
+    
     valid = m->GetValidTransitions(m->GetCurrentState());
     if (!valid.empty()) {
         std::cout << "valid" << std::endl;

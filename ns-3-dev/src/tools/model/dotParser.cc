@@ -1,4 +1,5 @@
 #include "dotParser.h"
+#include "ns3/message.h"
 
 namespace ns3 {
 using namespace boost;
@@ -59,6 +60,8 @@ void DotParser::BuildStateMachine (StateMachine *machine) {
         machine->AddState(toState);
         string rcvd = get(this->rcvd, e);
         string send = get(this->send, e);
+        // match transition
+        // TODO transition and message type matching
         if (send == "") send = "-";
         int type = machine->GetTransitionType(rcvd, send);
         Transition tr = Transition(type, rcvd, send);

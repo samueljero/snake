@@ -447,6 +447,7 @@ int MalProxy::MalMsg(Message *m)
         string packetTypeMetric = "pkt_cnt_" + m->TypeToStr(m->type);
     // each packet type cnt
     sm_server.IncrementMetric(packetTypeMetric);
+    sm_server.MakeTransition(Message::TypeToStr(m->type), Simulator::Now().GetInteger());
 
 	if (global_once == 1) {
 		if (app_debug > 0) {

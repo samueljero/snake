@@ -37,6 +37,11 @@ namespace ns3 {
         (m_reverseTransitionMap[to])[transition.GetType()] = from;
 
         m_trMap[transition.GetType()] = transition; // TODO
+        if (transition.Rcvd().compare(0, 2, "M_") == 0) {
+            string name = transition.Rcvd().substr(2, transition.Rcvd().size() - 2);
+            cout << "NAME: " << name << endl;
+            m_trMsgMap[name] = transition;
+        }
 
         if (m_stateSet.find(from) == m_stateSet.end()) m_stateSet.insert(from);
         if (m_stateSet.find(to) == m_stateSet.end()) m_stateSet.insert(to);
@@ -76,6 +81,11 @@ namespace ns3 {
     }
        
     void StateMachine::PrintRules() {
+        cout << "transitions" << endl;
+        for (TrMap::iterator it = m_trMap.begin(); it != m_trMap.end(); it++) {
+            Transition t = it->second;
+            cout << t << endl;
+        }
         cout << "valid transitions" << endl;
         StateSet::iterator iterState;
         for (iterState = m_stateSet.begin(); iterState != m_stateSet.end(); iterState++) {
@@ -97,19 +107,26 @@ namespace ns3 {
         }
         
     }
+    State StateMachine::MakeTransition(string msgTypeName, unsigned long now) {
+        Transition t = m_trMsgMap[msgTypeName];
+        return MakeTransition(t.GetType(), now);
+    }
 
     State StateMachine::MakeTransition(int trType, unsigned long now) {
         NextMap next = m_nextTransitionMap[m_curState];
         if (next.find(trType) != next.end()) {
+            cout << " changing state " << endl;
             smt.End("time_spent", m_curState, now);
             m_curState = next[trType];
             smt.Start("time_spent", m_curState, now);
             smt.IncrementMetric("visit_cnt", m_curState);
-        } else {
-            m_valid = false;
-            smt.End("time_spent", m_curState, now);
-            m_curState = State("ILLEGAL");
         }
+      // else {
+      //     m_valid = false;
+      //     smt.End("time_spent", m_curState, now);
+      //     m_curState = State("ILLEGAL");
+      // }
+        Print();
         return m_curState;
     }
 
