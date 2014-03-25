@@ -59,6 +59,7 @@ namespace ns3 {
         // state machine information
         State GetCurrentState(void) { return m_curState; };
         StateMetricTracker* GetStateMetricTracker(void) { return &smt; };
+        void IncrementMetric(string name) {smt.IncrementMetric(name, m_curState); };
 
         // to help attacks
         NextMap GetValidTransitions(State from); // set of transitions that are valid from the current state
@@ -74,7 +75,9 @@ namespace ns3 {
             m_curState = start;
             m_valid = true;
             smt.Start("time_spent", m_curState, now);
+            smt.IncrementMetric("visit_cnt", m_curState);
         };
+        // mainly to make sure the current state time is updated correctly
         void Finish(unsigned long now) { smt.End("time_spent", m_curState, now); }
         // TODO: return action
         State MakeTransition(int trType, unsigned long now);

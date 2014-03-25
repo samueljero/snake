@@ -270,8 +270,8 @@ int MalProxy::Command(string command)
 		dp.parseGraph(path.c_str());
 		dp.BuildStateMachine(&sm_server);
 		dp.BuildStateMachine(&sm_client);
-		sm_server.Start(State("LISTENING"));
-		sm_client.Start(State("CLOSED"));
+		sm_server.Start(State("LISTENING"), Simulator::Now().GetInteger());
+		sm_client.Start(State("CLOSED"), Simulator::Now().GetInteger());
 		return 1;
 	}
 	if (command.compare(0, strlen("Learned"), "Learned") == 0) {
@@ -426,10 +426,16 @@ int MalProxy::CommunicateController(Message *m)
 
 int MalProxy::MalMsg(Message *m)
 {
+    // pkt count update
+    sm_server.IncrementMetric("rcvd_pkt_cnt");
+    sm_client.IncrementMetric("sent_pkt_cnt");
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
 		return 0;
 	}
+        string packetTypeMetric = "pkt_cnt_" + m->TypeToStr(m->type);
+    // each packet type cnt
+    sm_server.IncrementMetric(packetTypeMetric);
 
 	if (global_once == 1) {
 		if (app_debug > 0) {

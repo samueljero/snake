@@ -46,7 +46,7 @@ namespace ns3 {
         StateMetricTracker() {}
         void UpdateMetric(string name, State st, double newvalue);
         void UpdateByDelta(string name, State st, double delta);
-        void IncremenMetric(string name, State st) {UpdateByDelta(name, st, 1);} // for counters
+        void IncrementMetric(string name, State st) {UpdateByDelta(name, st, 1);} // for counters
         void Start(string name, State st, unsigned long now);
         void End(string name, State st, unsigned long now);
         double GetMetricValue(string name, State st);

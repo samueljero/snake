@@ -104,6 +104,7 @@ namespace ns3 {
             smt.End("time_spent", m_curState, now);
             m_curState = next[trType];
             smt.Start("time_spent", m_curState, now);
+            smt.IncrementMetric("visit_cnt", m_curState);
         } else {
             m_valid = false;
             smt.End("time_spent", m_curState, now);

@@ -1,6 +1,7 @@
 #include "ns3/dotParser.h"
 #include "ns3/stateMachine.h"
 #include "ns3/stateMetric.h"
+#include "ns3/nstime.h"
        #include <sys/time.h>
 
 
