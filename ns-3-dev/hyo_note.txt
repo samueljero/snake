@@ -1,0 +1,4 @@
+- transition message mapping is currenly string based: planning to make perl
+  scripts to make this numeric. maybe next week.
+- currently, transitions are only based on rcvd messages. should be able to
+  use action part. thinking how to.
