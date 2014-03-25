@@ -39,7 +39,6 @@ namespace ns3 {
         m_trMap[transition.GetType()] = transition; // TODO
         if (transition.Rcvd().compare(0, 2, "M_") == 0) {
             string name = transition.Rcvd().substr(2, transition.Rcvd().size() - 2);
-            cout << "NAME: " << name << endl;
             m_trMsgMap[name] = transition;
         }
 
@@ -115,12 +114,12 @@ namespace ns3 {
     State StateMachine::MakeTransition(int trType, unsigned long now) {
         NextMap next = m_nextTransitionMap[m_curState];
         if (next.find(trType) != next.end()) {
-            cout << " changing state " << endl;
             smt.End("time_spent", m_curState, now);
             m_curState = next[trType];
             smt.Start("time_spent", m_curState, now);
             smt.IncrementMetric("visit_cnt", m_curState);
         }
+        
       // else {
       //     m_valid = false;
       //     smt.End("time_spent", m_curState, now);
