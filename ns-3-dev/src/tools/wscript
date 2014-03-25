@@ -9,6 +9,7 @@ def build(bld):
         'model/delay-jitter-estimation.cc',
         'model/dotParser.cc',
         'model/stateMachine.cc',
+        'model/stateMetric.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('tools')

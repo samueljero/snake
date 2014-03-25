@@ -52,9 +52,17 @@ void DotParser::BuildStateMachine (StateMachine *machine) {
     graph_traits < StateGraph >::edge_iterator ei, ei_end;
     for (boost::tie(ei, ei_end) = edges(this->graph); ei != ei_end; ++ei) {
         graph_traits < StateGraph >::edge_descriptor e = *ei;
-        graph_traits < StateGraph >::vertex_descriptor u = source(e, this->graph), v = target(e, this->graph);
-        Transition tr = Transition(get(this->rcvd, e), get(this->send, e), this->name[u], this->name[v]);
-        machine->AddTransition(tr);
+        graph_traits < StateGraph >::vertex_descriptor from = source(e, this->graph), to = target(e, this->graph);
+        State fromState = State(this->name[from]);
+        State toState = State(this->name[to]);
+        machine->AddState(fromState);
+        machine->AddState(toState);
+        string rcvd = get(this->rcvd, e);
+        string send = get(this->send, e);
+        if (send == "") send = "-";
+        int type = machine->GetTransitionType(rcvd, send);
+        Transition tr = Transition(type, rcvd, send);
+        machine->AddTransition(tr, fromState, toState);
     }
 
 }

@@ -6,6 +6,7 @@
 
 #include "state.h"
 #include "transition.h"
+#include "stateMetric.h"
 using namespace std;
 
 namespace ns3 {
@@ -20,10 +21,7 @@ namespace ns3 {
 
             inline bool operator() (Transition l, Transition r)
             {
-                if (l.From().compare(r.From()) == false) return (l.From().GetName() < r.From().GetName());
-                if (l.To().compare(r.To()) == false ) return (l.To().GetName() < r.To().GetName());
-                if (l.Rcvd() != r.Rcvd()) return (l.Rcvd() < r.Rcvd());
-                return (l.Send() < r.Send());
+                return (l.GetType() < r.GetType());
             }
             inline bool operator() (string l, string r)
             {
@@ -33,30 +31,54 @@ namespace ns3 {
 
     typedef set <State, Comp> StateSet;
     typedef set <Transition, Comp> TrSet;
-    typedef pair <State, TrSet> TrSetPair;
+    typedef map <int, State> NextMap;
+    typedef map <int, Transition> TrMap;
+    typedef map <string, State> StateMap;
 
     class StateMachine {
+        State m_curState;
+        State m_prevState;
+        StateSet m_stateSet;     // set of states
+        StateMap m_stateMap;
+        TrMap m_trMap;
+        bool m_valid;
+
+        map <State, NextMap> m_nextTransitionMap; // valid transitions for each state:
+                                    // m_nextTransitions[from_state][transitionType] --> State
+        map <State, NextMap> m_reverseTransitionMap; // valid transitions for each state:
+                                    // m_nextTransitions[to_state][transitionType] --> from_state
+
         public:
-            State m_curState;
-            State m_prevState;
-            StateSet m_stateSet;     // set of states
-            TrSet m_trSet;
-            map <State, TrSet> m_validTransitions; // valid transitions for each state
-            map <State, TrSet> m_reverseTransitions; // transitions that will lead to the given state
+        StateMetricTracker smt;
+        // construction
+        void AddState(State state);
+        void AddTransition(Transition tr, State from, State to);
+        void AddTransition(Transition tr);
+        int GetTransitionType(string rcvd, string send);
 
-            State GetCurrentState(void) {
-                return m_curState;
-            };
-            TrSet GetValidTransitions(State from); // set of transitions that are valid from the current state
-            TrSet GetInvalidTransitions(State from); // set of transitions not valid in the current state
-            TrSet GetTransitionsTo(State to); // set of transitions need to go "to" state from current state
-            void Print();
-            void PrintRules();
+        // state machine information
+        State GetCurrentState(void) { return m_curState; };
+        StateMetricTracker* GetStateMetricTracker(void) { return &smt; };
 
-            void AddState(State state);
-            void AddTransition(Transition tr);
-            void Start(State start) { m_curState = start; };
-            State MakeTransition(Transition);
+        // to help attacks
+        NextMap GetValidTransitions(State from); // set of transitions that are valid from the current state
+        TrSet GetInvalidTransitions(State from); // set of transitions not valid in the current state
+        NextMap GetTransitionsTo(State to); // set of transitions need to go "to" state from current state
+
+        // for us
+        void Print();
+        void PrintRules();
+
+        // state machine moving
+        void Start(State start, unsigned long now) {
+            m_curState = start;
+            m_valid = true;
+            smt.Start("time_spent", m_curState, now);
+        };
+        void Finish(unsigned long now) { smt.End("time_spent", m_curState, now); }
+        // TODO: return action
+        State MakeTransition(int trType, unsigned long now);
+        State MakeTransition(Transition tr, unsigned long now) {return MakeTransition(tr.GetType(), now); }
     };
 }
 #endif

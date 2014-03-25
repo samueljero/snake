@@ -14,7 +14,6 @@ namespace ns3 {
             m_name = name;
         }
         string GetName() {return m_name;};
-        bool compare(State c) { if (m_name.compare(c.GetName()) == 0) return true; return false; }
         friend ostream& operator<<(ostream& os, const State& s);
         friend bool operator== (const State& l, const State& r);
         friend bool operator!= (const State& l, const State& r);
