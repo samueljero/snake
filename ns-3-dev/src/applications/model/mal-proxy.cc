@@ -46,6 +46,7 @@
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/tap-bridge.h"
+#include "ns3/dotParser.h"
 
 using namespace std;
 
@@ -261,6 +262,16 @@ int MalProxy::Command(string command)
 	}
 	if (command.compare("Gatling Resume\n") == 0) {
 		global_consult_gatling = true;
+		return 1;
+	}
+	if(command.compare(0, strlen("GatlingLoadStateDiagram"), "GatlingLoadStateDiagram")==0){
+		string path=command.substr(strlen("GatlingLoadStateDiagram"));
+		DotParser dp;
+		dp.parseGraph(path.c_str());
+		dp.BuildStateMachine(&sm_server);
+		dp.BuildStateMachine(&sm_client);
+		sm_server.Start(State("LISTENING"));
+		sm_client.Start(State("CLOSED"));
 		return 1;
 	}
 	if (command.compare(0, strlen("Learned"), "Learned") == 0) {

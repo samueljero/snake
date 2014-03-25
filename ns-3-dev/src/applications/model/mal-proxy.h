@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <vector>
 #include "message.h"
+#include "ns3/stateMachine.h"
 
 namespace ns3 {
 
@@ -118,6 +119,8 @@ private:
   std::vector<std::pair<Ptr<Packet>,lowerLayers> > burst[MSG];
   bool burst_sched[MSG];
   ControllerType ctrltype;
+  StateMachine sm_server;
+  StateMachine sm_client;
 
   /*Sequence number tracking stuff*/
   class seq_state{
