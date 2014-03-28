@@ -47,6 +47,7 @@
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/tap-bridge.h"
 #include "ns3/dotParser.h"
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
@@ -266,6 +267,7 @@ int MalProxy::Command(string command)
 	}
 	if(command.compare(0, strlen("GatlingLoadStateDiagram"), "GatlingLoadStateDiagram")==0){
 		string path=command.substr(strlen("GatlingLoadStateDiagram"));
+		boost::algorithm::trim(path);
 		DotParser dp;
 		dp.parseGraph(path.c_str());
 		dp.BuildStateMachine(&sm_server);
