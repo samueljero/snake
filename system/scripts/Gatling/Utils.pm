@@ -47,12 +47,16 @@ sub directTopology($)
       Proto => 'tcp');
   die "Could not create socket to connect NS3: $!\n" unless $sock;
   print $sock "$comm\n";
-  $sock->recv($res, 1024);
+  my $tmp;
+  $res="";
+  while($tmp=<$sock>){
+	  $res=$res.$tmp;
+  }
   if ($GatlingConfig::debug > 1) {
   	print "$comm : $res\n";
   }
   $sock->close();
-  return;
+  return $res;
 }
 
 sub freezeNS3() {

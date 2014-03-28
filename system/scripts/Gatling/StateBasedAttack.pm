@@ -234,7 +234,15 @@ sub start {
 		
 		
 		#Wait for NS-3
-		sleep($GatlingConfig::runTime);
+		sleep($GatlingConfig::runTime/2);
+		
+		#Measure State Information
+		$command = "C GatlingSendStateStats";
+		Utils::logTime("command $command");
+		my $statstr=Utils::directTopology($command);
+		print $statstr;
+		
+		sleep($GatlingConfig::runTime/2);
 		while($GatlingConfig::watch_ns3 !=0){
 			sleep(1);
 		}
