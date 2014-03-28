@@ -47,6 +47,8 @@
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/tap-bridge.h"
 #include "ns3/dotParser.h"
+#include <boost/algorithm/string.hpp>
+#include <sstream>
 
 using namespace std;
 
@@ -254,7 +256,7 @@ void MalProxy::DoDispose(void)
 	Application::DoDispose();
 }
 
-int MalProxy::Command(string command)
+int MalProxy::Command(string command, std::string &output)
 {
 	if (command.compare("Gatling Pause\n") == 0) {
 		global_consult_gatling = false;
@@ -266,18 +268,23 @@ int MalProxy::Command(string command)
 	}
 	if(command.compare(0, strlen("GatlingLoadStateDiagram"), "GatlingLoadStateDiagram")==0){
 		string path=command.substr(strlen("GatlingLoadStateDiagram"));
+		boost::algorithm::trim(path);
 		DotParser dp;
 		dp.parseGraph(path.c_str());
 		dp.BuildStateMachine(&sm_server);
 		dp.BuildStateMachine(&sm_client);
-		sm_server.Start(State("LISTENING"), Simulator::Now().GetInteger());
+		sm_server.Start(State("LISTEN"), Simulator::Now().GetInteger());
 		sm_client.Start(State("CLOSED"), Simulator::Now().GetInteger());
 		return 1;
 	}
 	if(command.compare("GatlingSendStateStats\n")==0){
 		/* TODO: Return to controller! */
-		sm_server.GetStateMetricTracker()->PrintAll(std::cout);
-		sm_client.GetStateMetricTracker()->PrintAll(std::cout);
+		stringstream ss;
+		ss.str("");
+		sm_server.GetStateMetricTracker()->PrintAll(ss);
+		ss<<"======="<<std::endl;
+		sm_client.GetStateMetricTracker()->PrintAll(ss);
+		output=ss.str();
 		return 1;
 	}
 	if(command.compare("GatlingClearStateStats\n")==0){
@@ -437,17 +444,10 @@ int MalProxy::CommunicateController(Message *m)
 
 int MalProxy::MalMsg(Message *m)
 {
-    // pkt count update
-    sm_server.IncrementMetric("rcvd_pkt_cnt");
-    sm_client.IncrementMetric("sent_pkt_cnt");
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
 		return 0;
 	}
-        string packetTypeMetric = "pkt_cnt_" + m->TypeToStr(m->type);
-    // each packet type cnt
-    sm_server.IncrementMetric(packetTypeMetric);
-    sm_server.MakeTransition(Message::TypeToStr(m->type), Simulator::Now().GetInteger());
 
 	if (global_once == 1) {
 		if (app_debug > 0) {
@@ -933,33 +933,49 @@ void MalProxy::RunStateMachines(Message *m, lowerLayers *ll, maloptions *res)
 		return;
 	}
 
+	string packetTypeMetric = "pkt_cnt_" + m->TypeToStr(m->type);
+
 	for(int i=0 ; i < res->duptimes;i++){
        if(ll->dir==FROMTAP){
     	   	  if(res->replay==1){
-    	   		sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   		sm_client.IncrementMetric("sent_pkt_cnt");
+    	   		sm_client.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
     	   		if(res->action!=DROP){
-    	   		sm_client.MakeTransition(sm_client.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+    	   			sm_client.IncrementMetric("rcvd_pkt_cnt");
+    	   			sm_client.IncrementMetric(packetTypeMetric);
+    	   			sm_client.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
     	   		}
     	   	  }else if(res->divert==1){
-    	   		sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   		sm_client.IncrementMetric("sent_pkt_cnt");
+    	   		sm_client.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
     	   	  }else{
-               sm_client.MakeTransition(sm_client.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    	   	   sm_client.IncrementMetric("sent_pkt_cnt");
+               sm_client.MakeTransition("", m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
                if(res->action!=DROP){
-               sm_server.MakeTransition(sm_server.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+            	   sm_server.IncrementMetric("rcvd_pkt_cnt");
+            	   sm_server.IncrementMetric(packetTypeMetric);
+            	   sm_server.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
                }
     	   	  }
        }else{
     	   if(res->replay==1){
-    		   sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    		   sm_server.IncrementMetric("sent_pkt_cnt");
+    		   sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
     		   if(res->action!=DROP){
-    		   sm_server.MakeTransition(sm_server.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+    			   sm_server.IncrementMetric("rcvd_pkt_cnt");
+    			   sm_server.IncrementMetric(packetTypeMetric);
+    			   sm_server.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
     		   }
     	   }else if(res->divert==1){
-    		   sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    		   sm_server.IncrementMetric("sent_pkt_cnt");
+    		   sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
     	   }else{
-               sm_server.MakeTransition(sm_server.GetTransitionType("",m->TypeToStr(m->type)),Simulator::Now().GetInteger()+res->delay);
+    		   sm_server.IncrementMetric("sent_pkt_cnt");
+               sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
                if(res->action!=DROP){
-               sm_client.MakeTransition(sm_client.GetTransitionType(m->TypeToStr(m->type),""),Simulator::Now().GetInteger()+res->delay);
+            	   sm_client.IncrementMetric("rcvd_pkt_cnt");
+            	   sm_client.IncrementMetric(packetTypeMetric);
+            	   sm_client.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
                }
     	   }
        }

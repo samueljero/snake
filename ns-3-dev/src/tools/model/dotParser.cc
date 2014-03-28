@@ -1,6 +1,8 @@
 #include "dotParser.h"
 #include "ns3/message.h"
 
+static int dp_debug=0;
+
 namespace ns3 {
 using namespace boost;
 int DotParser::parseGraph(const char * filename) {
@@ -45,7 +47,7 @@ int DotParser::parseGraph(const char * filename) {
         this->valid.insert(make_pair(this->name[u], this->name[v]));
     }
     
-    std::cout << "status: " << status << std::endl;
+    if(dp_debug>0){std::cout << "status: " << status << std::endl;}
     return status;
 }
 
@@ -99,13 +101,13 @@ int DotParser::getLegalTransision(std::string cur) {
     vi = this->states.find(cur);
 
     if (vi != this->states.end()) {
-        std::cout << "found" << std::endl;
+    	if(dp_debug>0){std::cout << "found" << std::endl;}
         //graph_traits <StateGraph>::vertex_descriptor v = (vi)->second;
         boost::unordered_multimap<std::string, std::string>::iterator valid_next;
         valid_next = this->valid.find(cur);
         while(valid_next != this->valid.end()) {
             if (valid_next->first.compare(cur) != 0) break;
-            std::cout << "next: " << valid_next->second << std::endl;
+            if(dp_debug>0){std::cout << "next: " << valid_next->second << std::endl;}
             valid_next++; 
         }
 

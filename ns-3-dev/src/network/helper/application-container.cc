@@ -81,13 +81,13 @@ ApplicationContainer::Add (std::string name)
 }
 
 int
-ApplicationContainer::Command (std::string command)
+ApplicationContainer::Command (std::string command, std::string &output)
 {
 	int res = 0;
   for (Iterator i = Begin (); i != End (); ++i)
     {
       Ptr<Application> app = *i;
-      res =app->Command (command);
+      res =app->Command (command, output);
     }
 	return res;
 }

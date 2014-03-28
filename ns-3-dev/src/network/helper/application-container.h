@@ -175,7 +175,7 @@ public:
    * \param name The name of the Application Object to add to the container.
    */
   void Add (std::string name);
-	int Command(std::string command);
+	int Command(std::string command, std::string &output);
 	void *Save();
 	void Load(void *ptr);
 	void Resume();

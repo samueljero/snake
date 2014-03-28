@@ -224,7 +224,7 @@ void commandListener(void)
 		printf("Here is the message: %s\n",buffer);
 
 		if (buffer[0] == 'C') {
-			int i = apps->Command(string(buffer+2));
+			int i = apps->Command(string(buffer+2),outbuffer);
 			if (i) outbuffer = "command received\n";
 			else outbuffer = "command fail\n";
 		} else if (buffer[0] == 'F') {

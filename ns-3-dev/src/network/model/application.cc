@@ -106,7 +106,7 @@ Application::SetNode (Ptr<Node> node)
 }
 
 // Protected methods
-int Application::Command (std::string command)
+int Application::Command (std::string command, std::string &output)
 {
 	return 0;
 }
