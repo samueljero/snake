@@ -63,7 +63,8 @@ void DotParser::BuildStateMachine (StateMachine *machine) {
         // match transition
         // TODO transition and message type matching
         if (send == "") send = "-";
-        int type = machine->GetTransitionType(rcvd, send);
+        int type = Transition::getTransitionType(Transition::getMsgTypeFromAction(rcvd), Transition::getMsgTypeFromAction(send));
+        //int type = machine->GetTransitionType(rcvd, send);
         Transition tr = Transition(type, rcvd, send);
         machine->AddTransition(tr, fromState, toState);
     }
