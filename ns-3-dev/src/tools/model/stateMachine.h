@@ -33,7 +33,7 @@ namespace ns3 {
     typedef set <Transition, Comp> TrSet;
     typedef map <int, State> NextMap;
     typedef map <int, Transition> TrMap;
-    typedef map <string, Transition> TrMsgMap;
+    typedef map <State, map<string, pair<Transition,Transition> > > TrMsgMap;
     typedef map <string, State> StateMap;
 
     class StateMachine {
@@ -84,7 +84,8 @@ namespace ns3 {
         void Finish(unsigned long now) { smt.End("time_spent", m_curState, now); }
         // TODO: return action
         State MakeTransition(int trType, unsigned long now);
-        State MakeTransition(string msgName, unsigned long now);
+        State MakeTransition(string msgTypeName, unsigned long now);
+        State MakeTransition(string msgRcvName, string msgSndName, unsigned long now);
         State MakeTransition(Transition tr, unsigned long now) {return MakeTransition(tr.GetType(), now); }
     };
 }

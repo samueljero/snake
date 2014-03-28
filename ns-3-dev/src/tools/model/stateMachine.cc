@@ -38,8 +38,20 @@ namespace ns3 {
 
         m_trMap[transition.GetType()] = transition; // TODO
         if (transition.Rcvd().compare(0, 2, "M_") == 0) {
-            string name = transition.Rcvd().substr(2, transition.Rcvd().size() - 2);
-            m_trMsgMap[name] = transition;
+            string name = transition.Rcvd().substr(2);
+            m_trMsgMap[from][name].first = transition;
+        }
+        if(transition.Rcvd().compare(0,2,"A_")==0){
+        	if(transition.Send().length()>2){
+				string name = transition.Send().substr(2);
+				m_trMsgMap[from][name].second = transition;
+        	}
+        }
+        if(transition.Rcvd().compare(0,2,"E_")==0){
+        	if(transition.Send().length()>2){
+				string name = transition.Send().substr(2);
+				m_trMsgMap[from][name].second = transition;
+        	}
         }
 
         if (m_stateSet.find(from) == m_stateSet.end()) m_stateSet.insert(from);
@@ -104,11 +116,24 @@ namespace ns3 {
                 cout << "to: " << st << " " << tr << endl;
             }
         }
-        
     }
-    State StateMachine::MakeTransition(string msgTypeName, unsigned long now) {
-        Transition t = m_trMsgMap[msgTypeName];
-        return MakeTransition(t.GetType(), now);
+
+    State StateMachine::MakeTransition(string msgTypeName, unsigned long now){
+    	return MakeTransition(msgTypeName,"",now);
+    }
+
+    State StateMachine::MakeTransition(string msgRcvName, string msgSndName, unsigned long now) {
+    	if(msgRcvName!=""){
+    		Transition t = m_trMsgMap[m_curState][msgRcvName].first;
+    		std::cout<<"trans" << t <<std::endl;
+    		return MakeTransition(t.GetType(), now);
+    	}
+    	if(msgSndName!=""){
+			Transition t = m_trMsgMap[m_curState][msgSndName].second;
+			std::cout<<"trans" << t <<std::endl;
+			return MakeTransition(t.GetType(), now);
+		}
+    	return State("INVALID");
     }
 
     State StateMachine::MakeTransition(int trType, unsigned long now) {
