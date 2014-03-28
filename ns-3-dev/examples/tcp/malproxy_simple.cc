@@ -264,11 +264,15 @@ void commandListener(void) {
 		/*Process message*/
 		if (buffer[0] == 'C') {
 			//send command to Mal-Proxy
-			int i = apps->Command(string(buffer + 2));
-			if (i)
-				outbuffer = "command received\n";
-			else
-				outbuffer = "command fail\n";
+			outbuffer="";
+			int i = apps->Command(string(buffer + 2), outbuffer);
+			if(outbuffer==""){
+				if (i)
+					outbuffer = "command received\n";
+				else
+					outbuffer = "command fail\n";
+			}
+			out_len=outbuffer.length();
 		} else if (buffer[0] == 'F') {
 			//pause execution
 			if (debug > 1) {

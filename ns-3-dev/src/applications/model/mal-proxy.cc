@@ -48,6 +48,7 @@
 #include "ns3/tap-bridge.h"
 #include "ns3/dotParser.h"
 #include <boost/algorithm/string.hpp>
+#include <sstream>
 
 using namespace std;
 
@@ -255,7 +256,7 @@ void MalProxy::DoDispose(void)
 	Application::DoDispose();
 }
 
-int MalProxy::Command(string command)
+int MalProxy::Command(string command, std::string &output)
 {
 	if (command.compare("Gatling Pause\n") == 0) {
 		global_consult_gatling = false;
@@ -278,8 +279,12 @@ int MalProxy::Command(string command)
 	}
 	if(command.compare("GatlingSendStateStats\n")==0){
 		/* TODO: Return to controller! */
-		sm_server.GetStateMetricTracker()->PrintAll(std::cout);
-		sm_client.GetStateMetricTracker()->PrintAll(std::cout);
+		stringstream ss;
+		ss.str("");
+		sm_server.GetStateMetricTracker()->PrintAll(ss);
+		ss<<"======="<<std::endl;
+		sm_client.GetStateMetricTracker()->PrintAll(ss);
+		output=ss.str();
 		return 1;
 	}
 	if(command.compare("GatlingClearStateStats\n")==0){
