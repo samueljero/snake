@@ -3,6 +3,8 @@
 #include "stateMachine.h"
 #include "stateMetric.h"
 
+static int sm_debug=0;
+
 using namespace std;
 
 namespace ns3 {
@@ -125,12 +127,12 @@ namespace ns3 {
     State StateMachine::MakeTransition(string msgRcvName, string msgSndName, unsigned long now) {
     	if(msgRcvName!=""){
     		Transition t = m_trMsgMap[m_curState][msgRcvName].first;
-    		std::cout<<"trans" << t <<std::endl;
+    		if(sm_debug>0){std::cout<<"trans" << t <<std::endl;}
     		return MakeTransition(t.GetType(), now);
     	}
     	if(msgSndName!=""){
 			Transition t = m_trMsgMap[m_curState][msgSndName].second;
-			std::cout<<"trans" << t <<std::endl;
+			if(sm_debug>0){std::cout<<"trans" << t <<std::endl;}
 			return MakeTransition(t.GetType(), now);
 		}
     	return State("INVALID");
@@ -150,7 +152,7 @@ namespace ns3 {
       //     smt.End("time_spent", m_curState, now);
       //     m_curState = State("ILLEGAL");
       // }
-        Print();
+        if(sm_debug>0){Print();}
         return m_curState;
     }
 
