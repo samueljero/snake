@@ -82,7 +82,7 @@ public:
 
 protected:
   virtual void DoDispose (void);
-  virtual int Command(std::string cmd);
+  virtual int Command(std::string cmd, std::string &output);
   virtual void* Save();
   virtual void Load(void *ptr);
   virtual void Resume();
