@@ -141,7 +141,7 @@ sub getNumConnections
 		#Error, couldn't connect!
 		return -1;
 	}else{
-		return $lines;
+		return $lines - 3;
 	}
 }
 1;
