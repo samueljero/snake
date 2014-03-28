@@ -217,7 +217,7 @@ sub start {
 		
 		#Load Strategy
 		print "Trying strategy $FullStrategyList[$i]...\n";
-		my $fullpath = abs_path($statediagramFile);
+		my $fullpath = Cwd::abs_path($GatlingConfig::statediagramFile);
 		my $command = "C GatlingLoadStateDiagram $fullpath";
 		Utils::logTime("command $command");
 		Utils::directTopology($command);
@@ -250,6 +250,9 @@ sub start {
 		#Print results
 		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i] used $FullResourceUsage[$i]\n";
 		print PERF_LOG "$i $FullperfScore[$i] $FullResourceUsage[$i] $FullStrategyList[$i]\n";
+
+		#Join NS-3 Thread (so it goes away)
+		$ns3_thread->join();
 	}
 }
 
