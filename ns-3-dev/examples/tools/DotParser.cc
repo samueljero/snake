@@ -50,13 +50,21 @@ int main(int argc, char **argv) {
     if (!valid.empty()) {
         Transition t = m->GetTransition(valid.begin()->first);
         std::cout << "valid " << t << std::endl;
-        if (t.Rcvd().compare(0, 2, "M_") == 0) {
-            string name = t.Rcvd().substr(1, t.Rcvd().size() - 2);
-            std::cout << "NAME: " << name;
-            m->MakeTransition(name, GetNow());
-        } else {
-            m->MakeTransition(t, GetNow());
-        }
+        m->MakeTransition(t.m_rcvdType, t.m_sendType, GetNow());
+        m->Print();
+    } else {
+        std::cout << "No possible Transition from " << initState << std::endl;
+    }
+
+    valid = m->GetValidTransitions(m->GetCurrentState());
+    if (!valid.empty()) {
+        Transition t = m->GetTransition(valid.begin()->first);
+        std::cout << "valid " << t << std::endl;
+        //if (t.Rcvd().compare(0, 2, "M_") == 0) {
+            m->MakeTransition(t.m_rcvdType, t.m_sendType, GetNow());
+        //} else {
+            //m->MakeTransition(t.GetType(), GetNow());
+        //}
         m->Print();
     } else {
         std::cout << "No possible Transition from " << initState << std::endl;
@@ -67,27 +75,9 @@ int main(int argc, char **argv) {
         Transition t = m->GetTransition(valid.begin()->first);
         std::cout << "valid " << t << std::endl;
         if (t.Rcvd().compare(0, 2, "M_") == 0) {
-            string name = t.Rcvd().substr(1, t.Rcvd().size() - 2);
-            std::cout << "NAME: " << name;
-            m->MakeTransition(name, GetNow());
+            m->MakeTransition(-1, t.m_sendType, GetNow());
         } else {
-            m->MakeTransition(t, GetNow());
-        }
-        m->Print();
-    } else {
-        std::cout << "No possible Transition from " << initState << std::endl;
-    }
-
-    valid = m->GetValidTransitions(m->GetCurrentState());
-    if (!valid.empty()) {
-        Transition transition = m->GetTransition(valid.begin()->first);
-        std::cout << "valid " << transition << std::endl;
-        if (transition.Rcvd().compare(0, 2, "M_") == 0) {
-           string name = transition.Rcvd().substr(2, transition.Rcvd().size() - 2);
-           //std::cout << "---> name: " << name;
-            m->MakeTransition(name, GetNow());
-        } else {
-            m->MakeTransition(transition, GetNow());
+            m->MakeTransition(t.GetType(), GetNow());
         }
         cout << "done" << endl;
         m->Print();
@@ -97,15 +87,17 @@ int main(int argc, char **argv) {
     
     valid = m->GetValidTransitions(m->GetCurrentState());
     if (!valid.empty()) {
+        Transition t= m->GetTransition(valid.begin()->first);
         std::cout << "valid" << std::endl;
-        m->MakeTransition(valid.begin()->first, GetNow());
+        m->MakeTransition(t.GetType(), GetNow());
         m->Print();
     } else {
         std::cout << "No possible Transition from " << initState << std::endl;
     }
     NextMap toGo = m->GetTransitionsTo(toState);
     if (!toGo.empty()) {
-        m->MakeTransition(toGo.begin()->first, GetNow());
+        Transition t= m->GetTransition(toGo.begin()->first);
+        m->MakeTransition(t.GetType(), GetNow());
         m->Print();
     } else {
         std::cout << "No Transition to Go " << toState << std::endl;
@@ -115,7 +107,7 @@ int main(int argc, char **argv) {
     TrSet invalid = m->GetInvalidTransitions(m->GetCurrentState());
     Transition tr = *invalid.begin();
 
-    m->MakeTransition(tr, GetNow());
+    m->MakeTransition(tr.GetType(), GetNow());
     smt->UpdateMetric("prop1", m->GetCurrentState(), 2);
     m->Finish(GetNow());
     smt->PrintAll(cout);

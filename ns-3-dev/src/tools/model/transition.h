@@ -1,5 +1,8 @@
 #ifndef TRANSITION_H
 #define TRANSITION_H
+#include <string>
+#include <cstdio>
+
 using namespace std;
 namespace ns3 {
     class Transition
@@ -9,6 +12,8 @@ namespace ns3 {
         int m_type;
         int m_triggerMesage;
         public:
+        int m_rcvdType;
+        int m_sendType;
         void SetTriggerMsg(int msgType) {m_triggerMesage = msgType; }
         int GetTriggerMsg() { return m_triggerMesage;}
         int GetType() {return m_type;}
@@ -20,11 +25,15 @@ namespace ns3 {
                 m_type = type;
                 m_rcvd = rcvd;
                 m_send = send;
+                m_rcvdType = GetMsgType(rcvd);
+                m_sendType = GetMsgType(send);
             }
         Transition (const Transition& t) {
             m_type = t.m_type;
             m_rcvd = t.m_rcvd;
             m_send = t.m_send;
+            m_rcvdType = GetMsgType(m_rcvd);
+            m_sendType = GetMsgType(m_send);
         }
 
         Transition() {}
@@ -34,6 +43,9 @@ namespace ns3 {
         friend bool operator!= (const Transition& l, const Transition& r);
         friend bool operator< (const Transition& l, const Transition& r);
         friend bool operator> (const Transition& l, const Transition& r);
+        static int GetTransitionType(int rcvd, int send);
+        static int GetMsgType(string msgName);
+        static int GetMsgTypeFromAction(string action);
     };
 }
 #endif

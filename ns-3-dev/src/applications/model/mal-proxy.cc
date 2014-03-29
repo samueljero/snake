@@ -939,43 +939,43 @@ void MalProxy::RunStateMachines(Message *m, lowerLayers *ll, maloptions *res)
        if(ll->dir==FROMTAP){
     	   	  if(res->replay==1){
     	   		sm_client.IncrementMetric("sent_pkt_cnt");
-    	   		sm_client.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+    	   		sm_client.MakeTransition(-1,m->type,Simulator::Now().GetInteger()+res->delay);
     	   		if(res->action!=DROP){
     	   			sm_client.IncrementMetric("rcvd_pkt_cnt");
     	   			sm_client.IncrementMetric(packetTypeMetric);
-    	   			sm_client.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
+    	   			sm_client.MakeTransition(m->type,-1,Simulator::Now().GetInteger()+res->delay);
     	   		}
     	   	  }else if(res->divert==1){
     	   		sm_client.IncrementMetric("sent_pkt_cnt");
-    	   		sm_client.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+    	   		sm_client.MakeTransition(-1,m->type,Simulator::Now().GetInteger()+res->delay);
     	   	  }else{
     	   	   sm_client.IncrementMetric("sent_pkt_cnt");
-               sm_client.MakeTransition("", m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+               sm_client.MakeTransition(-1, m->type,Simulator::Now().GetInteger()+res->delay);
                if(res->action!=DROP){
             	   sm_server.IncrementMetric("rcvd_pkt_cnt");
             	   sm_server.IncrementMetric(packetTypeMetric);
-            	   sm_server.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
+            	   sm_server.MakeTransition(m->type,-1,Simulator::Now().GetInteger()+res->delay);
                }
     	   	  }
        }else{
     	   if(res->replay==1){
     		   sm_server.IncrementMetric("sent_pkt_cnt");
-    		   sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+    		   sm_server.MakeTransition(-1,m->type,Simulator::Now().GetInteger()+res->delay);
     		   if(res->action!=DROP){
     			   sm_server.IncrementMetric("rcvd_pkt_cnt");
     			   sm_server.IncrementMetric(packetTypeMetric);
-    			   sm_server.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
+    			   sm_server.MakeTransition(m->type,-1,Simulator::Now().GetInteger()+res->delay);
     		   }
     	   }else if(res->divert==1){
     		   sm_server.IncrementMetric("sent_pkt_cnt");
-    		   sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+    		   sm_server.MakeTransition(-1,m->type,Simulator::Now().GetInteger()+res->delay);
     	   }else{
     		   sm_server.IncrementMetric("sent_pkt_cnt");
-               sm_server.MakeTransition("",m->TypeToStr(m->type),Simulator::Now().GetInteger()+res->delay);
+               sm_server.MakeTransition(-1,m->type,Simulator::Now().GetInteger()+res->delay);
                if(res->action!=DROP){
             	   sm_client.IncrementMetric("rcvd_pkt_cnt");
             	   sm_client.IncrementMetric(packetTypeMetric);
-            	   sm_client.MakeTransition(m->TypeToStr(m->type),"",Simulator::Now().GetInteger()+res->delay);
+            	   sm_client.MakeTransition(m->type,-1,Simulator::Now().GetInteger()+res->delay);
                }
     	   }
        }

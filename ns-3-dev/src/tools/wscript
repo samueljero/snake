@@ -10,6 +10,7 @@ def build(bld):
         'model/dotParser.cc',
         'model/stateMachine.cc',
         'model/stateMetric.cc',
+        'model/transition.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('tools')

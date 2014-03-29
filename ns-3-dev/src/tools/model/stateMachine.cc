@@ -19,7 +19,8 @@ namespace ns3 {
     bool operator<  (const State& l, const State& r) {return l.m_name < r.m_name; }
 
     ostream& operator<< (std::ostream& os, const Transition& tr) {
-        os <<  "type: " << tr.m_type << " rcvd: " << tr.m_rcvd << " send: " << tr.m_send;
+        os <<  "type: " << tr.m_type << " rcvd: " << tr.m_rcvd << " " << tr.m_rcvdType <<
+            " send: " << tr.m_send << " " << tr.m_sendType;
         return os;
     }
     bool operator== (const Transition  &l, const Transition &r) {return (l.m_type == r.m_type); }
@@ -120,22 +121,34 @@ namespace ns3 {
         }
     }
 
-    State StateMachine::MakeTransition(string msgTypeName, unsigned long now){
-    	return MakeTransition(msgTypeName,"",now);
+
+    Transition *StateMachine::GetMatchingTransition(State st, int rcvd, int send) {
+        NextMap nmap = GetValidTransitions(st);
+        if (send == -1) { // only rcvd matching
+            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
+                Transition *t = &(m_trMap[it->first]);
+                if (t->m_rcvdType == rcvd) return t;
+            }
+        }
+        else if (rcvd == -1) { // only send matching
+            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
+                Transition *t = &(m_trMap[it->first]);
+                if (t->m_sendType == send) return t;
+            }
+        }
+        else {
+            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
+                Transition *t = &(m_trMap[it->first]);
+                if (t->m_sendType == send && t->m_rcvdType == rcvd) return t;
+            }
+        }
+        return NULL;
     }
 
-    State StateMachine::MakeTransition(string msgRcvName, string msgSndName, unsigned long now) {
-    	if(msgRcvName!=""){
-    		Transition t = m_trMsgMap[m_curState][msgRcvName].first;
-    		if(sm_debug>0){std::cout<<"trans" << t <<std::endl;}
-    		return MakeTransition(t.GetType(), now);
-    	}
-    	if(msgSndName!=""){
-			Transition t = m_trMsgMap[m_curState][msgSndName].second;
-			if(sm_debug>0){std::cout<<"trans" << t <<std::endl;}
-			return MakeTransition(t.GetType(), now);
-		}
-    	return State("INVALID");
+    State StateMachine::MakeTransition(int rcvdType, int sendType, unsigned long now) {
+        Transition *t = GetMatchingTransition(m_curState, rcvdType, sendType);
+        if (t != NULL) return MakeTransition(t->GetType(), now);
+        return State("INVALID");
     }
 
     State StateMachine::MakeTransition(int trType, unsigned long now) {

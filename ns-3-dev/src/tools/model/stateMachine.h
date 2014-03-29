@@ -56,6 +56,7 @@ namespace ns3 {
         void AddState(State state);
         void AddTransition(Transition tr, State from, State to);
         void AddTransition(Transition tr);
+        int GetTransitionType(string rcvd) { return GetTransitionType(rcvd, 0); }
         int GetTransitionType(string rcvd, string send);
         Transition GetTransition(int type) { return m_trMap[type];}
 
@@ -85,8 +86,8 @@ namespace ns3 {
         // TODO: return action
         State MakeTransition(int trType, unsigned long now);
         State MakeTransition(string msgTypeName, unsigned long now);
-        State MakeTransition(string msgRcvName, string msgSndName, unsigned long now);
-        State MakeTransition(Transition tr, unsigned long now) {return MakeTransition(tr.GetType(), now); }
+        State MakeTransition(int rcvdType, int sendType, unsigned long now) ;
+        Transition * GetMatchingTransition(State st, int rcvd, int send) ;
     };
 }
 #endif
