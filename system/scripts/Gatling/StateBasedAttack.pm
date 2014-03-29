@@ -234,15 +234,15 @@ sub start {
 		
 		
 		#Wait for NS-3
-		sleep($GatlingConfig::runTime/2);
+		sleep($GatlingConfig::runTime*(2/3.0));
 		
 		#Measure State Information
 		$command = "C GatlingSendStateStats";
 		Utils::logTime("command $command");
 		my $statstr=Utils::directTopology($command);
-		print $statstr;
+		my %db=Utils::makeMetricDB($statstr);
 		
-		sleep($GatlingConfig::runTime/2);
+		sleep($GatlingConfig::runTime*(1/3.0));
 		while($GatlingConfig::watch_ns3 !=0){
 			sleep(1);
 		}
@@ -261,6 +261,14 @@ sub start {
 
 		#Join NS-3 Thread (so it goes away)
 		$ns3_thread->join();
+
+		foreach $host (keys %db){
+			foreach $metric (keys %{$db{$host}}){
+				foreach $state (keys %{$db{$host}{$metric}}){
+					print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
+				}
+			}
+		}
 	}
 }
 

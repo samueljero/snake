@@ -148,4 +148,25 @@ sub getNumConnections
 		return $lines - 3;
 	}
 }
+
+sub makeMetricDB
+{
+	my $str=shift;
+	my @lines = split('\n',$str);
+	my $host="server";
+	my %db;
+
+	foreach my $val (@lines){
+		if($val =~/^#+/){
+			next;
+		}
+		if($val =~/=======/){
+			$host="client";
+			next;
+		}
+		my @lna=split(',',$val);
+		$db{$host}{$lna[0]}{$lna[1]}=$lna[2];
+	}
+	return %db;
+}
 1;
