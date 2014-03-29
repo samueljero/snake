@@ -53,15 +53,15 @@ namespace ns3 {
 
     // this is mainly for anaylsis. 
     void StateMetricTracker::PrintAll(ostream& os) {
-        os << "Metric\n" ;
-        os << "metric,\tstate,\tvalue\n";
+        os << "#Metric\n" ;
+        os << "#metric,state,value\n";
         list<string> metrics = GetMetrics();
         for (list<string>::iterator it = metrics.begin(); it != metrics.end(); it++) {
             string metric = *it;
             list<State> states = m_mapStateMetric[metric].GetStates();
             for (list<State>::iterator it_st = states.begin(); it_st != states.end(); it_st++) {
                 State st = *it_st;
-                os << metric << ",\t" << st << ",\t" << m_mapStateMetric[metric].GetValue(st) << "\n";
+                os << metric << "," << st << "," << m_mapStateMetric[metric].GetValue(st) << "\n";
             }
         }
     }
