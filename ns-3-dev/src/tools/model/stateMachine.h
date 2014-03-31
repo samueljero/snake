@@ -44,6 +44,7 @@ namespace ns3 {
         TrMap m_trMap;
         TrMsgMap m_trMsgMap;
         bool m_valid;
+        int m_cachedRcvdMsg;
 
         map <State, NextMap> m_nextTransitionMap; // valid transitions for each state:
                                     // m_nextTransitions[from_state][transitionType] --> State
@@ -77,6 +78,7 @@ namespace ns3 {
         // state machine moving
         void Start(State start, unsigned long now) {
             m_curState = start;
+            m_cachedRcvdMsg = -1;
             m_valid = true;
             smt.Start("time_spent", m_curState, now);
             smt.IncrementMetric("visit_cnt", m_curState);

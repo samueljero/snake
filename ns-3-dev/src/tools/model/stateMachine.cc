@@ -124,22 +124,22 @@ namespace ns3 {
 
     Transition *StateMachine::GetMatchingTransition(State st, int rcvd, int send) {
         NextMap nmap = GetValidTransitions(st);
-        if (send == -1) { // only rcvd matching
-            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
-                Transition *t = &(m_trMap[it->first]);
-                if (t->m_rcvdType == rcvd) return t;
+        for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
+            Transition *t = &(m_trMap[it->first]);
+            if (t->m_sendType == send && t->m_rcvdType == rcvd) {
+                // we never encounter where both rcvd and send are positive. 
+                // therefore, this should be the case only one side exist in the rule itself
+                // and cover both send == -1 , rcvd == -1 cases
+                return t;
             }
-        }
-        else if (rcvd == -1) { // only send matching
-            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
-                Transition *t = &(m_trMap[it->first]);
-                if (t->m_sendType == send) return t;
+            if (t->m_rcvdType == rcvd && t->m_sendType > 0) {
+                // cache it
+                m_cachedRcvdMsg = rcvd;
             }
-        }
-        else {
-            for(NextMap::iterator it = nmap.begin(); it != nmap.end(); it++){
-                Transition *t = &(m_trMap[it->first]);
-                if (t->m_sendType == send && t->m_rcvdType == rcvd) return t;
+            if (m_cachedRcvdMsg > 0 && t->m_rcvdType == m_cachedRcvdMsg && t->m_sendType == send) {
+                // rule match the the cached rcvd
+                m_cachedRcvdMsg = -1;
+                return t;
             }
         }
         return NULL;
