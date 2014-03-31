@@ -33,9 +33,10 @@ my %strategyCount;
 my %strategyList;
 my %excludeStrategy;    # actions to exclude
 my %perfScore;          # latest performance recorded
-my @FullStrategyList;
-my @FullPerfScore;
-my @FullResourceUsage;
+my @WaitingStrategyList;
+my @FinishedStrategyList;
+my @FinishedPerfScore;
+my @FinishedResourceUsage;
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -47,12 +48,27 @@ sub term_handler {
 }
 
 sub CreateStrategyList{
-	prepareMessages();
+	my $strategy=shift;
+	my $perf=shift;
+	my $res=shift;
+	my %db=@_;
+	 
 	for(my $i=0; $i < $messageCount; $i++){
-		for(my $j=0; $j < $strategyCount{$i};$j++){
-			push(@FullStrategyList,$strategyList{$i}[$j]);
-			push(@FullperfScore, $perfScore{$i}[$j]);
-			push(@FullResourceUsage, -1);
+		if(scalar keys (%{$db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
+			for(my $j=1; $j < $strategyCount{$i};$j++){
+				push(@WaitingStrategyList,$strategyList{$i}[$j]);
+				print NEW_LEARNED "TRY $strategyList{$i}[$j]\n";
+			}
+		}elsif(scalar keys (%{$db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
+			for(my $j=1; $j < $strategyCount{$i};$j++){
+				push(@WaitingStrategyList,$strategyList{$i}[$j]);
+				print NEW_LEARNED "TRY $strategyList{$i}[$j]\n";
+			}
+		}else{
+			push(@WaitingStrategyList,$strategyList{$i}[8]); #INJECT
+			push(@WaitingStrategyList,$strategyList{$i}[9]); #WINDOW
+			print NEW_LEARNED "TRY $strategyList{$i}[8]\n";
+			print NEW_LEARNED "TRY $strategyList{$i}[9]\n";
 		}
 	}
 }
@@ -62,7 +78,7 @@ sub prepareMessages {
 	#Prepare perfLog
 	open PERF_LOG, "+>", $GatlingConfig::perfMeasured
 	  or die "Can't create $GatlingConfig::perfMeasured $!";
-	print PERF_LOG "# MsgName MsgType action Index perfValue (Chosen)\n";
+	print PERF_LOG "#Sequence,Performance,Strategy,Resources\n";
 
 	#Prepare decision log
 	open NEW_LEARNED, "+>", $GatlingConfig::newlyLearned
@@ -150,36 +166,48 @@ sub prepareMessages {
 		$perfScore{$i}       = \@score;
 	}
 
-##LOAD PREFORMANCE MEASURED IN PREV RUN (IF ANY)
-#	$res = open PRE_PERF, "<", $GatlingConfig::prePerf;
-#	if ($res) {
-#		while ( my $line = <PRE_PERF> ) {
-#			chomp($line);
-#			my @token = split( / /, $line );
-#			if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
-#				next;
-#			}
-#			my $msgName     = $token[0];
-#			my $msgType     = $token[1];
-#			my $actionIndex = $token[2];
-#			my $perfValue   = $token[3];
-#			if ( $learned[$msgType] == -1 ) {
-#				if ( $#token > 3 and $token[4] eq "Chosen" ) {
-#					chooseAction( $msgType, $actionIndex, 0, $msgName );
-#				}
-#				elsif ( $#token > 3
-#					and ( $token[4] eq "Exclude" || $token[5] eq "Exclude" ) )
-#				{
-#					excludeAction( $msgType, $actionIndex, 0, $msgName );
-#				}
-#				else {
-#				$perfScore{$msgType}[$actionIndex] = $perfValue;
-#					$curActionIndex[$msgType] = $actionIndex + 1;
-#				}
-#			}
-#		}
-#		close PRE_PERF;
-#	}
+	#LOAD PREFORMANCE MEASURED IN PREV RUN (IF ANY)
+	$res = open PRE_PERF, "<", $GatlingConfig::prePerf;
+	if ($res) {
+		while ( my $line = <PRE_PERF> ) {
+			chomp($line);
+			my @token = split(',', $line );
+			if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
+				next;
+			}
+			my $i    = $token[0];
+			my $perf = $token[1];
+			my $strategy = $token[2];
+			my $res   = $token[3];
+			push(@FinishedStrategyList, $strategy);
+			push(@FinishedPerfScore, $perf);
+			push(@FinishedStrategyList, $res);
+		}
+		close PRE_PERF;
+	}
+	
+	#LOAD STRATEGIES FROM PREV RUN (IF ANY)
+	$res = open PRE_LEARNED, "<", $GatlingConfig::alreadyLearned;
+	if ($res) {
+		while ( my $line = <PRE_LEARNED> ) {
+			chomp($line);
+			my @token = split(/ /, $line );
+			if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
+				next;
+			}
+			my $type    = $token[0];
+			shift @token;
+			my $strategy = join(" ", @token);
+			if($type eq "TRY"){
+				if(grep {$_ eq $strategy} @FinishedStrategyList){
+					#Already tried
+				}else{
+					push(@WaitingStrategyList, $strategy);
+				}
+			}
+		}
+		close PRE_PERF;
+	}
 }
 
 sub ns3_thread {
@@ -194,12 +222,22 @@ sub ns3_thread {
 }
 
 sub start {
-	CreateStrategyList();
+	prepareMessages();
 	Utils::updateSnapshot(-1);
 	Utils::pauseVMs();
 	Utils::snapshotVMs();
+	my $i;
 	
-	for(my $i=0; $i < $#FullStrategyList; $i++){
+	if(not @WaitingStrategyList){
+		#Start with a benign execution
+		push(@WaitingStrategyList,"BaseMessage NONE 0");
+		$i=0;
+	}else{
+		$i=scalar @WaitingStrategyList;
+	}
+	
+	while(@WaitingStrategyList){
+		my $strategy=shift(@WaitingStrategyList);
 		
 		#Setup VMs/NS-3	
 		Utils::killVMs();
@@ -216,12 +254,12 @@ sub start {
 		}
 		
 		#Load Strategy
-		print "Trying strategy $FullStrategyList[$i]...\n";
+		print "Trying strategy $strategy...\n";
 		my $fullpath = Cwd::abs_path($GatlingConfig::statediagramFile);
 		my $command = "C GatlingLoadStateDiagram $fullpath";
 		Utils::logTime("command $command");
 		Utils::directTopology($command);
-		$command = "C $FullStrategyList[$i]";
+		$command = "C $strategy";
 		Utils::logTime("command $command");
 		Utils::directTopology($command);
 		Utils::directTopology("C Gatling Resume");
@@ -248,20 +286,27 @@ sub start {
 		}
 
 		#Measure perf
-		$FullperfScore[$i] = Utils::getPerfScore();
+		
+		my $perfscore = Utils::getPerfScore();
 		Utils::resetPerfScore();
 		GatlingConfig::prepare();
 
 		#Measure Resource Utilization
-		$FullResourceUsage[$i] = Utils::getNumConnections("root\@$serverip");
+		my $resourceusage = Utils::getNumConnections("root\@$serverip");
+		
+		#Save results
+		push(@FinishedStrategyList, $strategy);
+		push(@FinishedPerfScore, $perfscore);
+		push(@FinishedResourceUsage, $resourceusage);
 
 		#Print results
-		print "===perfScore $i: $FullperfScore[$i] for strategy $FullStrategyList[$i] used $FullResourceUsage[$i]\n";
-		print PERF_LOG "$i $FullperfScore[$i] $FullResourceUsage[$i] $FullStrategyList[$i]\n";
+		print "===perfScore $i: $perfscore for strategy $strategy used $resourceusage\n";
+		print PERF_LOG "$i,$perfscore,$strategy,$resourceusage\n";
 
 		#Join NS-3 Thread (so it goes away)
 		$ns3_thread->join();
 
+		#Debug State Results
 		foreach $host (keys %db){
 			foreach $metric (keys %{$db{$host}}){
 				foreach $state (keys %{$db{$host}{$metric}}){
@@ -269,6 +314,16 @@ sub start {
 				}
 			}
 		}
+		
+		#Update Strategies
+		if($i==0){
+			#First execution (benign)
+			CreateStrategyList($strategy,$perfscore,$resourceusage,%db);
+		}else{
+			#Any other execution
+		}
+		
+		$i++;
 	}
 }
 
