@@ -117,7 +117,7 @@ sub getPerfScore()
 	  while (my $line = <SCORE>) {
 		  $sum = $sum+$line;
 	  }
-	  $score=$GatlingConfig::brokenPerf - $sum;
+	  $score=$sum;
   } else {
     my $count = 0;
     my $sum = 0;
