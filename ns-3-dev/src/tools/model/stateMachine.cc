@@ -132,7 +132,7 @@ namespace ns3 {
                 // and cover both send == -1 , rcvd == -1 cases
                 return t;
             }
-            if (t->m_rcvdType == rcvd && t->m_sendType > 0) {
+            if (t->m_rcvdType == rcvd && t->m_sendType > 0 && rcvd != -1) {
                 // cache it
                 m_cachedRcvdMsg = rcvd;
             }
@@ -147,7 +147,9 @@ namespace ns3 {
 
     State StateMachine::MakeTransition(int rcvdType, int sendType, unsigned long now) {
         Transition *t = GetMatchingTransition(m_curState, rcvdType, sendType);
-        if (t != NULL) return MakeTransition(t->GetType(), now);
+        if (t != NULL){
+	       	return MakeTransition(t->GetType(), now);
+	}
         return State("INVALID");
     }
 
