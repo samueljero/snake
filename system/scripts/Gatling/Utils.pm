@@ -139,6 +139,9 @@ sub getNumConnections
 {
 	my $host=shift;
 	system("ssh $host \"netstat --inet -n\" > $GatlingConfig::tmpFile");
+	if($GatlingConfig::debug > 0){
+		system("cat $GatlingConfig::tmpFile");
+	}
 	my $lines = `cat $GatlingConfig::tmpFile | wc -l`;
 	system("rm -f $GatlingConfig::tmpFile");
 	if($lines==0){
