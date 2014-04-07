@@ -99,17 +99,17 @@ sub prepareMessages {
 		my $strategyForMessage = 0;
 
 		#Add NONE, Drop, Dup, Delay, Divert commands for this message
-		$strategyListForMessage[0] = "$MsgParse::msgName[$i] NONE 0";
-		$strategyListForMessage[1] = "$MsgParse::msgName[$i] DROP 100";
-		$strategyListForMessage[1] = "$MsgParse::msgName[$i] DROP 50";
-		$strategyListForMessage[2] = "$MsgParse::msgName[$i] DUP 10";
-		$strategyListForMessage[3] = "$MsgParse::msgName[$i] DELAY 1.0";
-		$strategyListForMessage[4] = "$MsgParse::msgName[$i] DIVERT 1.0";
-		$strategyListForMessage[5] = "$MsgParse::msgName[$i] REPLAY 1";
-		$strategyListForMessage[6] = "$MsgParse::msgName[$i] BURST 1.0";
-		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 2.0";
-		$strategyListForMessage[8] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$strategyListForMessage[9] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
+		$strategyListForMessage[0] = "*?*?$MsgParse::msgName[$i] NONE 0";
+		$strategyListForMessage[1] = "*?*?$MsgParse::msgName[$i] DROP 100";
+		$strategyListForMessage[1] = "*?*?$MsgParse::msgName[$i] DROP 50";
+		$strategyListForMessage[2] = "*?*?$MsgParse::msgName[$i] DUP 10";
+		$strategyListForMessage[3] = "*?*?$MsgParse::msgName[$i] DELAY 1.0";
+		$strategyListForMessage[4] = "*?*?$MsgParse::msgName[$i] DIVERT 1.0";
+		$strategyListForMessage[5] = "*?*?$MsgParse::msgName[$i] REPLAY 1";
+		$strategyListForMessage[6] = "*?*?$MsgParse::msgName[$i] BURST 1.0";
+		$strategyListForMessage[7] = "*?*?$MsgParse::msgName[$i] BURST 2.0";
+		$strategyListForMessage[8] = "*?*?$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
+		$strategyListForMessage[9] = "*?*?$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
 		for ( my $j = 0 ; $j < 10 ; $j++ ) {   # NONE, DROP 100, DROP 40, DUP 10, etc
 			push( @score,    9999 );
 			push( @selected, 0 );
@@ -132,7 +132,7 @@ sub prepareMessages {
 
 					#Add this lie command for message
 					#print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
+					push( @strategyListForMessage,"*?*?$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
 					push( @score,    9999 );
 					push( @selected, 0 );
 					push( @excluded, 0 );
@@ -150,7 +150,7 @@ sub prepareMessages {
 				{
 
 					#Add this lie command for message
-					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+					push( @strategyListForMessage,"*?*?$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
 					push( @score,    9999 );
 					push( @selected, 0 );
 					push( @excluded, 0 );
@@ -230,7 +230,7 @@ sub start {
 	
 	if(not @WaitingStrategyList){
 		#Start with a benign execution
-		push(@WaitingStrategyList,"BaseMessage NONE 0");
+		push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
 		$i=0;
 	}else{
 		$i=scalar @WaitingStrategyList;

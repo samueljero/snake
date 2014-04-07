@@ -62,12 +62,12 @@ sub prepareMessages {
     $learned[$i] = -1;
     
     #Add NONE, Drop, Dup, Delay, Divert commands for this message
-    $strategyListForMessage[0]= "$MsgParse::msgName[$i] NONE 0";
-    $strategyListForMessage[1]= "$MsgParse::msgName[$i] DROP 100";
-    $strategyListForMessage[1]= "$MsgParse::msgName[$i] DROP 50";
-    $strategyListForMessage[2]= "$MsgParse::msgName[$i] DUP 10";
-    $strategyListForMessage[3]= "$MsgParse::msgName[$i] DELAY 1.0";
-    $strategyListForMessage[4]= "$MsgParse::msgName[$i] DIVERT 1.0";
+    $strategyListForMessage[0]= "*?*?$MsgParse::msgName[$i] NONE 0";
+    $strategyListForMessage[1]= "*?*?$MsgParse::msgName[$i] DROP 100";
+    $strategyListForMessage[1]= "*?*?$MsgParse::msgName[$i] DROP 50";
+    $strategyListForMessage[2]= "*?*?$MsgParse::msgName[$i] DUP 10";
+    $strategyListForMessage[3]= "*?*?$MsgParse::msgName[$i] DELAY 1.0";
+    $strategyListForMessage[4]= "*?*?$MsgParse::msgName[$i] DIVERT 1.0";
     for (my $j = 0; $j < 5; $j++) { # dup, delay, divert, benign, drop
       push(@score, 9999);
       push(@selected, 0);
@@ -83,7 +83,7 @@ sub prepareMessages {
       	for (my $k = 0; $k <= $FlenNumList->{$msgFlenList->{$i}[$j]}; $k++) {
           #Add this lie command for message
 	  #print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-	  push(@strategyListForMessage, "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
+	  push(@strategyListForMessage, "*?*?$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
           push(@score, 9999);
           push(@selected, 0);
           push(@excluded, 0); 
@@ -93,7 +93,7 @@ sub prepareMessages {
       	#For each value it makes sense to lie on based on field type
         for (my $k = 0; $k <= $typeStrategyRef->{$fieldsPerMsgRef->{$i}[$j]}; $k++) {
           #Add this lie command for message
-          push(@strategyListForMessage, "$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+          push(@strategyListForMessage, "*?*?$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
           push(@score, 9999);
           push(@selected, 0);
           push(@excluded, 0); 
