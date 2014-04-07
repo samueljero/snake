@@ -77,7 +77,7 @@ public:
 	int MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
 	void StoreEvent(EventImpl *event);
 	void InjectPacket(int type, const char *spec);
-	void Burst(int type);
+	void Burst(int type, int dir);
 	void Window(int type, const char *spec);
 
 
@@ -104,6 +104,10 @@ private:
   bool deliveryActions[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
   double deliveryValues[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
   char* lyingValues[MAX_STATES][DIRECTIONS][MSG][FIELD];
+  char* injectStates [MAX_STATES];
+  int 	injectMsg[MAX_STATES];
+  char* windowStates [MAX_STATES];
+  int windowMsg[MAX_STATES];
 
   uint64_t num_processed;
   uint16_t m_udp_port;
