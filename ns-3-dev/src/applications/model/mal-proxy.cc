@@ -54,6 +54,7 @@ using namespace std;
 
 static bool global_consult_gatling = true;
 static short global_once = 0;
+static bool global_record_message = true;
 static int app_debug = 2;
 
 #define CTRL_IP "127.0.0.1"
@@ -380,6 +381,22 @@ void MalProxy::DoDispose(void)
 	Application::DoDispose();
 }
 
+void MalProxy::AddMessage(Message *m) {
+	m_messageQueue.push(Message(m->msg));
+}
+
+void MalProxy::DumpMessages(ostream &os) {
+    unsigned long seq=0;
+    os << "seq" << "," << "size" << "," << "data\n";
+	while (!m_messageQueue.empty()) {
+        Message m = m_messageQueue.front();
+        os << seq++ << "," << m.size << ",";
+        os.write((const char *)m.msg, m.size);
+        os << "\n";
+        m_messageQueue.pop();
+    }
+}
+
 int MalProxy::Command(string command, std::string &output)
 {
 	if (command.compare("Gatling Pause\n") == 0) {
@@ -418,6 +435,21 @@ int MalProxy::Command(string command, std::string &output)
 		sm_client.GetStateMetricTracker()->Reset();
 		return 1;
 	}
+	if (command.compare("GatlingStartMessageRecording\n") == 0) {
+		global_record_message = true;
+		return 1;
+	}
+	if (command.compare("GatlingStopMessageRecording\n") == 0) {
+		global_record_message = false;
+		return 1;
+	}
+	if (command.compare(0, strlen("GatlingDumpRecordedMessages"), "GatlingDumpRecordedMessages") == 0) {
+		stringstream ss;
+		ss.str("");
+		DumpMessages(ss);
+        output=ss.str();
+		return 1;
+    }
 	if (command.compare(0, strlen("Learned"), "Learned") == 0) {
 		string line = string(command.c_str() + strlen("Learned") + 1);
 		if (app_debug > 1) {
@@ -585,6 +617,9 @@ int MalProxy::MalMsg(Message *m, int dir)
 		return 1;
 	}
 
+    if (global_record_message) {
+        AddMessage(m);
+    }
 	/*Greedy Strategy---Check with Controller, if we don't know what
 	 * to do for this message type*/
 	if (ctrltype == GREEDY) {

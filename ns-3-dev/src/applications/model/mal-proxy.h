@@ -33,6 +33,7 @@
 #include "ns3/tcp-header.h"
 #include <unistd.h>
 #include <vector>
+#include <queue>
 #include "message.h"
 #include "ns3/stateMachine.h"
 
@@ -150,6 +151,10 @@ private:
  connection* FindConnection(Ipv4Address src, Ipv4Address dest, int sport, int dport);
  int FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq);
  void AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq, int offset);
+
+ std::queue<Message> m_messageQueue;
+ void AddMessage(Message *m);
+ void DumpMessages(ostream &os);
 };
 
 } // namespace ns3
