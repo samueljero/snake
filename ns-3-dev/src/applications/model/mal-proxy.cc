@@ -176,14 +176,14 @@ void MalProxy::AddStrategy(string line)
 			actstr=line;
 			line="";
 		}else{
-			actstr=line.substr(0,cur-1);
+			actstr=line.substr(0,cur);
 			line=line.substr(cur+1);
 		}
 
 
 		/*Parse State Prefix*/
 		cur=actstr.find("?");
-		tmp=actstr.substr(0,cur-1);
+		tmp=actstr.substr(0,cur);
 		boost::algorithm::trim(tmp);
 		if(tmp=="*"){
 			state=-1;
@@ -194,8 +194,9 @@ void MalProxy::AddStrategy(string line)
 
 		/*Parse Direction Prefix*/
 		cur=actstr.find("?");
-		tmp=actstr.substr(0,cur-1);
+		tmp=actstr.substr(0,cur);
 		boost::algorithm::trim(tmp);
+
 		if(tmp=="*"){
 			dir=-1;
 		}else{
@@ -272,8 +273,8 @@ void MalProxy::AddStrategy(string line)
 		}
 
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << avalue);
-		if (app_debug > 1) {
-			std::cout << "MALProxy] " << "msgType " << msgType << " action "
+		if (app_debug > 0) {
+			std::cout << "MALProxy] " << "state " << state << " dir " << dir << " msgType " << msgType << " action "
 					<< malact << " value " << avalue << std::endl;
 		}
 
