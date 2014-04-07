@@ -31,7 +31,11 @@ namespace ns3 {
     // state machine construction
     void StateMachine::AddState(State state) {
         m_stateSet.insert(state);
-        m_stateMap[state.GetName()] = state;
+        m_stateMap[state] = m_stateSet.size()-1;
+        if(m_stateSet.size()-1 > MAX_STATES){
+        	std::cerr<<"ERROR: Maximum Number of states exceeded, please adjust #define in ns3/stateMachine.h"<<std::endl;
+        	exit(1);
+        }
     }
 
     void StateMachine::AddTransition(Transition transition, State from, State to) {

@@ -44,6 +44,7 @@ enum ControllerType {GREEDY, STATEBASED};
 enum MalDirection { TOTAP, FROMTAP };
 enum MalAction {NONE, DROP, DUP, DELAY, DIVERT, REPLAY, LIE, BURST, INJECT, WINDOW, RETRY};
 #define NUMDELIVERYACTIONS 11
+#define DIRECTIONS 2
 
 struct maloptions{
 	int divert;
@@ -71,8 +72,8 @@ public:
 
   MalProxy ();
   virtual ~MalProxy ();
-	int MalMsg(Message *m);
-	int MaliciousStrategy(Message *m, maloptions *res) ;
+	int MalMsg(Message *m, int dir);
+	int MaliciousStrategy(Message *m, int dir, maloptions *res) ;
 	int MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
 	void StoreEvent(EventImpl *event);
 	void InjectPacket(int type, const char *spec);
@@ -100,9 +101,9 @@ private:
   void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
   void RunStateMachines(Message *m, lowerLayers *ll,maloptions *res);
 
-  bool deliveryActions[MSG][NUMDELIVERYACTIONS];
-  double deliveryValues[MSG][NUMDELIVERYACTIONS];
-  char* lyingValues[MSG][FIELD];
+  bool deliveryActions[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
+  double deliveryValues[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
+  char* lyingValues[MAX_STATES][DIRECTIONS][MSG][FIELD];
 
   uint64_t num_processed;
   uint16_t m_udp_port;
@@ -117,8 +118,8 @@ private:
   EventImpl *sav_evt;
   bool evt_resume;
   std::map<std::pair<Ipv4Address,uint16_t>, Ptr<Socket> > m_udp_conn;
-  std::vector<std::pair<Ptr<Packet>,lowerLayers> > burst[MSG];
-  bool burst_sched[MSG];
+  std::vector<std::pair<Ptr<Packet>,lowerLayers> > burst[DIRECTIONS][MSG];
+  bool burst_sched[DIRECTIONS][MSG];
   ControllerType ctrltype;
   StateMachine sm_server;
   StateMachine sm_client;

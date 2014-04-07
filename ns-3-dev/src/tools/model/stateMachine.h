@@ -7,6 +7,9 @@
 #include "state.h"
 #include "transition.h"
 #include "stateMetric.h"
+
+#define MAX_STATES 100
+
 using namespace std;
 
 namespace ns3 {
@@ -34,7 +37,7 @@ namespace ns3 {
     typedef map <int, State> NextMap;
     typedef map <int, Transition> TrMap;
     typedef map <State, map<string, pair<Transition,Transition> > > TrMsgMap;
-    typedef map <string, State> StateMap;
+    typedef map <State,int> StateMap;
 
     class StateMachine {
         State m_curState;
@@ -64,6 +67,8 @@ namespace ns3 {
         // state machine information
         State GetCurrentState(void) { return m_curState; };
         StateMetricTracker* GetStateMetricTracker(void) { return &smt; };
+        int GetStateAsInt(){return m_stateMap[m_curState];}
+        int GetStateAsInt(State s){return m_stateMap[s.GetName()];}
         void IncrementMetric(string name) {smt.IncrementMetric(name, m_curState); };
 
         // to help attacks

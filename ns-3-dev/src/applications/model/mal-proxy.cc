@@ -68,49 +68,79 @@ NS_OBJECT_ENSURE_REGISTERED(MalProxy);
 
 void MalProxy::ClearStrategyForMsg(int type)
 {
-	deliveryActions[type][NONE] = false;
-	deliveryActions[type][DROP] = false;
-	deliveryActions[type][DUP] = false;
-	deliveryActions[type][DELAY] = false;
-	deliveryActions[type][DIVERT] = false;
-	deliveryActions[type][REPLAY] = false;
-	deliveryActions[type][LIE] = false;
-	deliveryActions[type][BURST] = false;
-	deliveryActions[type][INJECT] = false;
-	deliveryActions[type][WINDOW] = false;
-	deliveryActions[type][RETRY] = false;
-	for (int j = 0; j < FIELD; j++) {
-		if (lyingValues[type][j] != NULL) {
-			delete lyingValues[type][j];
-			lyingValues[type][j] = NULL;
+	for(int j=0; j < MAX_STATES; j++){
+		for(int d=0; d < DIRECTIONS; d++){
+			deliveryActions[j][d][type][NONE] = false;
+			deliveryActions[j][d][type][DROP] = false;
+			deliveryActions[j][d][type][DUP] = false;
+			deliveryActions[j][d][type][DELAY] = false;
+			deliveryActions[j][d][type][DIVERT] = false;
+			deliveryActions[j][d][type][REPLAY] = false;
+			deliveryActions[j][d][type][LIE] = false;
+			deliveryActions[j][d][type][BURST] = false;
+			deliveryActions[j][d][type][INJECT] = false;
+			deliveryActions[j][d][type][WINDOW] = false;
+			deliveryActions[j][d][type][RETRY] = false;
+			for (int k = 0; k < FIELD; k++) {
+				if (lyingValues[j][d][type][k] != NULL) {
+					delete lyingValues[0][d][type][k];
+					lyingValues[j][d][type][k] = NULL;
+				}
+			}
+
+			burst_sched[d][type]=false;
+			burst[d][type].clear();
 		}
+		if(injectStates[j]!=NULL){
+			delete injectStates[j];
+			injectStates[j]=NULL;
+		}
+		if(windowStates[j]!=NULL){
+			delete windowStates[j];
+			windowStates[j]=NULL;
+		}
+		injectMsg[j]=-1;
+		windowMsg[j]=-1;
 	}
-	burst_sched[type]=false;
-	burst[type].clear();
+
 }
 
 void MalProxy::ClearStrategy()
 {
-	for (int i = 0; i < MSG; i++) {
-		deliveryActions[i][NONE] = false;
-		deliveryActions[i][DROP] = false;
-		deliveryActions[i][DUP] = false;
-		deliveryActions[i][DELAY] = false;
-		deliveryActions[i][DIVERT] = false;
-		deliveryActions[i][REPLAY] = false;
-		deliveryActions[i][LIE] = false;
-		deliveryActions[i][BURST] = false;
-		deliveryActions[i][INJECT] = false;
-		deliveryActions[i][WINDOW] = false;
-		deliveryActions[i][RETRY] = false;
-		for (int j = 0; j < FIELD; j++) {
-			if (lyingValues[i][j] != NULL) {
-				delete lyingValues[i][j];
-				lyingValues[i][j] = NULL;
+	for(int j=0; j < MAX_STATES; j++){
+		for(int d=0; d < DIRECTIONS; d++){
+			for (int i = 0; i < MSG; i++) {
+				deliveryActions[j][d][i][NONE] = false;
+				deliveryActions[j][d][i][DROP] = false;
+				deliveryActions[j][d][i][DUP] = false;
+				deliveryActions[j][d][i][DELAY] = false;
+				deliveryActions[j][d][i][DIVERT] = false;
+				deliveryActions[j][d][i][REPLAY] = false;
+				deliveryActions[j][d][i][LIE] = false;
+				deliveryActions[j][d][i][BURST] = false;
+				deliveryActions[j][d][i][INJECT] = false;
+				deliveryActions[j][d][i][WINDOW] = false;
+				deliveryActions[j][d][i][RETRY] = false;
+				for (int k = 0; k < FIELD; k++) {
+					if (lyingValues[j][d][i][k] != NULL) {
+						delete lyingValues[j][d][i][k];
+						lyingValues[j][d][i][k] = NULL;
+					}
+				}
+				burst_sched[d][i]=false;
+				burst[d][i].clear();
 			}
 		}
-		burst_sched[i]=false;
-		burst[i].clear();
+		if(injectStates[j]!=NULL){
+			delete injectStates[j];
+			injectStates[j]=NULL;
+		}
+		if(windowStates[j]!=NULL){
+			delete windowStates[j];
+			windowStates[j]=NULL;
+		}
+		injectMsg[j]=-1;
+		windowMsg[j]=-1;
 	}
 }
 
@@ -123,7 +153,16 @@ void MalProxy::ParseStrategy(string line)
 void MalProxy::AddStrategy(string line)
 {
 	string actstr;
+	string tmp;
 	int cur;
+
+	int state=0;
+	int dir=0;
+	int msgType;
+	int action;
+	string avalue;
+	int field;
+	string fmval;
 
 	NS_LOG_DEBUG("Adding new strategy " << line);
 	if (app_debug > 0) {
@@ -141,76 +180,161 @@ void MalProxy::AddStrategy(string line)
 			line=line.substr(cur+1);
 		}
 
+
+		/*Parse State Prefix*/
+		cur=actstr.find("?");
+		tmp=actstr.substr(0,cur-1);
+		boost::algorithm::trim(tmp);
+		if(tmp=="*"){
+			state=-1;
+		}else{
+			state=sm_server.GetStateAsInt(State(tmp));
+		}
+		actstr = actstr.substr(cur + 1);
+
+		/*Parse Direction Prefix*/
+		cur=actstr.find("?");
+		tmp=actstr.substr(0,cur-1);
+		boost::algorithm::trim(tmp);
+		if(tmp=="*"){
+			dir=-1;
+		}else{
+			dir=atoi(tmp.c_str());
+		}
+		actstr = actstr.substr(cur + 1);
+
 		/*Parse Message Type*/
 		cur = actstr.find(" ");
-		int msgType = Message::StrToType(actstr.substr(0, cur).c_str());
+		msgType = Message::StrToType(actstr.substr(0, cur).c_str());
 		actstr = actstr.substr(cur + 1);
 
 		/*Parse malicious action*/
 		cur = actstr.find(" ");
 		string malact = actstr.substr(0, cur);
 		actstr = actstr.substr(cur + 1);
+		if (malact == "NONE") {
+			action=NONE;
+		} else if (malact == "DROP") {
+			action=DROP;
+		} else if (malact == "DUP") {
+			action=DUP;
+		} else if (malact == "DELAY") {
+			action=DELAY;
+		} else if (malact == "DIVERT") {
+			action=DIVERT;
+		} else if (malact == "REPLAY") {
+			action=REPLAY;
+		} else if (malact == "BURST") {
+			action=BURST;
+		} else if (malact=="INJECT") {
+			action=INJECT;
+		} else if (malact=="WINDOW") {
+			action=WINDOW;
+		} else if (malact == "LIE") {
+			action=LIE;
+		} else {
+			std::cout<< "Error! Unrecognized action: " << malact<<std::endl;
+		}
 
-		string value="";
-		if(malact!="INJECT" && malact!="WINDOW"){
+		/*Parse action value*/
+		avalue="";
+		if(action==DROP){
+			avalue="0";
+		}else if(action==INJECT){
+			avalue=actstr;
+		}else if(action==WINDOW){
+			avalue=actstr;
+		}else if(action==LIE){
 			cur = actstr.find(" ");
 			if (cur != -1) {
-				value = actstr.substr(0, cur);
+				fmval = actstr.substr(0, cur);
 				actstr = actstr.substr(cur + 1);
 			} else {
-				value = actstr;
+				fmval = actstr;
 				actstr = "";
 			}
-		}
-
-		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << value);
-		if (app_debug > 1) {
-			std::cout << "MALProxy] " << "msgType " << msgType << " action "
-					<< malact << " value " << value << std::endl;
-		}
-
-		if (malact == "NONE") {
-			deliveryActions[msgType][NONE] = true;
-			deliveryValues[msgType][NONE] = 0;
-		} else if (malact == "DROP") {
-			deliveryActions[msgType][DROP] = true;
-			deliveryValues[msgType][DROP] = atof(value.c_str());
-			;
-		} else if (malact == "DUP") {
-			deliveryActions[msgType][DUP] = true;
-			deliveryValues[msgType][DUP] = atof(value.c_str());
-		} else if (malact == "DELAY") {
-			deliveryActions[msgType][DELAY] = true;
-			deliveryValues[msgType][DELAY] = atof(value.c_str());
-		} else if (malact == "DIVERT") {
-			deliveryActions[msgType][DIVERT] = true;
-			deliveryValues[msgType][DIVERT] = atof(value.c_str());
-		} else if (malact == "REPLAY") {
-			deliveryActions[msgType][REPLAY] = true;
-			deliveryValues[msgType][REPLAY] = atof(value.c_str());
-		} else if (malact == "BURST") {
-			deliveryActions[msgType][BURST] = true;
-			deliveryValues[msgType][BURST] = atof(value.c_str());
-		} else if (malact=="INJECT") {
-			deliveryActions[msgType][INJECT] = true;
-			InjectPacket(msgType, actstr.c_str());
-		} else if (malact=="WINDOW") {
-			deliveryActions[msgType][WINDOW] = true;
-			Window(msgType, actstr.c_str());
-		} else if (malact == "LIE") {
-			cur = actstr.find(" ");
-			int field;
 			if (cur != -1) {
 				field = atoi(actstr.substr(0, cur).c_str());
 				actstr = actstr.substr(cur + 1);
 			} else {
 				field = atoi(actstr.c_str());
 				actstr = "";
-			} NS_LOG_DEBUG("lying on field " << field);
-			lyingValues[msgType][field] = strdup(value.c_str());
+			}
+		}else{
+			cur = actstr.find(" ");
+			if (cur != -1) {
+				avalue = actstr.substr(0, cur);
+				actstr = actstr.substr(cur + 1);
+			} else {
+				avalue = actstr;
+				actstr = "";
+			}
 		}
-		//INJECT, WINDOW are much more complicated
 
+		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << avalue);
+		if (app_debug > 1) {
+			std::cout << "MALProxy] " << "msgType " << msgType << " action "
+					<< malact << " value " << avalue << std::endl;
+		}
+
+		/*Set tables*/
+		if(action==INJECT){
+			if(state >=0){
+				injectMsg[state]=msgType;
+				injectStates[state]=strdup(avalue.c_str());
+			}else{
+				InjectPacket(msgType, avalue.c_str());
+			}
+		}else if(action==WINDOW){
+			if(state >=0){
+				windowMsg[state]=msgType;
+				windowStates[state]=strdup(avalue.c_str());
+			}else{
+				Window(msgType, avalue.c_str());
+			}
+		}else{
+			if(state>=0){
+				if(dir>=0){
+					deliveryActions[state][dir][msgType][action]=true;
+					if(action==LIE){
+						lyingValues[state][dir][msgType][field]=strdup(fmval.c_str());
+					}else{
+						deliveryValues[state][dir][msgType][action]=atof(avalue.c_str());
+					}
+				}else{
+					for(int d=0; d < DIRECTIONS; d++){
+						deliveryActions[state][d][msgType][action]=true;
+						if(action==LIE){
+							lyingValues[state][d][msgType][field]=strdup(fmval.c_str());
+						}else{
+							deliveryValues[state][d][msgType][action]=atof(avalue.c_str());
+						}
+					}
+				}
+			}else{
+				if(dir >=0){
+					for(int i=0; i < MAX_STATES; i++){
+						deliveryActions[i][dir][msgType][action]=true;
+						if(action==LIE){
+							lyingValues[i][dir][msgType][field]=strdup(fmval.c_str());
+						}else{
+							deliveryValues[i][dir][msgType][action]=atof(avalue.c_str());
+						}
+					}
+				}else{
+					for(int i=0; i < MAX_STATES; i++){
+						for(int d=0; d < DIRECTIONS; d++){
+							deliveryActions[i][d][msgType][action]=true;
+							if(action==LIE){
+								lyingValues[i][d][msgType][field]=strdup(fmval.c_str());
+							}else{
+								deliveryValues[i][d][msgType][action]=atof(avalue.c_str());
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 }
@@ -444,8 +568,10 @@ int MalProxy::CommunicateController(Message *m)
 #endif
 }
 
-int MalProxy::MalMsg(Message *m)
+int MalProxy::MalMsg(Message *m, int dir)
 {
+	int state=sm_server.GetStateAsInt();
+
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
 		return 0;
@@ -494,7 +620,7 @@ int MalProxy::MalMsg(Message *m)
 			std::cout << "MALProxy] " << "Encapsulated msg type "
 					<< m->encMsg->type << std::endl;
 		}
-		return MalMsg(m->encMsg);
+		return MalMsg(m->encMsg, dir);
 	}
 
 	if (m->type < 0 || m->type >= MSG) {
@@ -505,12 +631,12 @@ int MalProxy::MalMsg(Message *m)
 		return 0;
 	}
 
-	if (deliveryActions[m->type][DROP]) {
+	if (deliveryActions[state][dir][m->type][DROP]) {
 		return 1;
 	}
 
 	for (int i = 0; i < FIELD; i++) {
-		if (lyingValues[m->type][i] != NULL) {
+		if (lyingValues[state][dir][m->type][i] != NULL) {
 			if (app_debug > 0) {
 				std::cout << "MALProxy] " << "will lie for " << m->type
 						<< std::endl;
@@ -519,7 +645,7 @@ int MalProxy::MalMsg(Message *m)
 		}
 	}
 
-	if (deliveryActions[m->type][DUP]) {
+	if (deliveryActions[state][dir][m->type][DUP]) {
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "will dup for " << m->type
 					<< std::endl;
@@ -527,7 +653,7 @@ int MalProxy::MalMsg(Message *m)
 		return 1;
 	}
 
-	if (deliveryActions[m->type][DELAY]) {
+	if (deliveryActions[state][dir][m->type][DELAY]) {
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "will delay for " << m->type
 					<< std::endl;
@@ -535,7 +661,7 @@ int MalProxy::MalMsg(Message *m)
 		return 1;
 	}
 
-	if (deliveryActions[m->type][DIVERT]) {
+	if (deliveryActions[state][dir][m->type][DIVERT]) {
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "will divert for " << m->type
 					<< std::endl;
@@ -543,7 +669,7 @@ int MalProxy::MalMsg(Message *m)
 		return 1;
 	}
 
-	if (deliveryActions[m->type][REPLAY]) {
+	if (deliveryActions[state][dir][m->type][REPLAY]) {
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "will replay for " << m->type
 					<< std::endl;
@@ -551,7 +677,7 @@ int MalProxy::MalMsg(Message *m)
 		return 1;
 	}
 
-	if (deliveryActions[m->type][BURST]) {
+	if (deliveryActions[state][dir][m->type][BURST]) {
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "will burst for " << m->type
 					<< std::endl;
@@ -562,9 +688,10 @@ int MalProxy::MalMsg(Message *m)
 	return 0;
 }
 
-int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
+int MalProxy::MaliciousStrategy(Message *m, int dir,maloptions *res)
 {
 	bool lie = false;
+	int state=sm_server.GetStateAsInt();
 
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
@@ -580,9 +707,9 @@ int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
 	while (cur != NULL) {
 		if (cur->type >= 0 && cur->type < MSG) {
 
-			if (deliveryActions[cur->type][DROP]) {
+			if (deliveryActions[state][dir][cur->type][DROP]) {
 				double prob = 100 * (double) rand() / (double) RAND_MAX;
-				if (prob <= deliveryValues[cur->type][DROP]) {
+				if (prob <= deliveryValues[state][dir][cur->type][DROP]) {
 					NS_LOG_INFO("MalProxy dropping message");
 					res->action = DROP;
 					return DROP;
@@ -590,41 +717,41 @@ int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
 			}
 
 			for (int i = 0; i < FIELD; i++) {
-				if (lyingValues[cur->type][i] != NULL) {
+				if (lyingValues[state][dir][cur->type][i] != NULL) {
 					lie = true;
 				}
 			}
 
-			if (deliveryActions[cur->type][DUP]) {
-				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[cur->type][DUP] << " times");
-				if (res->duptimes < (int) deliveryValues[cur->type][DUP]) {
-					res->duptimes = (int) deliveryValues[cur->type][DUP];
+			if (deliveryActions[state][dir][cur->type][DUP]) {
+				NS_LOG_INFO("MalProxy duplicating message " << (int)deliveryValues[state][dir][cur->type][DUP] << " times");
+				if (res->duptimes < (int) deliveryValues[state][dir][cur->type][DUP]) {
+					res->duptimes = (int) deliveryValues[state][dir][cur->type][DUP];
 				}
 			}
 
-			if (deliveryActions[cur->type][DIVERT]) {
+			if (deliveryActions[state][dir][cur->type][DIVERT]) {
 				NS_LOG_INFO("MalProxy diverting message" << cur->type);
 				res->divert = true;
 			}
 
-			if (deliveryActions[cur->type][DELAY]) {
+			if (deliveryActions[state][dir][cur->type][DELAY]) {
 
-				if (res->delay < deliveryValues[cur->type][DELAY]) {
-					res->delay = deliveryValues[cur->type][DELAY];
+				if (res->delay < deliveryValues[state][dir][cur->type][DELAY]) {
+					res->delay = deliveryValues[state][dir][cur->type][DELAY];
 				}
-				if (deliveryValues[cur->type][DELAY] < 0) {
-					res->delay = -1 * deliveryValues[cur->type][DELAY]
+				if (deliveryValues[state][dir][cur->type][DELAY] < 0) {
+					res->delay = -1 * deliveryValues[state][dir][cur->type][DELAY]
 							* (double) rand() / (double) RAND_MAX;
 				} NS_LOG_INFO("MalProxy delaying message " << res->delay << " seconds");
 			}
 
-			if (deliveryActions[cur->type][REPLAY]) {
+			if (deliveryActions[state][dir][cur->type][REPLAY]) {
 				// By default, replay packet will go to the original sender. It can be used with DIVERT/DUP.
 				// If BROADCAST is good, we can work on that as well.
-				res->replay = (int) deliveryValues[cur->type][REPLAY];
+				res->replay = (int) deliveryValues[state][dir][cur->type][REPLAY];
 			}
 
-			if (deliveryActions[cur->type][BURST]) {
+			if (deliveryActions[state][dir][cur->type][BURST]) {
 				res->burst = true;
 			}
 
@@ -638,8 +765,8 @@ int MalProxy::MaliciousStrategy(Message *m, maloptions *res)
 			if (cur->type >= 0 && cur->type < MSG) {
 
 				for (int i = 0; i < FIELD; i++) {
-					if (lyingValues[cur->type][i] != NULL) {
-						cur->ChangeValue(i, lyingValues[cur->type][i]);
+					if (lyingValues[state][dir][cur->type][i] != NULL) {
+						cur->ChangeValue(i, lyingValues[state][dir][cur->type][i]);
 					}
 				}
 			}
@@ -704,7 +831,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 #endif
 
 	/*Check for Malicious Actions and Do them!*/
-	int result = MalMsg(m);
+	int result = MalMsg(m, ll.dir);
 	if (result == 0) {
 		res->action = NONE;
 		RunStateMachines(m,&ll, res);
@@ -713,16 +840,28 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 		res->action = RETRY;
 		return RETRY;
 	}
-	MaliciousStrategy(m, res);
+	MaliciousStrategy(m, ll.dir, res);
 	RunStateMachines(m,&ll, res);
+
+	/*Handle state-specific injection actions*/
+	if(injectStates[sm_server.GetStateAsInt()]!=NULL){
+		InjectPacket(injectMsg[sm_server.GetStateAsInt()],injectStates[sm_server.GetStateAsInt()]);
+		delete injectStates[sm_server.GetStateAsInt()];
+		injectStates[sm_server.GetStateAsInt()]=NULL;
+	}
+	if(windowStates[sm_server.GetStateAsInt()]!=NULL){
+		Window(windowMsg[sm_server.GetStateAsInt()],windowStates[sm_server.GetStateAsInt()]);
+		delete windowStates[sm_server.GetStateAsInt()];
+		windowStates[sm_server.GetStateAsInt()]=NULL;
+	}
 
 	/*Handle Burst action*/
 	if (res->burst){
-		burst[m->type].push_back(std::make_pair(packet,ll));
+		burst[ll.dir][m->type].push_back(std::make_pair(packet,ll));
 		if (!burst_sched[m->type]) {
-			Simulator::Schedule(Time(Seconds(deliveryValues[m->type][BURST])),
-					&MalProxy::Burst, this, m->type);
-			burst_sched[m->type] = true;
+			Simulator::Schedule(Time(Seconds(deliveryValues[sm_server.GetStateAsInt()][ll.dir][m->type][BURST])),
+					&MalProxy::Burst, this, m->type, ll.dir);
+			burst_sched[ll.dir][m->type] = true;
 		}
 		res->action = DROP;
 	}
@@ -882,19 +1021,19 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 	}
 }
 
-void MalProxy::Burst(int type)
+void MalProxy::Burst(int type, int dir)
 {
-	if (burst_sched[type] == false) {
+	if (burst_sched[dir][type] == false) {
 		return;
 	}
 
-	for (int i = 0; i < burst[type].size(); i++) {
-		burst[type][i].second.iph.EnableChecksum();
-		burst[type][i].first->AddHeader(burst[type][i].second.iph);
-		((TapBridge*)(burst[type][i].second.obj))->SendPacket(burst[type][i].first,burst[type][i].second);
+	for (int i = 0; i < burst[dir][type].size(); i++) {
+		burst[dir][type][i].second.iph.EnableChecksum();
+		burst[dir][type][i].first->AddHeader(burst[dir][type][i].second.iph);
+		((TapBridge*)(burst[dir][type][i].second.obj))->SendPacket(burst[dir][type][i].first,burst[dir][type][i].second);
 	}
-	burst[type].clear();
-	burst_sched[type] = false;
+	burst[dir][type].clear();
+	burst_sched[dir][type] = false;
 }
 
 //w=window t=time ip_src ip_dest port_src port_dest size
