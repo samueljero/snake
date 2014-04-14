@@ -56,19 +56,21 @@ sub CreateStrategyList{
 	for(my $i=0; $i < $messageCount; $i++){
 		if(scalar keys (%{$db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
 			for(my $j=1; $j < $strategyCount{$i};$j++){
-				push(@WaitingStrategyList,$strategyList{$i}[$j]);
-				print NEW_LEARNED "TRY $strategyList{$i}[$j]\n";
+				push(@WaitingStrategyList,"*?*?$strategyList{$i}[$j]");
+				print NEW_LEARNED "TRY *?*?$strategyList{$i}[$j]\n";
 			}
 		}elsif(scalar keys (%{$db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
-			for(my $j=1; $j < $strategyCount{$i};$j++){
-				push(@WaitingStrategyList,$strategyList{$i}[$j]);
-				print NEW_LEARNED "TRY $strategyList{$i}[$j]\n";
+			for my $k (keys (%{$db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}})){
+				for(my $j=1; $j < $strategyCount{$i};$j++){
+					push(@WaitingStrategyList,"$k?*?$strategyList{$i}[$j]");
+					print NEW_LEARNED "TRY $k?*?$strategyList{$i}[$j]\n";
+				}
 			}
 		}else{
-			push(@WaitingStrategyList,$strategyList{$i}[8]); #INJECT
-			push(@WaitingStrategyList,$strategyList{$i}[9]); #WINDOW
-			print NEW_LEARNED "TRY $strategyList{$i}[8]\n";
-			print NEW_LEARNED "TRY $strategyList{$i}[9]\n";
+			push(@WaitingStrategyList,"*?*?$strategyList{$i}[9]"); #INJECT
+			push(@WaitingStrategyList,"*?*?$strategyList{$i}[10]"); #WINDOW
+			print NEW_LEARNED "TRY *?*?$strategyList{$i}[9]\n";
+			print NEW_LEARNED "TRY *?*?$strategyList{$i}[10]\n";
 		}
 	}
 }
@@ -93,34 +95,25 @@ sub prepareMessages {
 			print "$i] - $nameStr - $MsgParse::msgType[$i] $MsgParse::msgTypeList{$nameStr}\n";
 		}
 		my @strategyListForMessage;
-		my @score;
-		my @selected;
-		my @excluded;
 		my $strategyForMessage = 0;
 
 		#Add NONE, Drop, Dup, Delay, Divert commands for this message
-		$strategyListForMessage[0] = "*?*?$MsgParse::msgName[$i] NONE 0";
-		$strategyListForMessage[1] = "*?*?$MsgParse::msgName[$i] DROP 100";
-		$strategyListForMessage[1] = "*?*?$MsgParse::msgName[$i] DROP 50";
-		$strategyListForMessage[2] = "*?*?$MsgParse::msgName[$i] DUP 10";
-		$strategyListForMessage[3] = "*?*?$MsgParse::msgName[$i] DELAY 1.0";
-		$strategyListForMessage[4] = "*?*?$MsgParse::msgName[$i] DIVERT 1.0";
-		$strategyListForMessage[5] = "*?*?$MsgParse::msgName[$i] REPLAY 1";
-		$strategyListForMessage[6] = "*?*?$MsgParse::msgName[$i] BURST 1.0";
-		$strategyListForMessage[7] = "*?*?$MsgParse::msgName[$i] BURST 2.0";
-		$strategyListForMessage[8] = "*?*?$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$strategyListForMessage[9] = "*?*?$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
-		for ( my $j = 0 ; $j < 10 ; $j++ ) {   # NONE, DROP 100, DROP 40, DUP 10, etc
-			push( @score,    9999 );
-			push( @selected, 0 );
-			push( @excluded, 0 );
-			$strategyForMessage = $strategyForMessage + 1;
-		}
+		$strategyListForMessage[0] = "$MsgParse::msgName[$i] NONE 0";
+		$strategyListForMessage[1] = "$MsgParse::msgName[$i] DROP 100";
+		$strategyListForMessage[2] = "$MsgParse::msgName[$i] DROP 50";
+		$strategyListForMessage[3] = "$MsgParse::msgName[$i] DUP 10";
+		$strategyListForMessage[4] = "$MsgParse::msgName[$i] DELAY 1.0";
+		$strategyListForMessage[5] = "$MsgParse::msgName[$i] DIVERT 1.0";
+		$strategyListForMessage[6] = "$MsgParse::msgName[$i] REPLAY 1";
+		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 1.0";
+		$strategyListForMessage[8] = "$MsgParse::msgName[$i] BURST 2.0";
+		$strategyListForMessage[9] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
+		$strategyListForMessage[10] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
+		$strategyForMessage = 11;
 
 		#For each field in this message
 		for ( my $j = 0 ; $j <= $#{ $fieldsPerMsgRef->{$i} } ; $j++ ) {
 			if ( $msgFlenList->{$i}[$j] > 0 ) {
-
 				#Bit fields
 				#For each value it makes sense to lie on based on field type
 				for (
@@ -129,18 +122,13 @@ sub prepareMessages {
 					$k++
 				  )
 				{
-
 					#Add this lie command for message
 					#print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-					push( @strategyListForMessage,"*?*?$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
-					push( @score,    9999 );
-					push( @selected, 0 );
-					push( @excluded, 0 );
+					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
 					$strategyForMessage = $strategyForMessage + 1;
 				}
 			}
 			elsif ( $typeStrategyRef->{ $fieldsPerMsgRef->{$i}[$j] } > 0 ) {
-
 				#For each value it makes sense to lie on based on field type
 				for (
 					my $k = 0 ;
@@ -148,12 +136,8 @@ sub prepareMessages {
 					$k++
 				  )
 				{
-
 					#Add this lie command for message
-					push( @strategyListForMessage,"*?*?$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
-					push( @score,    9999 );
-					push( @selected, 0 );
-					push( @excluded, 0 );
+					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
 					$strategyForMessage = $strategyForMessage + 1;
 				}
 			}
@@ -162,8 +146,6 @@ sub prepareMessages {
 		#Final totals
 		$strategyCount{$i}   = $strategyForMessage;
 		$strategyList{$i}    = \@strategyListForMessage;
-		$excludeStrategy{$i} = \@excluded;
-		$perfScore{$i}       = \@score;
 	}
 
 	#LOAD PREFORMANCE MEASURED IN PREV RUN (IF ANY)

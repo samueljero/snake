@@ -167,7 +167,7 @@ sub makeMetricDB
 			$host="client";
 			next;
 		}
-		my @lna=split(',',$val);
+		my @lna=split(',',$val); #metric,state,value
 		$db{$host}{$lna[0]}{$lna[1]}=$lna[2];
 	}
 	return %db;
