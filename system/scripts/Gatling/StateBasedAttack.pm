@@ -29,14 +29,15 @@ my $FlenNumList         = MsgParse::getFlenNumList();
 
 print "Total $messageCount message types\n";
 
-my %strategyCount;
-my %strategyList;
-my %excludeStrategy;    # actions to exclude
-my %perfScore;          # latest performance recorded
-my @WaitingStrategyList;
-my @FinishedStrategyList;
-my @FinishedPerfScore;
-my @FinishedResourceUsage;
+my %strategyMatrixCounts; # message by number of malicious actions
+my %strategyMatrix;	# message by list of malicious actions
+my @excludeStrategy;    # Strategies to exclude
+my @WaitingStrategyList; # Queue of strategies waiting to execute
+my @FinishedStrategyList; # List of previously executed strategies
+my @FinishedPerfScore;	# Performance scores from previously executed strategies
+my @FinishedResourceUsage; # Resource usage info from previously executed strategies
+my %class2states; # State classes to a list of states
+my %class2packets; # State classes to a list of packet types
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -52,26 +53,73 @@ sub CreateStrategyList{
 	my $perf=shift;
 	my $res=shift;
 	my %db=@_;
-	 
-	for(my $i=0; $i < $messageCount; $i++){
-		if(scalar keys (%{$db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
-			for(my $j=1; $j < $strategyCount{$i};$j++){
-				push(@WaitingStrategyList,"*?*?$strategyList{$i}[$j]");
-				print NEW_LEARNED "TRY *?*?$strategyList{$i}[$j]\n";
-			}
-		}elsif(scalar keys (%{$db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}})>0){
-			for my $k (keys (%{$db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}})){
-				for(my $j=1; $j < $strategyCount{$i};$j++){
-					push(@WaitingStrategyList,"$k?*?$strategyList{$i}[$j]");
-					print NEW_LEARNED "TRY $k?*?$strategyList{$i}[$j]\n";
+
+	#Manual class - states mapping
+	$class2states{"DATATRANSFER"}= [ ("ESTAB") ];
+	$class2states{"CONNECTING"}= [ ("LISTEN","SYN_RCVD","SYN_SENT")];
+	$class2states{"CLOSING"}= [("FIN_WAIT_1","FIN_WAIT_2", "CLOSE_WAIT", "TIME_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
+
+	#Class - Packet Type mapping
+	foreach $cl (keys %class2states){
+		foreach $st (@{$class2states{$cl}}){
+			for(my $i=0; $i < $messageCount; $i++){
+				if($db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
+					my $found=$false;
+					foreach $val (@{$class2packets{$cl}}){
+						if ($val eq $MsgParse::msgName[$i]){
+							$found=$true;
+							last;
+						}
+					}
+					if(!$found){
+						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
+					}
+				}
+				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{$st}){
+					my $found=$false;
+					foreach $val (@{$class2packets{$cl}}){
+						if($val eq $MsgParse::msgName[$i]){
+							$found=$true;
+							last;
+						}
+					}
+					if(!$found){
+						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
+					}
 				}
 			}
-		}else{
-			push(@WaitingStrategyList,"*?*?$strategyList{$i}[9]"); #INJECT
-			push(@WaitingStrategyList,"*?*?$strategyList{$i}[10]"); #WINDOW
-			print NEW_LEARNED "TRY *?*?$strategyList{$i}[9]\n";
-			print NEW_LEARNED "TRY *?*?$strategyList{$i}[10]\n";
 		}
+	}
+	
+	# Build  Strategy List
+	foreach $cl (keys %class2packets){
+		for(my $i=0; $i < $messageCount; $i++){
+			if(grep /$MsgParse::msgName[$i]/, @{$class2packets{$cl}}){
+				for(my $j=1; $j < $strategyMatrixCounts{$i}; $j++){
+					if($j==9 or $j==10){
+						next;
+					}
+					foreach $st (@{$class2states{$cl}}){
+						push(@WaitingStrategyList, "$st?0?$strategyMatrix{$i}[$j]");
+						push(@WaitingStrategyList, "$st?1?$strategyMatrix{$i}[$j]");
+					}
+				}
+			}
+			foreach $st (@{$class2states{$cl}}){
+				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[9]");
+				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[10]");
+			}
+			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[9]");
+			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[10]");
+		}
+	}
+
+	#Add known attacks
+
+	
+	#Save attacks
+	foreach $a (@WaitingStrategyList){
+		print NEW_LEARNED "TRY $a\n";
 	}
 }
 
@@ -94,22 +142,22 @@ sub prepareMessages {
 			my $nameStr = $MsgParse::msgName[$i];
 			print "$i] - $nameStr - $MsgParse::msgType[$i] $MsgParse::msgTypeList{$nameStr}\n";
 		}
-		my @strategyListForMessage;
-		my $strategyForMessage = 0;
+		my @messageStrategyList;
+		my $numMessageStrategies = 0;
 
 		#Add NONE, Drop, Dup, Delay, Divert commands for this message
-		$strategyListForMessage[0] = "$MsgParse::msgName[$i] NONE 0";
-		$strategyListForMessage[1] = "$MsgParse::msgName[$i] DROP 100";
-		$strategyListForMessage[2] = "$MsgParse::msgName[$i] DROP 50";
-		$strategyListForMessage[3] = "$MsgParse::msgName[$i] DUP 10";
-		$strategyListForMessage[4] = "$MsgParse::msgName[$i] DELAY 1.0";
-		$strategyListForMessage[5] = "$MsgParse::msgName[$i] DIVERT 1.0";
-		$strategyListForMessage[6] = "$MsgParse::msgName[$i] REPLAY 1";
-		$strategyListForMessage[7] = "$MsgParse::msgName[$i] BURST 1.0";
-		$strategyListForMessage[8] = "$MsgParse::msgName[$i] BURST 2.0";
-		$strategyListForMessage[9] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$strategyListForMessage[10] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
-		$strategyForMessage = 11;
+		$messageStrategyList[0] = "$MsgParse::msgName[$i] NONE 0";
+		$messageStrategyList[1] = "$MsgParse::msgName[$i] DROP 100";
+		$messageStrategyList[2] = "$MsgParse::msgName[$i] DROP 50";
+		$messageStrategyList[3] = "$MsgParse::msgName[$i] DUP 10";
+		$messageStrategyList[4] = "$MsgParse::msgName[$i] DELAY 1.0";
+		$messageStrategyList[5] = "$MsgParse::msgName[$i] DIVERT 1.0";
+		$messageStrategyList[6] = "$MsgParse::msgName[$i] REPLAY 1";
+		$messageStrategyList[7] = "$MsgParse::msgName[$i] BURST 1.0";
+		$messageStrategyList[8] = "$MsgParse::msgName[$i] BURST 2.0";
+		$messageStrategyList[9] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
+		$messageStrategyList[10] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
+		$numMessageStrategies = 11;
 
 		#For each field in this message
 		for ( my $j = 0 ; $j <= $#{ $fieldsPerMsgRef->{$i} } ; $j++ ) {
@@ -124,8 +172,8 @@ sub prepareMessages {
 				{
 					#Add this lie command for message
 					#print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
-					$strategyForMessage = $strategyForMessage + 1;
+					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
+					$numMessageStrategies = $numMessageStrategies + 1;
 				}
 			}
 			elsif ( $typeStrategyRef->{ $fieldsPerMsgRef->{$i}[$j] } > 0 ) {
@@ -137,15 +185,15 @@ sub prepareMessages {
 				  )
 				{
 					#Add this lie command for message
-					push( @strategyListForMessage,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
-					$strategyForMessage = $strategyForMessage + 1;
+					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+					$numMessageStrategies = $numMessageStrategies + 1;
 				}
 			}
 		}
 
 		#Final totals
-		$strategyCount{$i}   = $strategyForMessage;
-		$strategyList{$i}    = \@strategyListForMessage;
+		$strategyMatrixCounts{$i}   = $numMessageStrategies;
+		$strategyMatrix{$i}    = \@messageStrategyList;
 	}
 
 	#LOAD PREFORMANCE MEASURED IN PREV RUN (IF ANY)
