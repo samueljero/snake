@@ -192,6 +192,8 @@ sub parseMessage {
   #push(@{$strategyList{$typenamestr}}, "=32");
   push(@{$strategyList{$typenamestr}}, "=16");
   push(@{$strategyList{$typenamestr}}, "=-16");
+  push(@{$strategyList{$typenamestr}}, "+1");
+  push(@{$strategyList{$typenamestr}}, "+10");
   @test = $strategyList{$typenamestr};
   $strategyCount{$typenamestr} = $#{$test[0]};
   $typenamestr = "uint8_t";
@@ -203,6 +205,8 @@ sub parseMessage {
   #push(@{$strategyList{$typenamestr}}, "=32");
   push(@{$strategyList{$typenamestr}}, "=16");
   push(@{$strategyList{$typenamestr}}, "=8");
+  push(@{$strategyList{$typenamestr}}, "+1");
+  push(@{$strategyList{$typenamestr}}, "+10");
   @test = $strategyList{$typenamestr};
   $strategyCount{$typenamestr} = $#{$test[0]};
   $typenamestr= "int16_t";
@@ -236,6 +240,11 @@ sub parseMessage {
   #push(@{$strategyList{$typenamestr}}, "=1024");
   push(@{$strategyList{$typenamestr}}, "=256");
   push(@{$strategyList{$typenamestr}}, "=64");
+  push(@{$strategyList{$typenamestr}}, "+1000");
+  push(@{$strategyList{$typenamestr}}, "+10");
+  push(@{$strategyList{$typenamestr}}, "+1");
+  push(@{$strategyList{$typenamestr}}, "-1");
+  push(@{$strategyList{$typenamestr}}, "-1000");
   @test = $strategyList{$typenamestr};
   $strategyCount{$typenamestr} = $#{$test[0]};
   $typenamestr= "int32_t";
@@ -269,6 +278,12 @@ sub parseMessage {
 #push(@{$strategyList{$typenamestr}}, "=131072");
   push(@{$strategyList{$typenamestr}}, "=4096");
   push(@{$strategyList{$typenamestr}}, "=128");
+  push(@{$strategyList{$typenamestr}}, "+1");
+  push(@{$strategyList{$typenamestr}}, "+10");
+  push(@{$strategyList{$typenamestr}}, "+1000");
+  push(@{$strategyList{$typenamestr}}, "+10000");
+  push(@{$strategyList{$typenamestr}}, "-1");
+  push(@{$strategyList{$typenamestr}}, "-1000");
   @test = $strategyList{$typenamestr};
   $strategyCount{$typenamestr} = $#{$test[0]};
   $typenamestr= "unsigned";
@@ -369,6 +384,8 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=4");
   push(@{$FlenList{$typenamestr}}, "=8");
   push(@{$FlenList{$typenamestr}}, "=15");
+  push(@{$FlenList{$typenamestr}}, "+1");
+  push(@{$FlenList{$typenamestr}}, "-1");
   @test = $FlenList{$typenamestr};
     $FlenNumList{$typenamestr}=$#{$test[0]};
   $typenamestr="5";
@@ -379,6 +396,8 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=16");
   push(@{$FlenList{$typenamestr}}, "=9");
   push(@{$FlenList{$typenamestr}}, "=31");
+  push(@{$FlenList{$typenamestr}}, "+1");
+  push(@{$FlenList{$typenamestr}}, "-1");
   @test = $FlenList{$typenamestr};
     $FlenNumList{$typenamestr}=$#{$test[0]};
   $typenamestr="6";
@@ -387,6 +406,8 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=4");
   push(@{$FlenList{$typenamestr}}, "=16");
   push(@{$FlenList{$typenamestr}}, "=63");
+  push(@{$FlenList{$typenamestr}}, "-1");
+  push(@{$FlenList{$typenamestr}}, "+1");
   @test = $FlenList{$typenamestr};
     $FlenNumList{$typenamestr}=$#{$test[0]};
   $typenamestr="7";
@@ -397,6 +418,8 @@ sub parseMessage {
   push(@{$FlenList{$typenamestr}}, "=19");
   push(@{$FlenList{$typenamestr}}, "=64");
   push(@{$FlenList{$typenamestr}}, "=127");
+  push(@{$FlenList{$typenamestr}}, "-1");
+  push(@{$FlenList{$typenamestr}}, "+1");
   @test = $FlenList{$typenamestr};
     $FlenNumList{$typenamestr}=$#{$test[0]};
     return \%fieldsPerMsg;
