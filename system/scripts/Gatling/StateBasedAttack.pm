@@ -38,6 +38,7 @@ my @FinishedPerfScore;	# Performance scores from previously executed strategies
 my @FinishedResourceUsage; # Resource usage info from previously executed strategies
 my %class2states; # State classes to a list of states
 my %class2packets; # State classes to a list of packet types
+my $benignAttackScore; #"Attack Score" for benign run
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -227,7 +228,7 @@ sub prepareMessages {
 			my $res   = $token[3];
 			push(@FinishedStrategyList, $strategy);
 			push(@FinishedPerfScore, $perf);
-			push(@FinishedStrategyList, $res);
+			push(@FinishedResourceUsage, $res);
 		}
 		close PRE_PERF;
 	}
@@ -256,6 +257,21 @@ sub prepareMessages {
 	}
 }
 
+sub isAttack
+{
+	my $val=shift;
+	my $ref=shift;
+
+	if($val > 1.5*$ref){ #greater than 1.5 times reference
+		return 1;
+	}
+	if($val < 0.5*$ref){ #less than half reference
+		return 1;
+	}
+
+	return 0;
+}
+
 sub ns3_thread {
 	my @args = @_;
 	print "NS-3 start: [".(join (' ', @args))."]\n";
@@ -279,11 +295,14 @@ sub start {
 		push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
 		$i=0;
 	}else{
+		#Already partly done, restart
 		$i=scalar @WaitingStrategyList;
+		$benignAttackScore=Utils::computeAttackScore($FinishedPerfScore[0],$FinishedResourceUsage[0]);
 	}
 	
 	while(@WaitingStrategyList){
 		my $strategy=shift(@WaitingStrategyList);
+		my $attackscore;
 		
 		#Setup VMs/NS-3	
 		Utils::killVMs();
@@ -317,7 +336,7 @@ sub start {
 		Utils::logTime("system start");
 		
 		
-		#Wait for NS-3
+		#Wait for NS-3 to do test
 		sleep($GatlingConfig::runTime*(2/3.0));
 		
 		#Measure State Information
@@ -326,19 +345,35 @@ sub start {
 		my $statstr=Utils::directTopology($command);
 		my %db=Utils::makeMetricDB($statstr);
 		
-		sleep($GatlingConfig::runTime*(1/3.0));
+		#Wait for system to normally close resources... i.e. TIMEWAIT
+		sleep($GatlingConfig::waitTime);
 		while($GatlingConfig::watch_ns3 !=0){
 			sleep(1);
 		}
 
 		#Measure perf
-		
 		my $perfscore = Utils::getPerfScore();
 		Utils::resetPerfScore();
 		GatlingConfig::prepare();
 
 		#Measure Resource Utilization
-		my $resourceusage = Utils::getNumConnections("root\@$serverip");
+		my $resourceusage=0;
+	       	if($GatlingConfig::serverhavessh==1){
+			print "Getting resource usage!\n";
+			$resourceusage = Utils::getNumConnections("root\@$serverip");
+		}else{
+			$resourceusage = Utils::PingHost("$serverip");
+		}
+		
+		#Check if this is an attack
+		$attackscore=Utils::computeAttackScore($perfscore,$resourceusage);
+		if($i > 0 && isAttack($attackscore,$benignAttackScore)){
+			print "FOUND ATTACK: strategy $i---$perfscore for strategy $strategy used $resourceusage\n";
+			print NEW_LEARNED "FOUND $i,$perfscore,$strategy,$resourceusage,$attackscore\n";
+		}
+		if($i==0){
+			$benignAttackScore=$attackscore;
+		}
 		
 		#Save results
 		push(@FinishedStrategyList, $strategy);
@@ -353,10 +388,12 @@ sub start {
 		$ns3_thread->join();
 
 		#Debug State Results
-		foreach $host (keys %db){
-			foreach $metric (keys %{$db{$host}}){
-				foreach $state (keys %{$db{$host}{$metric}}){
-					print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
+		if ( $GatlingConfig::debug > 0 ) {
+			foreach $host (keys %db){
+				foreach $metric (keys %{$db{$host}}){
+					foreach $state (keys %{$db{$host}{$metric}}){
+						print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
+					}
 				}
 			}
 		}

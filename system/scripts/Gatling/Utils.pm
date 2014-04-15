@@ -4,6 +4,7 @@ package Utils;
 
 use Time::HiRes;
 use GatlingConfig;
+use Net::Ping;
 
 ## variables
 $tm = (time)[0];
@@ -150,6 +151,24 @@ sub getNumConnections
 	}else{
 		return $lines - 3;
 	}
+}
+
+sub PingHost
+{
+	my $host=shift;
+	my $p = Net::Ping->new("icmp");
+	if($p->ping($host,2)){
+		return 0;
+	}
+	return 10;
+}
+
+sub computeAttackScore
+{
+	my $perf=shift;
+	my $resrc=shift;
+	#return $GatlingConfig::brokenPerf - $perf*($resrc+1);
+	return $perf*($resrc+1);
 }
 
 sub makeMetricDB

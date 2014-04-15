@@ -40,6 +40,7 @@ $s_parallel = 4;
 $c_parallel = 1;
 $num_vms = 8;
 $runTime = 2000000;
+$waitTime = 0;
 $watchPort = " ";
 $mal = " -mal 0 ";
 $timeLog = "timing.txt";
@@ -47,6 +48,7 @@ $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
 $perfMeasured = "perfMeasured.txt";
 $newlyLearned = "new_learned.txt";
+$serverhavessh = 1;
 $setupCommand = "";
 
 sub changeServerCommand($@) {
@@ -205,6 +207,7 @@ sub systemTCP()
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
   $runTime = 60;
+  $waitTime = 60;
   $watchPort = " -tcp_port 80";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
@@ -220,6 +223,7 @@ sub systemTCP()
   $s_parallel = 2;
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
+  $serverhavessh=1;
 }
 
 1;
