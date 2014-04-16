@@ -81,7 +81,6 @@ sub reloadNS3() {
 
 sub resumeNS3() {
   logTime("start resumeNS3");
-  #`date --set="$tmstr" && date --rfc-3339=ns`; 
   timeRollback();
   directTopology("R");
   logTime("end resumeNS3");

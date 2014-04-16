@@ -20,9 +20,9 @@ if (@ARGV < 3) {
   print "$usage\n";
   exit;
 }
-# need root
+
+# need root for some things
 my $login = (getpwuid $>);
-die "must run as root" if $login ne 'root';
 
 my $command = $ARGV[0];
 my $start = $ARGV[1];
@@ -108,7 +108,9 @@ if ($command eq "prep")
     my $ip = $ipbase.".$end";
 # TODO: if pub key does not exist, gen it
     system("cat ~/.ssh/id_rsa.pub | ssh root\@$ip \"cat >> ~/.ssh/authorized_keys\"");
-    system("cat /root/.ssh/id_rsa.pub | ssh root\@$ip \"cat >> ~/.ssh/authorized_keys\"");
+    if( $login eq "root"){
+    	system("cat /root/.ssh/id_rsa.pub | ssh root\@$ip \"cat >> ~/.ssh/authorized_keys\"");
+    }
     print "copying CustomizeVM.pl\n";
     system("scp -o StrictHostKeyChecking=no $basedir/CustomizeVM.pl root\@$ip:/usr/local/bin/CustomizeVM.pl");
     print "run $exec_command\n";

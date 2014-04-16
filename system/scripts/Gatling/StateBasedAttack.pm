@@ -9,6 +9,7 @@ use Cwd;
 
 #Attack topology/connection details
 my $serverip = "10.1.2.3";
+my $hostserverip = $serverip;
 my $clientip = "10.1.2.2";
 my $malip = "10.1.2.1";
 my $clientport= 5555;
@@ -360,9 +361,9 @@ sub start {
 		my $resourceusage=0;
 	       	if($GatlingConfig::serverhavessh==1){
 			print "Getting resource usage!\n";
-			$resourceusage = Utils::getNumConnections("root\@$serverip");
+			$resourceusage = Utils::getNumConnections("root\@$hostserverip");
 		}else{
-			$resourceusage = Utils::PingHost("$serverip");
+			$resourceusage = Utils::PingHost("$hostserverip");
 		}
 		
 		#Check if this is an attack
