@@ -250,14 +250,15 @@ void MalProxy::AddStrategy(string line)
 			cur = actstr.find(" ");
 			if (cur != -1) {
 				fmval = actstr.substr(0, cur);
-				actstr = actstr.substr(cur + 1);
+				actstr = actstr.substr(cur);
 			} else {
 				fmval = actstr;
 				actstr = "";
 			}
+
 			if (cur != -1) {
 				field = atoi(actstr.substr(0, cur).c_str());
-				actstr = actstr.substr(cur + 1);
+				actstr = actstr.substr(cur);
 			} else {
 				field = atoi(actstr.c_str());
 				actstr = "";
@@ -266,7 +267,7 @@ void MalProxy::AddStrategy(string line)
 			cur = actstr.find(" ");
 			if (cur != -1) {
 				avalue = actstr.substr(0, cur);
-				actstr = actstr.substr(cur + 1);
+				actstr = actstr.substr(cur);
 			} else {
 				avalue = actstr;
 				actstr = "";
@@ -276,7 +277,7 @@ void MalProxy::AddStrategy(string line)
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << avalue);
 		if (app_debug > 0) {
 			std::cout << "MALProxy] " << "state " << state << " dir " << dir << " msgType " << msgType << " action "
-					<< malact << " value " << avalue << std::endl;
+					<< malact << " value " << avalue <<  " fmval " << fmval << " field " << field << std::endl;
 		}
 
 		/*Set tables*/
