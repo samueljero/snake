@@ -250,12 +250,13 @@ void MalProxy::AddStrategy(string line)
 			cur = actstr.find(" ");
 			if (cur != -1) {
 				fmval = actstr.substr(0, cur);
-				actstr = actstr.substr(cur);
+				actstr = actstr.substr(cur+1);
 			} else {
 				fmval = actstr;
 				actstr = "";
 			}
 
+			cur = actstr.find(" ");
 			if (cur != -1) {
 				field = atoi(actstr.substr(0, cur).c_str());
 				actstr = actstr.substr(cur);
