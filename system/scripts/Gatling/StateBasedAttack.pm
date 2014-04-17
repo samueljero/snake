@@ -297,7 +297,7 @@ sub start {
 		$i=0;
 	}else{
 		#Already partly done, restart
-		$i=scalar @FinishedPerfList;
+		$i=scalar @FinishedStrategyList;
 		$benignAttackScore=Utils::computeAttackScore($FinishedPerfScore[0],$FinishedResourceUsage[0]);
 	}
 	
