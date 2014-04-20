@@ -1,8 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
+use Sys::Hostname;
 
 my $basedir = abs_path(dirname(__FILE__));
 my $classroot = $basedir; 
@@ -16,6 +17,7 @@ my $ipbase = "10.1.1";
 
 my $usage = "\nusage 1: $0 netstart|netstop|create|fresh|prep|start|kill|status start_vm end_vm\n";
 
+my $host = hostname;
 if (@ARGV < 3) {
   print "$usage\n";
   exit;
@@ -23,6 +25,13 @@ if (@ARGV < 3) {
 
 # need root for some things
 my $login = (getpwuid $>);
+# if it's not cloud, we can't run as root
+my $root = 1;
+if ( $host =~ /^cloud/ ) {
+    die "must run as root" if $login ne 'root';
+} else {
+    $root = 0;
+}
 
 my $command = $ARGV[0];
 my $start = $ARGV[1];

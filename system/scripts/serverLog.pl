@@ -1,8 +1,9 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 #
 
 #use strict;
+use warnings;
 use IO::Socket::INET;
 #use Time::Local;
 use threads;

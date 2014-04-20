@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w
-# FYI, PERF SCORE IS MEASURED SO THAT BIGGER IS WORSE
+#!/usr/bin/env perl
+
+# PERF SCORE - BIGGER IS WORSE
 
 use strict;
 use IO::Socket;
