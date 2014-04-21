@@ -61,7 +61,8 @@ sub CreateStrategyList{
 	#Manual class - states mapping
 	$class2states{"DATATRANSFER"}= [ ("ESTAB") ];
 	$class2states{"CONNECTING"}= [ ("LISTEN","SYN_RCVD","SYN_SENT")];
-	$class2states{"CLOSING"}= [("FIN_WAIT_1","FIN_WAIT_2", "CLOSE_WAIT", "TIME_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
+	$class2states{"PASIVE_CLOSING"}= [("CLOSE_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
+	$class2states{"ACTIVE_CLOSING"}= [("FIN_WAIT_1", "FIN_WAIT_2","TIME_WAIT", "CLOSING")];
 
 	#Class - Packet Type mapping
 	foreach $cl (keys %class2states){
@@ -79,7 +80,7 @@ sub CreateStrategyList{
 						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
 					}
 				}
-				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{$st}){
+				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
 					my $found=$false;
 					foreach $val (@{$class2packets{$cl}}){
 						if($val eq $MsgParse::msgName[$i]){
@@ -98,7 +99,7 @@ sub CreateStrategyList{
 	# Build  Strategy List
 	foreach $cl (keys %class2packets){
 		for(my $i=0; $i < $messageCount; $i++){
-			if(grep /$MsgParse::msgName[$i]/, @{$class2packets{$cl}}){
+			if(grep /^$MsgParse::msgName[$i]$/, @{$class2packets{$cl}}){
 				for(my $j=1; $j < $strategyMatrixCounts{$i}; $j++){
 					if($j > 11 and  $j < 20){
 						next;
