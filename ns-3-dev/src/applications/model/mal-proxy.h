@@ -101,6 +101,7 @@ private:
   int CommunicateController(Message *m);
   void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
   void RunStateMachines(Message *m, lowerLayers *ll,maloptions *res);
+  void ShouldInject();
 
   bool deliveryActions[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
   double deliveryValues[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
