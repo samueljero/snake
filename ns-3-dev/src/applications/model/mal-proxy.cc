@@ -730,9 +730,6 @@ int MalProxy::MaliciousStrategy(Message *m, int dir,maloptions *res)
 {
 	bool lie = false;
 	int state=sm_server.GetStateAsInt();
-	if(app_debug > 0){
-		std::cout<<"In State " << state <<std::endl;
-	}
 
 	/*Safety Check*/
 	if (m->type < 0 || m->type >= MSG) {
@@ -1003,6 +1000,7 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	dest = Ipv4Address(sdest);
 	spec += len;
 	uint8_t *buf=(uint8_t*)malloc(sizeof(BaseMessage));
+	memset(buf,0,sizeof(BaseMessage));
 	p = new Packet(buf,sizeof(BaseMessage));
 	free(buf);
 	m = new Message(p->PeekDataForMal());
@@ -1160,7 +1158,7 @@ void MalProxy::RunStateMachines(Message *m, lowerLayers *ll, maloptions *res)
 void MalProxy::ShouldInject(){
 	if(injectStates[sm_server.GetStateAsInt()]!=NULL){
 		if(app_debug > 0){
-			std::cout<<"Injecting packet type " << injectMsg[sm_server.GetStateAsInt()] << sm_server.GetCurrentState() << std::endl;
+			std::cout<<"Injecting packet type " << injectMsg[sm_server.GetStateAsInt()] << " in state " << sm_server.GetCurrentState() << std::endl;
 		}
 		InjectPacket(injectMsg[sm_server.GetStateAsInt()],injectStates[sm_server.GetStateAsInt()]);
 		delete injectStates[sm_server.GetStateAsInt()];
@@ -1168,7 +1166,7 @@ void MalProxy::ShouldInject(){
 	}
 	if(windowStates[sm_server.GetStateAsInt()]!=NULL){
 		if(app_debug > 0){
-			std::cout<<"Windowing packet type " << windowMsg[sm_server.GetStateAsInt()] << std::endl;
+			std::cout<<"Windowing packet type " << windowMsg[sm_server.GetStateAsInt()] << " in state " << sm_server.GetCurrentState() << std::endl;
 		}
 		Window(windowMsg[sm_server.GetStateAsInt()],windowStates[sm_server.GetStateAsInt()]);
 		delete windowStates[sm_server.GetStateAsInt()];
