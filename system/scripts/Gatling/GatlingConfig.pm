@@ -206,7 +206,8 @@ sub systemTCP()
   $client_command = "/root/TCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
-  $runTime = 60;
+  $runTime = 90;
+  $window_size=70;
   $waitTime = 60;
   $watchPort = " -tcp_port 80";
   $mal = " -mal 0 ";
@@ -215,7 +216,6 @@ sub systemTCP()
   $perfMeasured = "TCP/perf.txt";
   $newlyLearned = "TCP/new_learned.txt";
   $num_vms = 4;
-  $window_size = 30;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
   $start_attack = 1;
