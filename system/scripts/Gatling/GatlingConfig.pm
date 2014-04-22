@@ -2,6 +2,7 @@
 
 use Cwd 'abs_path';
 use File::Basename;
+use Sys::Hostname;
 
 package GatlingConfig;
 
@@ -36,6 +37,14 @@ $server_command = "./counter.pl | ~/logcollector.pl";
 $client_command = "./counter.pl | ~/logcollector.pl ";
 $serverList = "pssh_servers.txt";
 $clientList = "pssh_clients.txt";
+$allList = "pssh_all.txt";
+
+my $host = hostname;
+if ( $host =~ /^sound/ ) {
+    $serverList = "pssh_servers0.txt";
+    $clientList = "pssh_clients0.txt";
+    $allList = "pssh_all0.txt";
+}
 $s_parallel = 4;
 $c_parallel = 1;
 $num_vms = 8;

@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
+# FYI, PERF SCORE IS MEASURED SO THAT BIGGER IS WORSE
 
 # PERF SCORE - BIGGER IS WORSE
 
+use warnings;
 use strict;
 use IO::Socket;
 use Time::Local;

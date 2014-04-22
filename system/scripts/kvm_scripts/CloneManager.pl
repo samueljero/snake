@@ -33,6 +33,10 @@ if ( $host =~ /^cloud/ ) {
     $root = 0;
 }
 
+if ( $host =~ /^sound/ ) {
+    $ipbase = "10.0.1";
+}
+
 my $command = $ARGV[0];
 my $start = $ARGV[1];
 my $num = $ARGV[2];
@@ -67,6 +71,19 @@ elsif ($command eq "create")
   }
   print "\nCreated ".($num-$start+1)." VMs for you!\n";
 } 
+
+if ($command eq "master")
+{
+    my $i = 1;
+    my $telnetport = 10100 + $i;
+    my $vncport = (11000 - 5900) + $i;
+    my $mac1 = "00:00:00:01:";
+    my $mac2 = "00:00:00:02:";
+    my $str = sprintf("%02d:%02d", $i / 100, $i % 100);
+    $mac1 .= $str;
+    $mac2 .= $str;
+    system("qemu-system-x86_64 -hda $masterdir/ubuntu-master.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait &");
+}
 
 if ($command eq "fresh" or $command eq "start") 
 {

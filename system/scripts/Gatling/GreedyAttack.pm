@@ -476,7 +476,7 @@ sub start {
   
   #Verify that VMs and NS-3 are up
   sleep 3;
-  system("pssh -P -h pssh_all.txt -t 5 \"ping 10.1.2.5 -c 5\"");
+  system("pssh -P -h $GatlingConfig::allList -t 5 \"ping 10.1.2.5 -c 5\"");
 
   if ($GatlingConfig::watch_ns3 == 0) {
     print "Gatling suspended due to NS3 termination\n";
