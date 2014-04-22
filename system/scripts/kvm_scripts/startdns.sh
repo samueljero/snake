@@ -1,7 +1,7 @@
 #!/bin/bash
-if [ $HOSTNAME = "ocean1.cs.purdue.edu" ]
+if [ $HOSTNAME = "ocean1.cs.purdue.edu" ] || [ $HOSTNAME = "sound.cs.purdue.edu" ]
 then
-	sudo /usr/local/sbin/restart-dhcpd < /scratch2/sjero/turret/dns-conf
+	sudo /usr/local/sbin/restart-dhcpd < /tmp/ip-mac
 else
 	pkill dnsmasq
 	where_am_i=$(

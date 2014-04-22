@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use strict;
 use Cwd 'abs_path';
@@ -25,6 +25,7 @@ if (@ARGV < 3) {
 
 # need root for some things
 my $login = (getpwuid $>);
+# if it's not cloud, we can't run as root
 my $root = 1;
 if ( $host =~ /^cloud/ ) {
     die "must run as root" if $login ne 'root';

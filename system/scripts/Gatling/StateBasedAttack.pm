@@ -1,10 +1,11 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 package StateBasedAttack;
 require MsgParse;
 require Utils;
 require GatlingConfig;
 use Cwd;
+use List::Util qw(max min);
 
 
 #Attack topology/connection details
@@ -40,6 +41,7 @@ my @FinishedResourceUsage; # Resource usage info from previously executed strate
 my %class2states; # State classes to a list of states
 my %class2packets; # State classes to a list of packet types
 my $benignAttackScore; #"Attack Score" for benign run
+my $numBenignRuns=3; #Number of benign runs to average together for performance threshold
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -59,7 +61,8 @@ sub CreateStrategyList{
 	#Manual class - states mapping
 	$class2states{"DATATRANSFER"}= [ ("ESTAB") ];
 	$class2states{"CONNECTING"}= [ ("LISTEN","SYN_RCVD","SYN_SENT")];
-	$class2states{"CLOSING"}= [("FIN_WAIT_1","FIN_WAIT_2", "CLOSE_WAIT", "TIME_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
+	$class2states{"PASIVE_CLOSING"}= [("CLOSE_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
+	$class2states{"ACTIVE_CLOSING"}= [("FIN_WAIT_1", "FIN_WAIT_2","TIME_WAIT", "CLOSING")];
 
 	#Class - Packet Type mapping
 	foreach $cl (keys %class2states){
@@ -77,7 +80,7 @@ sub CreateStrategyList{
 						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
 					}
 				}
-				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{$st}){
+				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
 					my $found=$false;
 					foreach $val (@{$class2packets{$cl}}){
 						if($val eq $MsgParse::msgName[$i]){
@@ -96,7 +99,7 @@ sub CreateStrategyList{
 	# Build  Strategy List
 	foreach $cl (keys %class2packets){
 		for(my $i=0; $i < $messageCount; $i++){
-			if(grep /$MsgParse::msgName[$i]/, @{$class2packets{$cl}}){
+			if(grep /^$MsgParse::msgName[$i]$/, @{$class2packets{$cl}}){
 				for(my $j=1; $j < $strategyMatrixCounts{$i}; $j++){
 					if($j > 11 and  $j < 20){
 						next;
@@ -263,10 +266,10 @@ sub isAttack
 	my $val=shift;
 	my $ref=shift;
 
-	if($val > 1.5*$ref){ #greater than 1.5 times reference
+	if($val > 1.75*$ref){ #greater than 1.75 times reference
 		return 1;
 	}
-	if($val < 0.5*$ref){ #less than half reference
+	if($val < 0.25*$ref){ #less than a quarter reference
 		return 1;
 	}
 
@@ -290,15 +293,24 @@ sub start {
 	Utils::pauseVMs();
 	Utils::snapshotVMs();
 	my $i;
+	$benignAttackScore=0;
 	
 	if(not @WaitingStrategyList){
 		#Start with a benign execution
-		push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
+		for(my $j=0; $j < $numBenignRuns; $j++){
+			push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
+		}
 		$i=0;
 	}else{
 		#Already partly done, restart
 		$i=scalar @FinishedStrategyList;
-		$benignAttackScore=Utils::computeAttackScore($FinishedPerfScore[0],$FinishedResourceUsage[0]);
+		for(my $j=0; $j < min($numBenignRuns,$i); $j++){
+			$benignAttackScore+=Utils::computeAttackScore($FinishedPerfScore[$j],$FinishedResourceUsage[$j]);
+		}
+		if( $i > $numBenignRuns ){
+			$benignAttackScore=$benignAttackScore/$numBenignRuns;
+			print "Averaged Benign Score: $benignAttackScore\n";
+		}
 	}
 	
 	while(@WaitingStrategyList){
@@ -368,12 +380,15 @@ sub start {
 		
 		#Check if this is an attack
 		$attackscore=Utils::computeAttackScore($perfscore,$resourceusage);
-		if($i > 0 && isAttack($attackscore,$benignAttackScore)){
+		if($i+1 > $numBenignRuns && isAttack($attackscore,$benignAttackScore)){
 			print "FOUND ATTACK: strategy $i---$perfscore for strategy $strategy used $resourceusage\n";
 			print NEW_LEARNED "FOUND $i,$perfscore,$strategy,$resourceusage,$attackscore\n";
-		}
-		if($i==0){
-			$benignAttackScore=$attackscore;
+		}elsif($i+1 < $numBenignRuns){
+			$benignAttackScore+=$attackscore;
+		}elsif($i+1  == $numBenignRuns){
+			$benignAttackScore+=$attackscore;
+			$benignAttackScore=$benignAttackScore/$numBenignRuns;
+			print "Averaged Benign Score: $benignAttackScore\n";
 		}
 		
 		#Save results

@@ -1,5 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
+
+use warnings;
 use strict;
 use Cwd 'abs_path';
 use File::Basename;

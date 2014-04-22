@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
-#!/usr/bin/perl -w
 
 use strict;
+use warnings;
 use Cwd 'abs_path';
 use File::Basename;
 use IO::Socket;
