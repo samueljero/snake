@@ -6,6 +6,7 @@ use Cwd 'abs_path';
 use File::Basename;
 use IO::Socket;
 use Net::Ping;
+use Sys::Hostname;
 use threads ('yield',
      'stack_size' => 64*4096,
      'exit' => 'threads_only',
@@ -20,6 +21,10 @@ my $sn = 1;
 my $seq = 1;
 my $special3=0;
 my $savevmtime=0;
+my $host = hostname;
+if ( $host =~ /^sound/ ) {
+    $ipbase = "10.0.1";
+}
 
 if ($#ARGV < 0) {
 	print "usage 1: ./SnapshotManager.pl pause|save|load|resume|kill (start) num\n";

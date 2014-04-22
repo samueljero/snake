@@ -7,6 +7,10 @@ use Sys::Hostname;
 my $i = 0;
 my $host = hostname;
 my $addr = '10.1.1.1';
+if ( $host =~ /^sound/ ) {
+    $addr = "10.0.1.1";
+}
+
 if ($#ARGV >= 0) {
 	$addr = $ARGV[0];
 }

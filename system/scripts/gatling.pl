@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 #!/usr/bin/perl -w
 # FYI, PERF SCORE IS MEASURED SO THAT BIGGER IS WORSE
 
