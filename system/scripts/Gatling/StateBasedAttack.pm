@@ -6,11 +6,18 @@ require Utils;
 require GatlingConfig;
 use Cwd;
 use List::Util qw(max min);
+use Sys::Hostname;
 
+my $host = Sys::Hostname::hostname(); #Get hostname
 
 #Attack topology/connection details
 my $serverip = "10.1.2.3";
-my $hostserverip = $serverip;
+my $hostserverip=$serverip;
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
+	$hostserverip = "10.0.1.3";
+}elsif ($host =~ /^cloud15/ ){
+	$hostserverip = $serverip;
+}
 my $clientip = "10.1.2.2";
 my $malip = "10.1.2.1";
 my $clientport= 5555;
@@ -373,7 +380,6 @@ sub start {
 		#Measure Resource Utilization
 		my $resourceusage=0;
 	       	if($GatlingConfig::serverhavessh==1){
-			print "Getting resource usage!\n";
 			$resourceusage = Utils::getNumConnections("root\@$hostserverip");
 		}else{
 			$resourceusage = Utils::PingHost("$hostserverip");

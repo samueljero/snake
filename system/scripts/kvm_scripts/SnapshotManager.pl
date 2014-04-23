@@ -22,7 +22,7 @@ my $seq = 1;
 my $special3=0;
 my $savevmtime=0;
 my $host = hostname;
-if ( $host =~ /^sound/ ) {
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
     $ipbase = "10.0.1";
 }
 

@@ -7,7 +7,7 @@ use Sys::Hostname;
 my $i = 0;
 my $host = hostname;
 my $addr = '10.1.1.1';
-if ( $host =~ /^sound/ ) {
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
     $addr = "10.0.1.1";
 }
 

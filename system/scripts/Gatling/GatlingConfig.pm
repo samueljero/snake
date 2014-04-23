@@ -38,9 +38,9 @@ $client_command = "./counter.pl | ~/logcollector.pl ";
 $serverList = "pssh_servers.txt";
 $clientList = "pssh_clients.txt";
 $allList = "pssh_all.txt";
-
-my $host = hostname;
-if ( $host =~ /^sound/ ) {
+my $host = Sys::Hostname::hostname();
+print "hostname: $host\n";
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
     $serverList = "pssh_servers0.txt";
     $clientList = "pssh_clients0.txt";
     $allList = "pssh_all0.txt";
@@ -213,8 +213,6 @@ sub systemTCP()
   $setupCommand = "mkdir TCP";
   $server_command = "";
   $client_command = "/root/TCP/client.sh";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
