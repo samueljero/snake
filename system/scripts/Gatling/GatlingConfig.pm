@@ -39,7 +39,7 @@ $serverList = "pssh_servers.txt";
 $clientList = "pssh_clients.txt";
 $allList = "pssh_all.txt";
 
-my $host = hostname;
+$host = Sys::Hostname::hostname;
 if ( $host =~ /^sound/ ) {
     $serverList = "pssh_servers0.txt";
     $clientList = "pssh_clients0.txt";
@@ -74,6 +74,7 @@ sub prepare()
 
 sub runSystem()
 {
+	print("pssh -p $s_parallel -h $serverList \"pkill server\"\n");
 	system("pssh -p $s_parallel -h $serverList \"pkill server\"");
 	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
 	print "About to execute server command: $server_command\n";
@@ -215,6 +216,11 @@ sub systemTCP()
   $client_command = "/root/TCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
+  if ( $host =~ /^sound.*/ ) {
+      $serverList = "pssh_servers0.txt";
+      $clientList = "pssh_clients0.txt";
+  }
+  print "using $serverList $host\n";
   $runTime = 60;
   $waitTime = 60;
   $watchPort = " -tcp_port 80";
