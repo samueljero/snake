@@ -33,7 +33,7 @@ if ( $host =~ /^cloud/ ) {
     $root = 0;
 }
 
-if ( $host =~ /^sound/ ) {
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
     $ipbase = "10.0.1";
 }
 

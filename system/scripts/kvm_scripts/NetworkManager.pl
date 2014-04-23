@@ -5,10 +5,11 @@ use warnings;
 use strict;
 use Cwd 'abs_path';
 use File::Basename;
+use Sys::Hostname;
 
 chomp(my $user = `echo \$USER`); # XXX: change this 
 print "Running as user: $user\n";
-my $dnsconf = "/scratch/cs505/ip-mac-cs505";
+my $dnsconf = "/tmp/ip-mac";
 
 my $basedir = abs_path(dirname(__FILE__));
 
@@ -23,6 +24,15 @@ my $usage = "usage: $0 dnsconf|dns|addall|delall start end";
 if (@ARGV < 3) {
   print "$usage\n";
   exit;
+}
+
+#Host differences
+my $promisc="promisc";
+my $netmask="255.0.0.0";
+my $host=Sys::Hostname::hostname();
+if ( $host =~ /^ocean1/ or $host =~ /^sound/ ) {
+	$promisc="";
+	$netmask="255.255.0.0";
 }
 
 #if ($#ARGV < 1) {
@@ -65,7 +75,7 @@ if ($command eq "dns")
   system("sudo brctl delbr $bridge > /dev/null 2>&1");
   sleep 1;
   system("sudo brctl addbr $bridge"); # dhcpd requires brhost to be up
-  system("sudo ifconfig $bridge 10.0.0.1 netmask 255.0.0.0 up");
+  system("sudo ifconfig $bridge 10.0.0.1 netmask $netmask up");
   system("$basedir/startdns.sh");
 }
 
@@ -83,7 +93,7 @@ if ($command eq "addall")
   for (my $i = $start; $i <= $num; $i++) 
   {
     system("sudo tunctl -u $user -t $hwname1$i");
-    system("sudo ifconfig $hwname1$i 0.0.0.0 promisc up");
+    system("sudo ifconfig $hwname1$i 0.0.0.0 $promisc up");
     system("sudo brctl addif $bridge $hwname1$i");
   }
 
@@ -97,8 +107,8 @@ if ($command eq "addall")
     system("sudo brctl addbr $brname$i");
     system("sudo tunctl -u $user -t $hwname2$i"); # tap for VM
     system("sudo tunctl -u $user -t $tapname$i"); # tap for NS-3
-    system("sudo ifconfig $hwname2$i 0.0.0.0 promisc up");
-    system("sudo ifconfig $tapname$i 0.0.0.0 promisc up");
+    system("sudo ifconfig $hwname2$i 0.0.0.0 $promisc up");
+    system("sudo ifconfig $tapname$i 0.0.0.0 $promisc up");
     system("sudo brctl addif $brname$i $hwname2$i");
     system("sudo brctl addif $brname$i $tapname$i");
     system("sudo ifconfig $brname$i up");

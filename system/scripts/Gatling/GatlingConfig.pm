@@ -38,9 +38,9 @@ $client_command = "./counter.pl | ~/logcollector.pl ";
 $serverList = "pssh_servers.txt";
 $clientList = "pssh_clients.txt";
 $allList = "pssh_all.txt";
-
-$host = Sys::Hostname::hostname;
-if ( $host =~ /^sound/ ) {
+my $host = Sys::Hostname::hostname();
+print "hostname: $host\n";
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
     $serverList = "pssh_servers0.txt";
     $clientList = "pssh_clients0.txt";
     $allList = "pssh_all0.txt";
@@ -216,12 +216,13 @@ sub systemTCP()
   $client_command = "/root/TCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
-  if ( $host =~ /^sound.*/ ) {
+  if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
       $serverList = "pssh_servers0.txt";
       $clientList = "pssh_clients0.txt";
   }
   print "using $serverList $host\n";
-  $runTime = 60;
+  $runTime = 90;
+  $window_size=70;
   $waitTime = 60;
   $watchPort = " -tcp_port 80";
   $mal = " -mal 0 ";
@@ -230,7 +231,6 @@ sub systemTCP()
   $perfMeasured = "TCP/perf.txt";
   $newlyLearned = "TCP/new_learned.txt";
   $num_vms = 4;
-  $window_size = 30;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
   $start_attack = 1;

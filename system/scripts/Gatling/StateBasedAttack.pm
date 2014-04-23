@@ -6,11 +6,18 @@ require Utils;
 require GatlingConfig;
 use Cwd;
 use List::Util qw(max min);
+use Sys::Hostname;
 
+my $host = Sys::Hostname::hostname(); #Get hostname
 
 #Attack topology/connection details
 my $serverip = "10.1.2.3";
-my $hostserverip = $serverip;
+my $hostserverip=$serverip;
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
+	$hostserverip = "10.0.1.3";
+}elsif ($host =~ /^cloud15/ ){
+	$hostserverip = $serverip;
+}
 my $clientip = "10.1.2.2";
 my $malip = "10.1.2.1";
 my $clientport= 5555;
@@ -42,6 +49,7 @@ my %class2states; # State classes to a list of states
 my %class2packets; # State classes to a list of packet types
 my $benignAttackScore; #"Attack Score" for benign run
 my $numBenignRuns=3; #Number of benign runs to average together for performance threshold
+my $numtrials=1; #Number of times to execute an apparent attack
 
 $SIG{TERM} = 'term_handler';
 $SIG{KILL} = 'term_handler';
@@ -174,10 +182,10 @@ sub prepareMessages {
 		$messageStrategyList[13] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
 		$messageStrategyList[14] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $clientip $serverip $clientport $serverport 5";
 		$messageStrategyList[15] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $serverip $clientip $serverport $clientport 5";
-		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=5 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=5 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
-		$messageStrategyList[18] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $clientip $serverip $clientport $serverport 5";
-		$messageStrategyList[19] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=5 $serverip $clientip $serverport $clientport 5";
+		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
+		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
+		$messageStrategyList[18] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5";
+		$messageStrategyList[19] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5";
 		$numMessageStrategies = 20;
 
 		#For each field in this message
@@ -266,10 +274,10 @@ sub isAttack
 	my $val=shift;
 	my $ref=shift;
 
-	if($val > 1.75*$ref){ #greater than 1.75 times reference
+	if($val > 1.5*$ref){ #greater than 1.5 times reference
 		return 1;
 	}
-	if($val < 0.25*$ref){ #less than a quarter reference
+	if($val < 0.5*$ref){ #less than 0.5 times reference
 		return 1;
 	}
 
@@ -293,6 +301,7 @@ sub start {
 	Utils::pauseVMs();
 	Utils::snapshotVMs();
 	my $i;
+	my $trial=0;
 	$benignAttackScore=0;
 	
 	if(not @WaitingStrategyList){
@@ -350,7 +359,7 @@ sub start {
 		
 		
 		#Wait for NS-3 to do test
-		sleep($GatlingConfig::runTime*(2/3.0));
+		sleep($GatlingConfig::window_size);
 		
 		#Measure State Information
 		$command = "C GatlingSendStateStats";
@@ -367,12 +376,10 @@ sub start {
 		#Measure perf
 		my $perfscore = Utils::getPerfScore();
 		Utils::resetPerfScore();
-		GatlingConfig::prepare();
 
 		#Measure Resource Utilization
 		my $resourceusage=0;
 	       	if($GatlingConfig::serverhavessh==1){
-			print "Getting resource usage!\n";
 			$resourceusage = Utils::getNumConnections("root\@$hostserverip");
 		}else{
 			$resourceusage = Utils::PingHost("$hostserverip");
@@ -381,8 +388,15 @@ sub start {
 		#Check if this is an attack
 		$attackscore=Utils::computeAttackScore($perfscore,$resourceusage);
 		if($i+1 > $numBenignRuns && isAttack($attackscore,$benignAttackScore)){
-			print "FOUND ATTACK: strategy $i---$perfscore for strategy $strategy used $resourceusage\n";
-			print NEW_LEARNED "FOUND $i,$perfscore,$strategy,$resourceusage,$attackscore\n";
+			if($trial < $numtrials){
+				$trial++;
+				unshift(@WaitingStrategyList,$strategy);
+				print "possible attack-- $i: $perfscore for strategy $strategy used $resourceusage\n";
+				next;
+			}else{
+				print "FOUND ATTACK: strategy $i---$perfscore for strategy $strategy used $resourceusage\n";
+				print NEW_LEARNED "FOUND $i,$perfscore,$strategy,$resourceusage,$attackscore\n";
+			}
 		}elsif($i+1 < $numBenignRuns){
 			$benignAttackScore+=$attackscore;
 		}elsif($i+1  == $numBenignRuns){
@@ -390,6 +404,7 @@ sub start {
 			$benignAttackScore=$benignAttackScore/$numBenignRuns;
 			print "Averaged Benign Score: $benignAttackScore\n";
 		}
+		$trial=0;
 		
 		#Save results
 		push(@FinishedStrategyList, $strategy);
