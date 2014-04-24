@@ -62,7 +62,7 @@
 //
 
 
-// #define NO_CREATOR
+#define NO_CREATOR 1 // uncomment for department managed machines
 
 #ifdef NO_CREATOR
 #include <fcntl.h>
@@ -538,22 +538,22 @@ TapBridge::CreateTap (void)
       //
       // Execute the socket creation process image.
       //
-      status = ::execlp ("tap-creator", 
-                         "tap-creator",                       // argv[0] (filename)
-                         ossDeviceName.str ().c_str (),       // argv[1] (-d<device name>)
-                         ossGateway.str ().c_str (),          // argv[2] (-g<gateway>)
-                         ossIp.str ().c_str (),               // argv[3] (-i<IP address>)
-                         ossMac.str ().c_str (),              // argv[4] (-m<MAC address>)
-                         ossNetmask.str ().c_str (),          // argv[5] (-n<net mask>)
-                         ossMode.str ().c_str (),             // argv[6] (-o<operating mode>)
-                         ossPath.str ().c_str (),             // argv[7] (-p<path>)
-                         (char *)NULL);
+     status = ::execlp ("tap-creator", 
+                        "tap-creator",                       // argv[0] (filename)
+                        ossDeviceName.str ().c_str (),       // argv[1] (-d<device name>)
+                        ossGateway.str ().c_str (),          // argv[2] (-g<gateway>)
+                        ossIp.str ().c_str (),               // argv[3] (-i<IP address>)
+                        ossMac.str ().c_str (),              // argv[4] (-m<MAC address>)
+                        ossNetmask.str ().c_str (),          // argv[5] (-n<net mask>)
+                        ossMode.str ().c_str (),             // argv[6] (-o<operating mode>)
+                        ossPath.str ().c_str (),             // argv[7] (-p<path>)
+                        (char *)NULL);
 
-      //
-      // If the execlp successfully completes, it never returns.  If it returns it failed or the OS is
-      // broken.  In either case, we bail.
-      //
-      NS_FATAL_ERROR ("TapBridge::CreateTap(): Back from execlp(), errno = " << ::strerror (errno));
+     //
+     // If the execlp successfully completes, it never returns.  If it returns it failed or the OS is
+     // broken.  In either case, we bail.
+     //
+     NS_FATAL_ERROR ("TapBridge::CreateTap(): Back from execlp(), errno = " << ::strerror (errno));
     }
   else
     {

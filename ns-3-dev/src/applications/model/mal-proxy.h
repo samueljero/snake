@@ -152,8 +152,17 @@ private:
  int FindOffset(std::vector<seq_state> *lst, SequenceNumber32 seq);
  void AddOffset(std::vector<seq_state> *lst, SequenceNumber32 seq, int offset);
 
- std::queue<Message> m_messageQueue;
- void AddMessage(Message *m);
+ class message_data {
+     public:
+         int dir;
+         Message *m;
+         message_data(int d, Message *_m) {
+             dir = d;
+             m = _m;
+         }
+ };
+ std::queue< message_data > m_messageQueue;
+ void AddMessage(int dir, Message *m);
  void DumpMessages(ostream &os);
 };
 

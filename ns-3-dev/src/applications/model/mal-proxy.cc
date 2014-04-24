@@ -384,16 +384,18 @@ void MalProxy::DoDispose(void)
 	Application::DoDispose();
 }
 
-void MalProxy::AddMessage(Message *m) {
-	m_messageQueue.push(Message(m->msg));
+void MalProxy::AddMessage(int dir, Message *m) {
+    class message_data data = message_data(dir,new Message(m->msg));
+    m_messageQueue.push(data);
 }
 
 void MalProxy::DumpMessages(ostream &os) {
     unsigned long seq=0;
-    os << "seq" << "," << "size" << "," << "data\n";
+    os << "seq,dir,size,data\n";
 	while (!m_messageQueue.empty()) {
-        Message m = m_messageQueue.front();
-        os << seq++ << "," << m.size << ",";
+        class message_data data = m_messageQueue.front();
+        Message m = *data.m;
+        os << seq++ << "," << data.dir << "," << m.size << ",";
         os.write((const char *)m.msg, m.size);
         os << "\n";
         m_messageQueue.pop();
@@ -438,19 +440,30 @@ int MalProxy::Command(string command, std::string &output)
 		sm_client.GetStateMetricTracker()->Reset();
 		return 1;
 	}
-	if (command.compare("GatlingStartMessageRecording\n") == 0) {
+	if (command.compare(0, strlen("GatlingStartMessageRecording"), "GatlingStartMessageRecording") == 0) {
+                std::cout << "Start message recording" << std::endl;
 		global_record_message = true;
 		return 1;
 	}
-	if (command.compare("GatlingStopMessageRecording\n") == 0) {
+	if (command.compare(0, strlen("GatlingStopMessageRecording"), "GatlingStopMessageRecording") == 0) {
 		global_record_message = false;
 		return 1;
 	}
 	if (command.compare(0, strlen("GatlingDumpRecordedMessages"), "GatlingDumpRecordedMessages") == 0) {
-		stringstream ss;
-		ss.str("");
-		DumpMessages(ss);
-        output=ss.str();
+            // filename is the next argument
+            ofstream dumpfilestr;
+            char *filename = "dump_recording";
+            if (command.length() > strlen("GatlingDumpRecordedMessages") + 1) {
+                filename = (char *)command.c_str() + strlen("GatlingDumpRecordedMessages") + 1;
+                if (strstr(filename, "\n") != NULL) filename[strstr(filename, "\n")-filename] = 0;
+            }
+            dumpfilestr.open(filename, ofstream::out | ofstream::trunc);
+            std::cout << "dump messages to file: [" << filename << "]" << std::endl;
+            //stringstream ss;
+            //ss.str("");
+            DumpMessages(dumpfilestr);
+            //output=ss.str();
+            dumpfilestr.close();
 		return 1;
     }
 	if (command.compare(0, strlen("Learned"), "Learned") == 0) {
@@ -620,9 +633,6 @@ int MalProxy::MalMsg(Message *m, int dir)
 		return 1;
 	}
 
-    if (global_record_message) {
-        AddMessage(m);
-    }
 	/*Greedy Strategy---Check with Controller, if we don't know what
 	 * to do for this message type*/
 	if (ctrltype == GREEDY) {
@@ -868,6 +878,9 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	m->SetAcknowledgementNumber(m->GetAcknowledgementNumber()+ack_offset);
 #endif
 
+        if (global_record_message) {
+            AddMessage(ll.dir, m);
+        }
 	/*Check for Malicious Actions and Do them!*/
 	int result = MalMsg(m, ll.dir);
 	if (result == 0) {
