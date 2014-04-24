@@ -277,7 +277,7 @@ void MalProxy::AddStrategy(string line)
 
 		NS_LOG_DEBUG("msgType " << msgType << " action " << malact << " value " << avalue);
 		if (app_debug > 0) {
-			std::cout << "MALProxy] " << "state " << state << " dir " << dir << " msgType " << msgType << " action "
+			std::cout << "MALProxy] " << "state " << state << "(" << sm_server.GetState(state) << ") dir " << dir << " msgType " << msgType << " action "
 					<< malact << " value " << avalue <<  " fmval " << fmval << " field " << field << std::endl;
 		}
 
@@ -886,6 +886,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	if (result == 0) {
 		res->action = NONE;
 		RunStateMachines(m,&ll, res);
+		ShouldInject();
 		return NONE;
 	} else if (result == 2) {
 		res->action = RETRY;
@@ -893,18 +894,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	}
 	MaliciousStrategy(m, ll.dir, res);
 	RunStateMachines(m,&ll, res);
-
-	/*Handle state-specific injection actions*/
-	if(injectStates[sm_server.GetStateAsInt()]!=NULL){
-		InjectPacket(injectMsg[sm_server.GetStateAsInt()],injectStates[sm_server.GetStateAsInt()]);
-		delete injectStates[sm_server.GetStateAsInt()];
-		injectStates[sm_server.GetStateAsInt()]=NULL;
-	}
-	if(windowStates[sm_server.GetStateAsInt()]!=NULL){
-		Window(windowMsg[sm_server.GetStateAsInt()],windowStates[sm_server.GetStateAsInt()]);
-		delete windowStates[sm_server.GetStateAsInt()];
-		windowStates[sm_server.GetStateAsInt()]=NULL;
-	}
+	ShouldInject();
 
 	/*Handle Burst action*/
 	if (res->burst){
@@ -1023,6 +1013,7 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	dest = Ipv4Address(sdest);
 	spec += len;
 	uint8_t *buf=(uint8_t*)malloc(sizeof(BaseMessage));
+	memset(buf,0,sizeof(BaseMessage));
 	p = new Packet(buf,sizeof(BaseMessage));
 	free(buf);
 	m = new Message(p->PeekDataForMal());
@@ -1078,6 +1069,9 @@ void MalProxy::Burst(int type, int dir)
 		return;
 	}
 
+	if(app_debug >0){
+		std::cout<<"Bursting for type "<< type << std::endl;
+	}
 	for (int i = 0; i < burst[dir][type].size(); i++) {
 		burst[dir][type][i].second.iph.EnableChecksum();
 		burst[dir][type][i].first->AddHeader(burst[dir][type][i].second.iph);
@@ -1172,6 +1166,26 @@ void MalProxy::RunStateMachines(Message *m, lowerLayers *ll, maloptions *res)
     	   }
        }
 	}
+}
+
+void MalProxy::ShouldInject(){
+	if(injectStates[sm_server.GetStateAsInt()]!=NULL){
+		if(app_debug > 0){
+			std::cout<<"Injecting packet type " << injectMsg[sm_server.GetStateAsInt()] << " in state " << sm_server.GetCurrentState() << std::endl;
+		}
+		InjectPacket(injectMsg[sm_server.GetStateAsInt()],injectStates[sm_server.GetStateAsInt()]);
+		delete injectStates[sm_server.GetStateAsInt()];
+		injectStates[sm_server.GetStateAsInt()]=NULL;
+	}
+	if(windowStates[sm_server.GetStateAsInt()]!=NULL){
+		if(app_debug > 0){
+			std::cout<<"Windowing packet type " << windowMsg[sm_server.GetStateAsInt()] << " in state " << sm_server.GetCurrentState() << std::endl;
+		}
+		Window(windowMsg[sm_server.GetStateAsInt()],windowStates[sm_server.GetStateAsInt()]);
+		delete windowStates[sm_server.GetStateAsInt()];
+		windowStates[sm_server.GetStateAsInt()]=NULL;
+	}
+	return;
 }
 
 

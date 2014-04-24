@@ -29,6 +29,7 @@
 #include "ns3/ipv4-static-routing-helper.h"
 #include "ns3/ipv4-list-routing-helper.h"
 #include "ns3/ipv4-nix-vector-helper.h"
+#include "ns3/uinteger.h"
 #include <pthread.h>
 
 // Network topology
@@ -455,9 +456,10 @@ int main(int argc, char *argv[]) {
 	Ptr<CsmaNetDevice> cdev;
 	Ptr<CsmaChannel> cchannel;
 	q=CreateObject<DropTailQueue>();
+	q->SetAttribute("MaxPackets",UintegerValue(100));
 	cchannel = CreateObject<CsmaChannel>();
 	cchannel->SetAttribute("DataRate",DataRateValue(string("100Mbps")));
-	cchannel->SetAttribute("Delay",TimeValue(Seconds(0.010)));
+	cchannel->SetAttribute("Delay",TimeValue(MilliSeconds(2)));
 	cdev = CreateObject<CsmaNetDevice>();
 	cdev->SetQueue(q);
 	cdev->SetAddress(Mac48Address(mac_addresses_2[0].c_str()));
@@ -467,6 +469,7 @@ int main(int argc, char *argv[]) {
 
 	/*Create topology---switch 2*/
 	q=CreateObject<DropTailQueue>();
+	q->SetAttribute("MaxPackets",UintegerValue(100));
 	cdev = CreateObject<CsmaNetDevice>();
 	cdev->SetQueue(q);
 	cdev->SetAddress(Mac48Address(mac_addresses_2[1].c_str()));

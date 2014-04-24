@@ -30,6 +30,9 @@ namespace ns3 {
 
     // state machine construction
     void StateMachine::AddState(State state) {
+    	if(m_stateSet.find(state)!=m_stateSet.end()){
+		return;
+	}
         m_stateSet.insert(state);
         m_stateMap[state] = m_stateSet.size()-1;
         if(m_stateSet.size()-1 > MAX_STATES){
@@ -182,5 +185,14 @@ namespace ns3 {
         }
 
         return (m_trMap.size() + 1);
+    }
+
+    State StateMachine::GetState(int i){
+	for(std::map<State,int>::iterator iterator = m_stateMap.begin(); iterator != m_stateMap.end(); iterator++) {
+		if(iterator->second==i){
+			return iterator->first;
+		}
+	}
+	return State();
     }
 }
