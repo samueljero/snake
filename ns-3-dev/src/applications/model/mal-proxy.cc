@@ -384,8 +384,8 @@ void MalProxy::DoDispose(void)
 	Application::DoDispose();
 }
 
-void MalProxy::AddMessage(int dir, Message *m) {
-    class message_data data = message_data(dir,new Message(m->msg));
+void MalProxy::AddMessage(int src, int dest, int dir, size_t size, uint8_t *m) {
+    class message_data data = message_data(src, dest, dir, size, m);
     m_messageQueue.push(data);
 }
 
@@ -394,10 +394,10 @@ void MalProxy::DumpMessages(ostream &os) {
     os << "seq,dir,size,data\n";
 	while (!m_messageQueue.empty()) {
         class message_data data = m_messageQueue.front();
-        Message m = *data.m;
-        os << seq++ << "," << data.dir << "," << m.size << ",";
-        os.write((const char *)m.msg, m.size);
+        os << seq++ << "," << data.src << "," << data.dest << "," << data.dir << "," << data.size << ",";
+        os.write((const char *)data.data, data.size);
         os << "\n";
+        free(data.data);
         m_messageQueue.pop();
     }
 }
@@ -879,7 +879,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 #endif
 
         if (global_record_message) {
-            AddMessage(ll.dir, m);
+            static uint64_t seq = 0;
+            AddMessage(ll.iph.GetSource().Get(), ll.iph.GetDestination().Get(), ll.dir, m->FindMsgSize(), m->msg);
         }
 	/*Check for Malicious Actions and Do them!*/
 	int result = MalMsg(m, ll.dir);

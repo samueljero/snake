@@ -42,9 +42,12 @@ namespace ns3 {
     class StateMetricTracker {
         // map of state matrics key by name
         map <string, StateMetric> m_mapStateMetric;
+        typedef set<int> MsgSet; // set of message types
+        map <State, MsgSet> m_mapStateSentMsgs;
         public:
         StateMetricTracker() {}
         void UpdateMetric(string name, State st, double newvalue);
+        void AddMsgType(State st, int msgType);
         void UpdateByDelta(string name, State st, double delta);
         void IncrementMetric(string name, State st) {UpdateByDelta(name, st, 1);} // for counters
         void Start(string name, State st, unsigned long now);

@@ -17,6 +17,10 @@ namespace ns3 {
         m_mapStateMetric[name].UpdateValue(st, newvalue);
     }
 
+    void StateMetricTracker::AddMsgType(State st, int msgType) {
+        m_mapStateSentMsgs[st].insert(msgType);
+    }
+
     void StateMetricTracker::UpdateByDelta(string name, State st, double delta) {
         m_mapStateMetric[name].UpdateValueDelta(st, delta);
     }
@@ -63,6 +67,10 @@ namespace ns3 {
                 State st = *it_st;
                 os << metric << "," << st << "," << m_mapStateMetric[metric].GetValue(st) << "\n";
             }
+        }
+        for (map<State, MsgSet>::iterator it = m_mapStateSentMsgs.begin(); it != m_mapStateSentMsgs.end(); it++) {
+                State st = it->first;
+                os << "msgTypes" << "," << st << "," << it->second.size() << "\n";
         }
     }
 

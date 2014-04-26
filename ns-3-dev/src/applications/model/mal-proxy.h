@@ -155,15 +155,21 @@ private:
 
  class message_data {
      public:
+         int src, dest;
          int dir;
-         Message *m;
-         message_data(int d, Message *_m) {
-             dir = d;
-             m = _m;
+         size_t size;
+         uint8_t *data;
+         message_data(int _src, int _dest, int _dir, size_t _size, uint8_t *_m) {
+             src = _src;
+             dest = _dest;
+             dir = _dir;
+             size = _size;
+             data = (uint8_t *)malloc(_size);
+             memcpy(data, _m, _size);
          }
  };
  std::queue< message_data > m_messageQueue;
- void AddMessage(int dir, Message *m);
+ void AddMessage(int src, int dest, int dir, size_t _size, uint8_t *m);
  void DumpMessages(ostream &os);
 };
 

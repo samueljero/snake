@@ -153,6 +153,7 @@ namespace ns3 {
     }
 
     State StateMachine::MakeTransition(int rcvdType, int sendType, unsigned long now) {
+        smt.AddMsgType(m_curState, sendType);
         Transition *t = GetMatchingTransition(m_curState, rcvdType, sendType);
         if (t != NULL){
 	       	return MakeTransition(t->GetType(), now);
