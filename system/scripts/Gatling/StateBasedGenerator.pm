@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-package StateBasedAttack;
 require MsgParse;
 require Utils;
 require GatlingConfig;
@@ -46,7 +45,7 @@ my %basicStrategyMatrixCounts;
 
 
 my @excludeStrategy;    # Strategies to exclude
-my @WaitingStrategyList :shared; # Queue of strategies waiting to execute
+my @WaitingStrategyList; # Queue of strategies waiting to execute
 my @FinishedStrategyList; # List of previously executed strategies
 my @FinishedPerfScore;	# Performance scores from previously executed strategies
 my @FinishedResourceUsage; # Resource usage info from previously executed strategies
@@ -274,6 +273,7 @@ sub prepareMessages {
 	}
 }
 
+# should think where this should be
 sub isAttack
 {
 	my $val=shift;
@@ -289,214 +289,17 @@ sub isAttack
 	return 0;
 }
 
-sub ns3_thread {
-	my @args = @_;
-	print "NS-3 start: [".(join (' ', @args))."]\n";
-	system (join (' ', @args, "\n"));
-	$GatlingConfig::watch_ns3 = 0;
-	system ("pkill serverLog\n");
-	system ("pkill clientLog\n");
-	print "NS3 finished\n";
-	exit();
+# Main loop
+# pick strategies from global strategy map and distribute startegies to executors
+
+sub distributor {
+    # while global strategy list is not empty
+    
 }
 
-# strategy listener -- get strategies from the generator
-my $idx_str;
-my $quit :shared;
+# prepare message
+# load from global log 
 
-sub reportResult {
-    my $strategy = shift;
-    my $perfscore = shift;
-    my $resourceusage = shift;
-
-    #Save results
-    push(@FinishedStrategyList, $strategy);
-    push(@FinishedPerfScore, $perfscore);
-    push(@FinishedResourceUsage, $resourceusage);
-
-    # TODO send the result to the server
-    #Print results
-    print "===perfScore $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
-    print PERF_LOG "$idx_str,$perfscore,$strategy,$resourceusage\n";
+while (1) {
+    
 }
-
-sub strategyListener {
-    print "===> strategyListener started\n";
-   #if(not @WaitingStrategyList){
-   #    #Start with a benign execution
-   #    for(my $j=0; $j < $numBenignRuns; $j++){
-   #        push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
-   #    }
-       $idx_str=0;
-   #}
-  # else {
-  #     #Already partly done, restart
-  #     $idx_str=scalar @FinishedStrategyList;
-  #     for(my $j=0; $j < min($numBenignRuns,$idx_str); $j++){
-  #         $benignAttackScore+=Utils::computeAttackScore($FinishedPerfScore[$j],$FinishedResourceUsage[$j]);
-  #     }
-  #     if( $idx_str > $numBenignRuns ){
-  #         $benignAttackScore=$benignAttackScore/$numBenignRuns;
-  #         print "Averaged Benign Score: $benignAttackScore\n";
-  #     }
-  # }
-
-    my $socket = new IO::Socket::INET (
-            LocalHost => localhost,
-            LocalPort => '9991', # read from config
-            Proto => 'tcp',
-            Listen => 50,
-            Reuse => 1
-            ) or die "Error in Socket Creation for strategyListener : $!\n";
-
-    while (1) 
-    {
-        my $sock = $socket->accept();
-        my $line = "";
-        $sock->recv($line, 1024);
-	chop($line);
-        push (@WaitingStrategyList, $line);
-        if ($line =~ "stop") {
-            $quit = 1;
-            last;
-        }
-        print "$line added to WaitingStrategyList, now $#WaitingStrategyList\n";
-        print $sock "got it\n";
-    }
-
-    return;
-}
-
-# reporter -- report the result to the generator
-
-sub start {
-    $quit = 0;
-    my $strListener = threads->create('strategyListener', '');
-    $strListener->detach();
-    prepareMessages(); # TODO make it local
-
-    Utils::updateSnapshot(-1);
-    Utils::pauseVMs();
-    Utils::snapshotVMs();
-    my $trial=0;
-    $benignAttackScore=0;
-
-    while (1) {
-        if ($quit == 1) {last;}
-        if (@WaitingStrategyList) {
-            my $strategy=shift(@WaitingStrategyList);
-            my $attackscore;
-            print "Current strategy: $strategy\n";
-
-            #Setup VMs/NS-3	
-            Utils::killVMs();
-            sleep(1);
-            Utils::restoreVMs(-1);
-            $GatlingConfig::watch_ns3=1;
-            $ns3_thread = threads->create( 'ns3_thread',
-                    "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms $GatlingConfig::num_vms -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\""
-                    );
-            sleep ($GatlingConfig::start_attack);
-            if($GatlingConfig::watch_ns3==0){
-                print "PANIC: NS-3 didn't start!!\n";
-                exit;
-            }
-
-            #Load Strategy
-            print "Trying strategy $strategy...\n";
-            my $fullpath = Cwd::abs_path($GatlingConfig::statediagramFile);
-            my $command = "C GatlingLoadStateDiagram $fullpath";
-            Utils::logTime("command $command");
-            Utils::directTopology($command);
-            $command = "C $strategy";
-            Utils::logTime("command $command");
-            Utils::directTopology($command);
-            Utils::directTopology("C Gatling Resume");
-
-            #Start clients
-            print "Starting System\n";
-            GatlingConfig::runSystem();
-            GatlingConfig::runClient();
-            Utils::logTime("system start");
-
-
-            #Wait for NS-3 to do test
-            sleep($GatlingConfig::window_size);
-
-            #Measure State Information
-            $command = "C GatlingSendStateStats";
-            Utils::logTime("command $command");
-            my $statstr=Utils::directTopology($command);
-            my %db=Utils::makeMetricDB($statstr);
-
-            #Wait for system to normally close resources... i.e. TIMEWAIT
-            sleep($GatlingConfig::waitTime);
-            while($GatlingConfig::watch_ns3 !=0){
-                sleep(1);
-            }
-
-            #Measure perf
-            my $perfscore = Utils::getPerfScore();
-            Utils::resetPerfScore();
-
-            #Measure Resource Utilization
-            my $resourceusage=0;
-            if($GatlingConfig::serverhavessh==1){
-                $resourceusage = Utils::getNumConnections("root\@$hostserverip");
-            }else{
-                $resourceusage = Utils::PingHost("$hostserverip");
-            }
-
-            #Check if this is an attack
-            $attackscore=Utils::computeAttackScore($perfscore,$resourceusage);
-            if($idx_str+1 > $numBenignRuns && isAttack($attackscore,$benignAttackScore)){
-                if($trial < $numtrials){
-                    $trial++;
-                    unshift(@WaitingStrategyList,$strategy);
-                    print "possible attack-- $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
-                    next;
-                }else{
-                    print "FOUND ATTACK: strategy $idx_str---$perfscore for strategy $strategy used $resourceusage\n";
-                    print NEW_LEARNED "FOUND $idx_str,$perfscore,$strategy,$resourceusage,$attackscore\n";
-                }
-            }elsif($idx_str+1 < $numBenignRuns){
-                $benignAttackScore+=$attackscore;
-            }elsif($idx_str+1  == $numBenignRuns){
-                $benignAttackScore+=$attackscore;
-                $benignAttackScore=$benignAttackScore/$numBenignRuns;
-                print "Averaged Benign Score: $benignAttackScore\n";
-            }
-            $trial=0;
-
-            # report result
-            reportResult($strategy, $perfscore, $resourceusage);
-
-
-            #Join NS-3 Thread (so it goes away)
-            $ns3_thread->join();
-
-
-            #Debug State Results
-            if ( $GatlingConfig::debug > 0 ) {
-                foreach $host (keys %db){
-                    foreach $metric (keys %{$db{$host}}){
-                        foreach $state (keys %{$db{$host}{$metric}}){
-                            print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
-                        }
-                    }
-                }
-            }
-
-            $idx_str++;
-        }
-        else {
-            print "no strategy in the queue. waiting... $#WaitingStrategyList\n";
-            # TODO wait signal (otherwise it will be busy waiting)
-            sleep 1;
-        }
-    }
-
-    # TODO think if there's any post processing needed
-}
-
-1;
