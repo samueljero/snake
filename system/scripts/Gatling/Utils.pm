@@ -155,7 +155,8 @@ sub getNumConnections
 sub PingHost
 {
 	my $host=shift;
-	my $p = Net::Ping->new("icmp");
+	my $p = Net::Ping->new("tcp");
+	$p->port_number(80);
 	if($p->ping($host,2)){
 		return 0;
 	}
