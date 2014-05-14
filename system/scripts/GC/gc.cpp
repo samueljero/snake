@@ -20,6 +20,8 @@
 #include "gc.h"
 
 int turretInstanceId = 0;
+char *strategyComposeScript = NULL;
+
 bool strategy::operator ==(const strategy &s2) {
     if (content.compare(s2.content) == 0) return true;
     return false;
@@ -49,7 +51,7 @@ void gc::perfCollector() {
     listen(sd, 10);
 
     LOG(INFO) << "listening... on " << ntohs(serv_addr.sin_port);
-    while(quit != 0) {
+    while(quit != 1) {
         struct sockaddr_in turret_addr;
         socklen_t sock_len;
         int sock = accept(sd,(struct sockaddr*) &turret_addr, &sock_len);
@@ -61,6 +63,7 @@ void gc::perfCollector() {
             int len = read (sock, buff, 1024);
             struct sockaddr peer;
             socklen_t peer_len;
+            // XXX getpeer didn't work
             if (getpeername(sock, &peer, &peer_len) == -1) {
                 perror("getpeername doesn't work\n");
             }
@@ -70,7 +73,7 @@ void gc::perfCollector() {
             TurretInstance *ti = NULL;
 
             for (std::list<TurretInstance>::iterator it=turretInstances.begin(); it!= turretInstances.end(); it++) {
-                *ti = *it;
+                ti = &(*it);
                 if (ti->ifMatch(dest)) {
                     // found the instance
                     if(startsWith(buff, "perf")) {
@@ -95,7 +98,7 @@ void gc::perfCollector() {
                 LOG(DEBUG) << " new turret instance added: " << inet_ntoa(dest->sin_addr) << ":" << ntohs(dest->sin_port) <<" id" << ti_new.id;
                 turretInstances.push_front(ti_new);
                 availableTurret++;
-                pthread_cond_signal(&strategy_cond);
+                pthread_cond_signal(&distributor_cond);
             }
             if (ti != NULL) {
                 LOG(ERROR) << "received " << buff << " from unkown Turret " << inet_ntoa(dest->sin_addr);
@@ -113,7 +116,7 @@ void gc::perfCollector() {
         }
         close(sock);
     }
-    LOG(DEBUG) << "stopping perfCollector";
+    LOG(DEBUG) << "stopping perfCollector: " << quit;
     close(sd); 
 }
 
@@ -126,24 +129,61 @@ void gc::strategyComposer() {
     }
     while (!quit) {
         pthread_mutex_lock(&strategy_mutex);
+        while (performanceResult.empty()) {
+            pthread_cond_wait(&strategy_cond, &strategy_mutex);
+        }
         if (!performanceResult.empty()) {
+            LOG(DEBUG) << "strategyComposer";
             std::string line = performanceResult.front();
             performanceResult.pop();
             expanding = true;
             pthread_mutex_unlock(&strategy_mutex);
 
+            #define PREAD 0
+            #define PWRITE 1
             // main algorithm
-            int fd;
-            char * strFIFO = "/tmp/strFIFO";
-            mkfifo(strFIFO, 0666);
-            fd = open(strFIFO, O_WRONLY);
-            write(fd, "test", sizeof("test"));
-            close(fd);
-            unlink (strFIFO);
+            int inpipe[2], outpipe[2];
+
+            pipe(inpipe);
+            pipe(outpipe);
+
+            pid_t pid = fork();
+            if (pid == (pid_t)0) {
+                dup2(inpipe[PREAD], STDIN_FILENO);
+                dup2(outpipe[PWRITE], STDOUT_FILENO);
+
+                close(inpipe[PREAD]);
+                close(inpipe[PWRITE]);
+                close(outpipe[PREAD]); 
+                close(outpipe[PWRITE]); 
+                LOG(DEBUG) << "execl: " << line;
+                int nres = execl(strategyComposeScript, strategyComposeScript, line.c_str(), NULL);
+                perror("child");
+                exit(nres);
+            }
+            else {
+                char buf[1024];
+                std::string resultStr = "";
+                close(inpipe[PREAD]);
+                close(outpipe[PWRITE]);
+
+                //int n = write(inpipe[PWRITE], "test", 5);
+                //LOG(DEBUG) << n << "bytes wrote";
+                int len = 0;
+                while (1) {
+                    int n = read(outpipe[PREAD], buf, 102);
+                    if (n <= 0) break;
+                    resultStr.append(buf, n);
+                    len+=n;
+                }
+                LOG(DEBUG) << len << "bytes read " << resultStr;
+                close(inpipe[PWRITE]);
+                close(outpipe[PREAD]);
+            }
 
             pthread_mutex_lock(&strategy_mutex);
             expanding = false;
-        }
+        } 
         pthread_mutex_unlock(&strategy_mutex);
     }
 }
@@ -168,7 +208,7 @@ void gc::distributor() {
         pthread_mutex_lock(&strategy_mutex);
         while (!ready_to_send())
         {
-            pthread_cond_wait(&strategy_cond, &strategy_mutex);
+            pthread_cond_wait(&distributor_cond, &strategy_mutex);
         }
         if (ready_to_send()) {
             strategy nextStr = waitingStrategy.front();
@@ -196,6 +236,9 @@ void gc::distributor() {
             pthread_mutex_lock(&strategy_mutex);
             // XXX status update
             runningTurretCnt++;
+            performanceResult.push("test string");
+            pthread_cond_signal(&strategy_cond);
+            LOG(DEBUG) << "performanceResult added" << performanceResult.size();
             availableTurret--;
         }
         pthread_mutex_unlock(&strategy_mutex);
@@ -210,20 +253,22 @@ bool gc::finishCondition() {
 int main(int argc, char **argv)
 {
     gc gc_instance = gc();
+    strategyComposeScript = (char *)"./test.pl";
 
     pthread_t thread;
     int t=1;
-    
+    quit = 0;
 
     // LOGGING
     FILELog::ReportingLevel() = FILELog::FromString("DEBUG");
 
     std::thread th_distributor(&gc::distributor, std::ref(gc_instance));
-    std::thread th_perfCollector(&gc::perfCollector, std::ref(gc_instance));
     std::thread th_strComposer(&gc::strategyComposer, std::ref(gc_instance));
-
+    std::thread th_perfCollector(&gc::perfCollector, std::ref(gc_instance));
+    sleep(1);
     while (1) {
         if (gc_instance.finishCondition() == true) {
+            LOG(DEBUG) << "finish";
             quit = 1;
             break;
         }

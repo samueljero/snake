@@ -10,6 +10,7 @@
 pthread_mutex_t history_mutex;
 pthread_mutex_t strategy_mutex;
 pthread_cond_t  strategy_cond;
+pthread_cond_t  distributor_cond;
 
 class strategy {
     public:
@@ -89,6 +90,7 @@ class gc {
         expanding = false;
         pthread_mutex_init(&history_mutex, NULL);
         pthread_mutex_init(&(strategy_mutex), NULL);
+        pthread_cond_init(&(distributor_cond), NULL);
         pthread_cond_init(&(strategy_cond), NULL);
     }
     ~gc() {
