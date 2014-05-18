@@ -18,7 +18,7 @@ class strategy {
     std::string content;
     bool operator== (const strategy &s2);
     bool operator< (const strategy &s2);
-    strategy(std::string c, int w) {
+    strategy(int w, std::string c) {
         content = c;
         weight = w;
     }

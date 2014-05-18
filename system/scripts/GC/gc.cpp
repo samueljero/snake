@@ -15,12 +15,21 @@
 #include <algorithm>
 #include <thread>
 
+#include <ext/stdio_filebuf.h>
+#include <fstream>
+#include<boost/tokenizer.hpp>
 
 #include "log.h"
 #include "gc.h"
 
 int turretInstanceId = 0;
 char *strategyComposeScript = NULL;
+
+bool strCmp (const strategy& first, const strategy& second)
+{
+      unsigned int i=0;
+      return first.weight < second.weight;
+}
 
 bool strategy::operator ==(const strategy &s2) {
     if (content.compare(s2.content) == 0) return true;
@@ -81,6 +90,7 @@ void gc::perfCollector() {
                         pthread_cond_signal(&strategy_cond);
                         break;
                     }
+                    break;
                 }
                 ti = NULL;
             }
@@ -124,7 +134,7 @@ void gc::perfCollector() {
 void gc::strategyComposer() {
     // XXX load from saved
     if (waitingStrategy.empty()) { // put benign
-        strategy benign = strategy("BENIGN", 0);
+        strategy benign = strategy(0, "BENIGN");
         waitingStrategy.push_front(benign);
     }
     while (!quit) {
@@ -167,16 +177,26 @@ void gc::strategyComposer() {
                 close(inpipe[PREAD]);
                 close(outpipe[PWRITE]);
 
-                //int n = write(inpipe[PWRITE], "test", 5);
-                //LOG(DEBUG) << n << "bytes wrote";
-                int len = 0;
-                while (1) {
-                    int n = read(outpipe[PREAD], buf, 102);
-                    if (n <= 0) break;
-                    resultStr.append(buf, n);
-                    len+=n;
+                LOG(DEBUG) << "start piping";
+                __gnu_cxx::stdio_filebuf<char> filebuf(outpipe[PREAD], std::ios::in); // 1
+                std::istream is(&filebuf);
+                std::string line;
+                // the format of each line should be weight:strategy
+                while ( std::getline(is, line)) {
+                    int weight;
+                    boost::char_separator<char> sep(":");
+                    boost::tokenizer< boost::char_separator<char> > tok(line, sep);
+                    boost::tokenizer< boost::char_separator<char> >::iterator it=tok.begin();
+                    weight = atoi((*it++).c_str());
+                    strategy str = strategy(weight, *it);
+                    waitingStrategy.push_front(str);
+                    LOG(DEBUG) << " str: " << str.content << " weight: " << str.weight;
                 }
-                LOG(DEBUG) << len << "bytes read " << resultStr;
+                waitingStrategy.sort(strCmp);
+                for(std::list<strategy>::iterator it = waitingStrategy.begin(); it != waitingStrategy.end(); it++) {
+                   LOG(DEBUG) << "sorted: " << (*it).weight << " - " << (*it).content;
+                }
+                LOG(DEBUG) << "reading done";
                 close(inpipe[PWRITE]);
                 close(outpipe[PREAD]);
             }
@@ -246,7 +266,12 @@ void gc::distributor() {
 }
 
 bool gc::finishCondition() {
-    if (waitingStrategy.empty() && runningTurretCnt == 0 && expanding == false) return true;
+    pthread_mutex_lock(&strategy_mutex);
+    if (waitingStrategy.empty() && runningTurretCnt == 0 && expanding == false) {
+        pthread_mutex_unlock(&strategy_mutex);
+        return true;
+    }
+    pthread_mutex_unlock(&strategy_mutex);
     return false;
 }
 
