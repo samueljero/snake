@@ -1,0 +1,82 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CPP	Makefile	/^CPP=g++$/;"	m
+CPPFLAGS	Makefile	/^CPPFLAGS=$(CFLAGS) -std=c++0x -g$/;"	m
+DEBUG	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+DEBUG1	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+DEBUG2	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+DEBUG3	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+DEBUG4	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+ERROR	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+FILELOG_DECLSPEC	log.h	112;"	d
+FILELOG_DECLSPEC	log.h	114;"	d
+FILELOG_DECLSPEC	log.h	116;"	d
+FILELOG_DECLSPEC	log.h	119;"	d
+FILELOG_MAX_LEVEL	log.h	126;"	d
+FILELog	log.h	/^class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};$/;"	c
+FromString	log.h	/^TLogLevel Log<T>::FromString(const std::string& level)$/;"	f	class:Log
+Get	log.h	/^std::ostringstream& Log<T>::Get(TLogLevel level)$/;"	f	class:Log
+INFO	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+LOG	log.h	129;"	d
+Log	log.h	/^Log<T>::Log()$/;"	f	class:Log
+Log	log.h	/^class Log$/;"	c
+NowTime	log.h	/^inline std::string NowTime()$/;"	f
+Output	log.h	/^inline void Output2FILE::Output(const std::string& msg)$/;"	f	class:Output2FILE
+Output2FILE	log.h	/^class Output2FILE$/;"	c
+ReportingLevel	log.h	/^TLogLevel& Log<T>::ReportingLevel()$/;"	f	class:Log
+SRC	Makefile	/^SRC=gc.cpp$/;"	m
+Status	gc.h	/^        enum Status {$/;"	g	class:TurretInstance
+Stream	log.h	/^inline FILE*& Output2FILE::Stream()$/;"	f	class:Output2FILE
+TLogLevel	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	g
+ToString	log.h	/^std::string Log<T>::ToString(TLogLevel level)$/;"	f	class:Log
+TurretInstance	gc.h	/^        TurretInstance(struct sockaddr_in* addrP, int pt, Status st) {$/;"	f	class:TurretInstance
+TurretInstance	gc.h	/^class TurretInstance {$/;"	c
+WARNING	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	e	enum:TLogLevel
+_GC	gc.h	2;"	d
+__LOG_H__	log.h	2;"	d
+addr	gc.h	/^        struct sockaddr_in addr;$/;"	m	class:TurretInstance	typeref:struct:TurretInstance::sockaddr_in
+availableTurret	gc.h	/^    int availableTurret;$/;"	m	class:gc
+comp	gc.h	/^class comp $/;"	c
+content	gc.h	/^    std::string content;$/;"	m	class:strategy
+distributor	gc.cpp	/^void gc::distributor() {$/;"	f	class:gc
+error	gc.h	/^            error$/;"	e	enum:TurretInstance::Status
+expanding	gc.h	/^    bool expanding;$/;"	m	class:gc
+finishCondition	gc.cpp	/^bool gc::finishCondition() {$/;"	f	class:gc
+gc	gc.h	/^    gc() {$/;"	f	class:gc
+gc	gc.h	/^class gc {$/;"	c
+history_mutex	gc.h	/^pthread_mutex_t history_mutex;$/;"	v
+id	gc.h	/^        int id;$/;"	m	class:TurretInstance
+ifMatch	gc.h	/^        bool ifMatch(struct sockaddr_in* addrP) {$/;"	f	class:TurretInstance
+main	gc.cpp	/^int main(int argc, char **argv)$/;"	f
+nextAvailableTurret	gc.cpp	/^TurretInstance * gc::nextAvailableTurret() {$/;"	f	class:gc
+operator ()	gc.h	/^        bool operator() (const TurretInstance &lhs, const TurretInstance &rhs) const$/;"	f	class:comp
+operator ()	gc.h	/^        bool operator() (const strategy &lhs, const strategy &rhs) const$/;"	f	class:comp
+operator <	gc.cpp	/^bool strategy::operator<(const strategy &s2) {$/;"	f	class:strategy
+operator ==	gc.cpp	/^bool strategy::operator ==(const strategy &s2) {$/;"	f	class:strategy
+os	log.h	/^    std::ostringstream os;$/;"	m	class:Log
+perfCollector	gc.cpp	/^void gc::perfCollector() {$/;"	f	class:gc
+performanceResult	gc.h	/^    std::queue<std::string> performanceResult;$/;"	m	class:gc
+port	gc.h	/^        int port;$/;"	m	class:TurretInstance
+quit	gc.cpp	/^int quit = 0;$/;"	v
+ready	gc.h	/^            ready,$/;"	e	enum:TurretInstance::Status
+ready_to_send	gc.cpp	/^bool gc::ready_to_send() {$/;"	f	class:gc
+running	gc.h	/^            running,$/;"	e	enum:TurretInstance::Status
+runningTurretCnt	gc.h	/^    int runningTurretCnt;$/;"	m	class:gc
+sin_port	gc.h	/^        int sin_port;$/;"	m	class:TurretInstance
+startsWith	gc.h	66;"	d
+status	gc.h	/^        Status status;$/;"	m	class:TurretInstance
+strategy	gc.h	/^    strategy(std::string c, int w) {$/;"	f	class:strategy
+strategy	gc.h	/^class strategy {$/;"	c
+strategyComposer	gc.cpp	/^void gc::strategyComposer() {$/;"	f	class:gc
+strategy_cond	gc.h	/^pthread_cond_t  strategy_cond;$/;"	v
+strategy_mutex	gc.h	/^pthread_mutex_t strategy_mutex;$/;"	v
+turretInstanceId	gc.cpp	/^int turretInstanceId = 0;$/;"	v
+turretInstances	gc.h	/^    std::list<TurretInstance> turretInstances;$/;"	m	class:gc
+waitingStrategy	gc.h	/^    std::list<strategy> waitingStrategy;$/;"	m	class:gc
+weight	gc.h	/^    int weight;$/;"	m	class:strategy
+~Log	log.h	/^Log<T>::~Log()$/;"	f	class:Log
+~gc	gc.h	/^    ~gc() {$/;"	f	class:gc

@@ -1,12 +1,13 @@
 #!/usr/bin/env perl
 
-package StateBasedAttack;
+package StateBasedExecutor;
 require MsgParse;
 require Utils;
 require GatlingConfig;
 use Cwd;
 use List::Util qw(max min);
 use Sys::Hostname;
+
 
 my $host = Sys::Hostname::hostname(); #Get hostname
 
@@ -318,32 +319,16 @@ sub reportResult {
     #Print results
     print "===perfScore $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
     print PERF_LOG "$idx_str,$perfscore,$strategy,$resourceusage\n";
+    
+    # XXX
+    reportGC("perf:$ListenAddr:$ListenPort:$strategy:$perfscore:$resourceusage");
 }
 
 sub strategyListener {
     print "===> strategyListener started\n";
-   #if(not @WaitingStrategyList){
-   #    #Start with a benign execution
-   #    for(my $j=0; $j < $numBenignRuns; $j++){
-   #        push(@WaitingStrategyList,"*?*?BaseMessage NONE 0");
-   #    }
-       $idx_str=0;
-   #}
-  # else {
-  #     #Already partly done, restart
-  #     $idx_str=scalar @FinishedStrategyList;
-  #     for(my $j=0; $j < min($numBenignRuns,$idx_str); $j++){
-  #         $benignAttackScore+=Utils::computeAttackScore($FinishedPerfScore[$j],$FinishedResourceUsage[$j]);
-  #     }
-  #     if( $idx_str > $numBenignRuns ){
-  #         $benignAttackScore=$benignAttackScore/$numBenignRuns;
-  #         print "Averaged Benign Score: $benignAttackScore\n";
-  #     }
-  # }
-
     my $socket = new IO::Socket::INET (
             LocalHost => localhost,
-            LocalPort => '9991', # read from config
+            LocalPort => $GatlingConfig::LocalPort, # read from config
             Proto => 'tcp',
             Listen => 50,
             Reuse => 1
@@ -354,7 +339,7 @@ sub strategyListener {
         my $sock = $socket->accept();
         my $line = "";
         $sock->recv($line, 1024);
-	chop($line);
+        chop($line);
         push (@WaitingStrategyList, $line);
         if ($line =~ "stop") {
             $quit = 1;
@@ -378,6 +363,7 @@ sub start {
     Utils::updateSnapshot(-1);
     Utils::pauseVMs();
     Utils::snapshotVMs();
+    Utils::reportGC("ready:$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort");
     my $trial=0;
     $benignAttackScore=0;
 

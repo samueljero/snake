@@ -6,6 +6,18 @@ use Sys::Hostname;
 
 package GatlingConfig;
 
+# for the global collector
+$GlobalCollectorAddr = "cloud14.cs.purdue.edu";
+$GlobalCollectorPort = 9991;
+$useGlobal = 0;
+$attackModule = "StateBasedAttack";
+#$attackModule = "StateBasedExecutor";
+#$attackModule = "StateBasedExecutor";
+$host = Sys::Hostname::hostname(); #Get hostname
+$ListenAddr = $host;
+$ListenPort = 9992;
+
+
 ## Configurations
 #pick VM env
 $VM = "KVM";
@@ -239,6 +251,7 @@ sub systemTCP()
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
+  $useGlobal=1;
 }
 
 1;

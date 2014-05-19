@@ -20,6 +20,27 @@ BEGIN {
     import XenUtils;
   }
 }
+
+sub reportGC()
+{
+    my $msg = shift;
+    my $toread = shift;
+    my $res = "";
+
+    my $sock = new IO::Socket::INET->new( PeerAddr => $GatlingConfig::GlobalCollectorAddr,
+            PeerPort => $GatlingConfig::GlobalCollectorPort,
+            Proto => 'tcp');
+    die "Could not create socket to connect NS3: $!\n" unless $sock;
+    print $sock "$msg";
+    if ($toread == 1) {
+        while(my $tmp=<$sock>){
+            $res=$res.$tmp;
+        }
+    }
+    $sock->close();
+    return $res;
+}
+
 sub useXEN()
 {
   require XenUtils;
