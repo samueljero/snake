@@ -41,7 +41,7 @@ class TurretInstance {
         TurretInstance(struct sockaddr_in* addrP, int pt, Status st) {
             memcpy(&addr, addrP, sizeof(struct sockaddr_in));
             status = st;
-            id = turretInstanceId++;
+            id = ++turretInstanceId;
         }
         bool ifMatch(struct sockaddr_in* addrP) {
             if (memcmp(&addr, addrP, sizeof(struct sockaddr_in)) == 0) return true;
@@ -70,18 +70,19 @@ class gc {
     std::list<strategy> waitingStrategy;
     std::queue<std::string> performanceResult;
     bool expanding;
-    std::list<TurretInstance> turretInstances;
+    std::list<TurretInstance> turretIList;
 
     public:
     int runningTurretCnt;
     int availableTurret;
 
 
-    void perfCollector();
+    void reportCollector();
     void strategyComposer();
     void distributor();
     bool finishCondition();
     bool ready_to_send();
+    void updatePerformance(TurretInstance *ti, std::string perfString);
     TurretInstance *nextAvailableTurret();
 
     gc() {

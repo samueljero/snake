@@ -42,7 +42,7 @@ bool strategy::operator<(const strategy &s2) {
 
 int quit = 0;
 
-void gc::perfCollector() {
+void gc::reportCollector() {
     int sd;
     struct sockaddr_in serv_addr;
     int t = 1;
@@ -67,58 +67,78 @@ void gc::perfCollector() {
         if (sock <= 0) {
             perror("accept fail\n");
         } else {
+            // message format - IP:PORT:MSG
             LOG(DEBUG) << "accept";
             char buff[1025];
             int len = read (sock, buff, 1024);
-            struct sockaddr peer;
-            socklen_t peer_len;
-            // XXX getpeer didn't work
-            if (getpeername(sock, &peer, &peer_len) == -1) {
-                perror("getpeername doesn't work\n");
-            }
-            LOG(DEBUG) << "read " << len << " bytes " << buff;
             int len2 = 0;
-            struct sockaddr_in *dest = (struct sockaddr_in *) &peer;
+            struct sockaddr_in dest;
             TurretInstance *ti = NULL;
 
-            for (std::list<TurretInstance>::iterator it=turretInstances.begin(); it!= turretInstances.end(); it++) {
+            // Get addr and port
+            // format ready:IP:port 
+            char *ip = strtok(buff, ":");
+            char *pch = strtok(NULL, ":");
+            int port = atoi(pch);
+            char *msg = strtok(NULL, "\n");
+            LOG(DEBUG) << "rcvd from IP: " << ip << " PORT: " << port << " MSG: " << msg;
+
+            memset(&dest, 0, sizeof(struct sockaddr_in));
+            inet_pton(AF_INET, ip, &(dest.sin_addr));
+            dest.sin_family = AF_INET;
+            dest.sin_port = htons(port);
+
+            // check if the instance already exists
+            for (std::list<TurretInstance>::iterator it=turretIList.begin(); it!= turretIList.end(); it++) {
                 ti = &(*it);
-                if (ti->ifMatch(dest)) {
-                    // found the instance
-                    if(startsWith(buff, "perf")) {
-                        LOG(DEBUG) << "match!";
-                        pthread_cond_signal(&strategy_cond);
-                        break;
-                    }
+                if (ti->ifMatch(&dest)) { // found the instance
                     break;
                 }
                 ti = NULL;
             }
-            if (ti == NULL && startsWith(buff, "ready") == 0) { // add to turret instance
-                // format ready:IP:port // XXX here I am
-                char *pch = strtok(buff, ":");
-                pch = strtok(NULL, ":");
-                char *ip = strdup(pch);
-                pch = strtok(NULL, ":");
-                int port = atoi(pch);
-                inet_pton(AF_INET, ip, &(dest->sin_addr));
-                dest->sin_family = AF_INET;
-                dest->sin_port = htons(port);
-                TurretInstance ti_new = TurretInstance(dest, port, TurretInstance::ready);
-                LOG(DEBUG) << " new turret instance added: " << inet_ntoa(dest->sin_addr) << ":" << ntohs(dest->sin_port) <<" id" << ti_new.id;
-                turretInstances.push_front(ti_new);
+
+            // ***********************
+            // lines start with keyword
+            // ready: a turret instance reports it is ready to accept new strategies
+            // perf: a turret instance reports performance for an execution
+            // info: a turret instance reports additional information about an execution
+            // ***********************
+            
+            if (ti != NULL) { // found the instance
+                if (startsWith(msg, "perf") == 0) {
+                    updatePerformance(ti, msg);
+                }
+                else if (startsWith(msg, "ready") == 0) {
+                    LOG(DEBUG) << "ready " << msg;
+                    // XXX what if there's status mismatch?
+                    // if there was a strategy being tested -- retry the strategy
+                    // if a strategy retried too many times, report the user, it might need investigation
+                    if (ti->status != TurretInstance::Status::ready) {
+                        availableTurret++;
+                        ti->status = TurretInstance::Status::ready;
+                    }
+                    pthread_cond_signal(&distributor_cond);
+                } else {
+                    LOG(ERROR) << "received " << buff << " from Turret " << inet_ntoa(dest.sin_addr);
+                }
+            }
+            else if (startsWith(msg, "ready") == 0) { 
+                // add new turret instance
+                TurretInstance ti_new = TurretInstance(&dest, port, TurretInstance::ready);
+                LOG(DEBUG) << " new turret instance added: " << inet_ntoa(dest.sin_addr) << ":" << ntohs(dest.sin_port) <<" id" << ti_new.id;
+                turretIList.push_front(ti_new);
                 availableTurret++;
                 pthread_cond_signal(&distributor_cond);
             }
-            if (ti != NULL) {
-                LOG(ERROR) << "received " << buff << " from unkown Turret " << inet_ntoa(dest->sin_addr);
+            else {
+                LOG(ERROR) << "rcvd " << buff << " from unknown";
             }
 
             // XXX - to decide ping back
             while (len-len2 > 0) {
                  int cur = write(sock, buff + len2, len - len2);
                  if (cur <= 0) {
-                     LOG(INFO) << "Fail to write to " << inet_ntoa(dest->sin_addr);
+                     LOG(INFO) << "Fail to write to " << inet_ntoa(dest.sin_addr);
                      break;
                  }
                  len2 += cur;
@@ -126,7 +146,7 @@ void gc::perfCollector() {
         }
         close(sock);
     }
-    LOG(DEBUG) << "stopping perfCollector: " << quit;
+    LOG(DEBUG) << "stopping reportCollector: " << quit;
     close(sd); 
 }
 
@@ -200,9 +220,9 @@ void gc::strategyComposer() {
                 close(inpipe[PWRITE]);
                 close(outpipe[PREAD]);
             }
-
             pthread_mutex_lock(&strategy_mutex);
             expanding = false;
+            pthread_cond_signal(&distributor_cond);
         } 
         pthread_mutex_unlock(&strategy_mutex);
     }
@@ -216,7 +236,7 @@ bool gc::ready_to_send() {
 
 TurretInstance * gc::nextAvailableTurret() {
     TurretInstance *ti  = NULL;
-    for (std::list<TurretInstance>::iterator it=turretInstances.begin(); it!= turretInstances.end(); it++) {
+    for (std::list<TurretInstance>::iterator it=turretIList.begin(); it!= turretIList.end(); it++) {
         ti = &(*it);
         if (ti->status == TurretInstance::Status::ready) return ti;
     }
@@ -243,8 +263,10 @@ void gc::distributor() {
             int sockfd = socket(AF_INET, SOCK_STREAM, 0);
             if (sockfd < 0) perror("Error opening socket");
             LOG(DEBUG) << "connecting TurretInstance " << ti->id << " addr: " << inet_ntoa(ti->addr.sin_addr) << " port: " << ntohs(ti->addr.sin_port);
-            if (connect(sockfd, (struct sockaddr*)&ti->addr, sizeof(struct sockaddr_in)) < 0)
+            if (connect(sockfd, (struct sockaddr*)&ti->addr, sizeof(struct sockaddr_in)) < 0) {
                 perror("Error connecting Turret");
+                LOG(ERROR) << "can't connect turret : " << ti->id;
+            }
             else {
                 LOG(DEBUG) << "will writte: " << nextStr.content.c_str();
                 int n = write(sockfd, nextStr.content.c_str(), strlen(nextStr.content.c_str())+1);
@@ -254,15 +276,22 @@ void gc::distributor() {
             close(sockfd);
 
             pthread_mutex_lock(&strategy_mutex);
-            // XXX status update
             runningTurretCnt++;
-            performanceResult.push("test string");
-            pthread_cond_signal(&strategy_cond);
-            LOG(DEBUG) << "performanceResult added" << performanceResult.size();
             availableTurret--;
+            pthread_cond_signal(&distributor_cond);
         }
         pthread_mutex_unlock(&strategy_mutex);
     }
+}
+
+// update performance
+void gc::updatePerformance(TurretInstance * ti, std::string perfString) {
+    // XXX what if there's status mismatch?
+    // update the strategy finished
+    // signal appropriate threads and update this instance ready
+    LOG(DEBUG) << "performanceResult added - ti: " << ti->id << " perf: " << perfString << " size: " << performanceResult.size();
+    performanceResult.push(perfString);
+    pthread_cond_signal(&strategy_cond);
 }
 
 bool gc::finishCondition() {
@@ -289,7 +318,7 @@ int main(int argc, char **argv)
 
     std::thread th_distributor(&gc::distributor, std::ref(gc_instance));
     std::thread th_strComposer(&gc::strategyComposer, std::ref(gc_instance));
-    std::thread th_perfCollector(&gc::perfCollector, std::ref(gc_instance));
+    std::thread th_reportCollector(&gc::reportCollector, std::ref(gc_instance));
     sleep(1);
     while (1) {
         if (gc_instance.finishCondition() == true) {
@@ -300,7 +329,7 @@ int main(int argc, char **argv)
     }
 
     th_distributor.join();
-    th_perfCollector.join();
+    th_reportCollector.join();
     th_strComposer.join();
 
     return 0;
