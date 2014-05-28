@@ -900,7 +900,7 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 	/*Handle Burst action*/
 	if (res->burst){
 		burst[ll.dir][m->type].push_back(std::make_pair(packet,ll));
-		if (!burst_sched[m->type]) {
+		if (!burst_sched[ll.dir][m->type]) {
 			Simulator::Schedule(Time(Seconds(deliveryValues[sm_server.GetStateAsInt()][ll.dir][m->type][BURST])),
 					&MalProxy::Burst, this, m->type, ll.dir);
 			burst_sched[ll.dir][m->type] = true;
