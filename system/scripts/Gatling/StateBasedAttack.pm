@@ -119,10 +119,12 @@ sub CreateStrategyList{
 				}
 			}
 			foreach $st (@{$class2states{$cl}}){
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[12]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[13]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[14]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[15]");
+				#These are currently unreliable because they try to inject into connection 2 based on the
+				#   state of connection 1
+				#push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[12]");
+				#push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[13]");
+				#push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[14]");
+				#push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[15]");
 			}
 			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[16]");
 			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[17]");
