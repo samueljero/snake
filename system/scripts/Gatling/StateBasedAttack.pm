@@ -180,12 +180,12 @@ sub prepareMessages {
 		$messageStrategyList[9] = "$MsgParse::msgName[$i] BURST 1.0";
 		$messageStrategyList[10] = "$MsgParse::msgName[$i] BURST 2.0";
 		$messageStrategyList[11] = "$MsgParse::msgName[$i] BURST 0.5";
-		$messageStrategyList[12] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$messageStrategyList[13] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
+		$messageStrategyList[12] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[13] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
 		$messageStrategyList[14] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $clientip $serverip $clientport $serverport 5";
 		$messageStrategyList[15] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $serverip $clientip $serverport $clientport 5";
-		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
+		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
 		$messageStrategyList[18] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5";
 		$messageStrategyList[19] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5";
 		$numMessageStrategies = 20;
