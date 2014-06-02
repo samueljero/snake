@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use strict;
 package StateBasedExecutor;
 require MsgParse;
 require Utils;
@@ -66,89 +67,8 @@ sub term_handler {
 	exit;
 }
 
-sub CreateStrategyList{
-	my $strategy=shift;
-	my $perf=shift;
-	my $res=shift;
-	my %db=@_;
 
-	#Manual class - states mapping
-	$class2states{"DATATRANSFER"}= [ ("ESTAB") ];
-	$class2states{"CONNECTING"}= [ ("LISTEN","SYN_RCVD","SYN_SENT")];
-	$class2states{"PASIVE_CLOSING"}= [("CLOSE_WAIT", "LAST_ACK", "CLOSING","CLOSED")];
-	$class2states{"ACTIVE_CLOSING"}= [("FIN_WAIT_1", "FIN_WAIT_2","TIME_WAIT", "CLOSING")];
-
-	#Class - Packet Type mapping
-	foreach $cl (keys %class2states){
-		foreach $st (@{$class2states{$cl}}){
-			for(my $i=0; $i < $messageCount; $i++){
-				if($db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
-					my $found=$false;
-					foreach $val (@{$class2packets{$cl}}){
-						if ($val eq $MsgParse::msgName[$i]){
-							$found=$true;
-							last;
-						}
-					}
-					if(!$found){
-						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
-					}
-				}
-				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
-					my $found=$false;
-					foreach $val (@{$class2packets{$cl}}){
-						if($val eq $MsgParse::msgName[$i]){
-							$found=$true;
-							last;
-						}
-					}
-					if(!$found){
-						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
-					}
-				}
-			}
-		}
-	}
-	
-	# Build  Strategy List
-	foreach $cl (keys %class2packets){
-		for(my $i=0; $i < $messageCount; $i++){
-			if(grep /^$MsgParse::msgName[$i]$/, @{$class2packets{$cl}}){
-				for(my $j=1; $j < $strategyMatrixCounts{$i}; $j++){
-					if($j > 11 and  $j < 20){
-						next;
-					}
-					foreach $st (@{$class2states{$cl}}){
-						push(@WaitingStrategyList, "$st?0?$strategyMatrix{$i}[$j]");
-						push(@WaitingStrategyList, "$st?1?$strategyMatrix{$i}[$j]");
-					}
-				}
-			}
-			foreach $st (@{$class2states{$cl}}){
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[12]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[13]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[14]");
-				push(@WaitingStrategyList, "$st?*?$strategyMatrix{$i}[15]");
-			}
-			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[16]");
-			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[17]");
-			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[18]");
-			push(@WaitingStrategyList, "*?*?$strategyMatrix{$i}[19]");
-		}
-	}
-
-	#Add (other) known attacks
-	my $strat="LISTEN?*?Syn REPLAY 1,LISTEN?*?Syn LIE =$serverport 0,LISTEN?*?Syn LIE =$clientport 1"; #Simlutainious Open
-	push(@WaitingStrategyList, $strat);
-	$strat="ESTAB?*?Ack LIE +10000 3"; #Ack Storm (approximation)
-	push(@WaitingStrategyList, $strat);
-	
-	#Save attacks
-	foreach $a (@WaitingStrategyList){
-		print NEW_LEARNED "TRY $a\n";
-	}
-}
-
+# in executor, we do not make local decisions
 sub prepareMessages {
 
 	#Prepare perfLog
@@ -160,119 +80,7 @@ sub prepareMessages {
 	open NEW_LEARNED, "+>", $GatlingConfig::newlyLearned
 	  or die "Can't create $GatlingConfig::newlyLearned $!";
 
-	#Create data structure of all possible attacks
-	for ( my $i = 0 ; $i <= $messageCount ; $i++ ) {
-
-		#for each message
-		if ( $GatlingConfig::debug > 1 ) {
-			my $nameStr = $MsgParse::msgName[$i];
-			print "$i] - $nameStr - $MsgParse::msgType[$i] $MsgParse::msgTypeList{$nameStr}\n";
-		}
-		my @messageStrategyList;
-		my $numMessageStrategies = 0;
-
-		#Add NONE, Drop, Dup, Delay, Divert commands for this message
-		$messageStrategyList[0] = "$MsgParse::msgName[$i] NONE 0";
-		$messageStrategyList[1] = "$MsgParse::msgName[$i] DROP 100";
-		$messageStrategyList[2] = "$MsgParse::msgName[$i] DROP 50";
-		$messageStrategyList[3] = "$MsgParse::msgName[$i] DUP 10";
-		$messageStrategyList[4] = "$MsgParse::msgName[$i] DUP 100";
-		$messageStrategyList[5] = "$MsgParse::msgName[$i] DELAY 1.0";
-		$messageStrategyList[6] = "$MsgParse::msgName[$i] DELAY 5.0";
-		$messageStrategyList[7] = "$MsgParse::msgName[$i] DIVERT 1.0";
-		$messageStrategyList[8] = "$MsgParse::msgName[$i] REPLAY 1";
-		$messageStrategyList[9] = "$MsgParse::msgName[$i] BURST 1.0";
-		$messageStrategyList[10] = "$MsgParse::msgName[$i] BURST 2.0";
-		$messageStrategyList[11] = "$MsgParse::msgName[$i] BURST 0.5";
-		$messageStrategyList[12] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$messageStrategyList[13] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
-		$messageStrategyList[14] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $clientip $serverip $clientport $serverport 5";
-		$messageStrategyList[15] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $serverip $clientip $serverport $clientport 5";
-		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5";
-		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5";
-		$messageStrategyList[18] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5";
-		$messageStrategyList[19] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5";
-		$numMessageStrategies = 20;
-
-		#For each field in this message
-		for ( my $j = 0 ; $j <= $#{ $fieldsPerMsgRef->{$i} } ; $j++ ) {
-			if ( $msgFlenList->{$i}[$j] > 0 ) {
-				#Bit fields
-				#For each value it makes sense to lie on based on field type
-				for (
-					my $k = 0 ;
-					$k <= $FlenNumList->{ $msgFlenList->{$i}[$j] } ;
-					$k++
-				  )
-				{
-					#Add this lie command for message
-					#print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
-					$numMessageStrategies = $numMessageStrategies + 1;
-				}
-			}
-			elsif ( $typeStrategyRef->{ $fieldsPerMsgRef->{$i}[$j] } > 0 ) {
-				#For each value it makes sense to lie on based on field type
-				for (
-					my $k = 0 ;
-					$k <= $typeStrategyRef->{ $fieldsPerMsgRef->{$i}[$j] } ;
-					$k++
-				  )
-				{
-					#Add this lie command for message
-					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
-					$numMessageStrategies = $numMessageStrategies + 1;
-				}
-			}
-		}
-
-		#Final totals
-		$strategyMatrixCounts{$i}   = $numMessageStrategies;
-		$strategyMatrix{$i}    = \@messageStrategyList;
-	}
-
-	#LOAD PREFORMANCE MEASURED IN PREV RUN (IF ANY)
-	$res = open PRE_PERF, "<", $GatlingConfig::prePerf;
-	if ($res) {
-		while ( my $line = <PRE_PERF> ) {
-			chomp($line);
-			my @token = split(',', $line );
-			if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
-				next;
-			}
-			my $i    = $token[0];
-			my $perf = $token[1];
-			my $strategy = $token[2];
-			my $res   = $token[3];
-			push(@FinishedStrategyList, $strategy);
-			push(@FinishedPerfScore, $perf);
-			push(@FinishedResourceUsage, $res);
-		}
-		close PRE_PERF;
-	}
-	
-	#LOAD STRATEGIES FROM PREV RUN (IF ANY)
-	$res = open PRE_LEARNED, "<", $GatlingConfig::alreadyLearned;
-	if ($res) {
-		while ( my $line = <PRE_LEARNED> ) {
-			chomp($line);
-			my @token = split(/ /, $line );
-			if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
-				next;
-			}
-			my $type    = $token[0];
-			shift @token;
-			my $strategy = join(" ", @token);
-			if($type eq "TRY"){
-				if(grep {$_ eq $strategy} @FinishedStrategyList){
-					#Already tried
-				}else{
-					push(@WaitingStrategyList, $strategy);
-				}
-			}
-		}
-		close PRE_PERF;
-	}
+    # TODO if unreported logs, report to the GC
 }
 
 sub isAttack
@@ -310,32 +118,34 @@ sub reportResult {
     my $perfscore = shift;
     my $resourceusage = shift;
 
-    #Save results
+    #Save results # XXX do we need this?
     push(@FinishedStrategyList, $strategy);
     push(@FinishedPerfScore, $perfscore);
     push(@FinishedResourceUsage, $resourceusage);
 
-    # TODO send the result to the server
-    #Print results
+    #Print results for local monitor
     print "===perfScore $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
     print PERF_LOG "$idx_str,$perfscore,$strategy,$resourceusage\n";
     
-    # XXX
-    reportGC("perf:$ListenAddr:$ListenPort:$strategy:$perfscore:$resourceusage");
+    # send the result to the server
+    Utils::reportGC("perf:$strategy:$perfscore:$resourceusage");
 }
 
+my $listenerStarted: shared;
 sub strategyListener {
-    print "===> strategyListener started\n";
+    print "======> strategyListener started\n";
     my $socket = new IO::Socket::INET (
-            LocalHost => localhost,
-            LocalPort => $GatlingConfig::LocalPort, # read from config
+            LocalHost => $GatlingConfig::ListenAddr,
+            LocalPort => $GatlingConfig::ListenPort, # read from config
             Proto => 'tcp',
             Listen => 50,
             Reuse => 1
             ) or die "Error in Socket Creation for strategyListener : $!\n";
-
+    
+    print "====================== strategyListener is Listening at $GatlingConfig::ListenAddr:$GatlingConfig::ListenPort\n";
     while (1) 
     {
+        $listenerStarted = 1;
         my $sock = $socket->accept();
         my $line = "";
         $sock->recv($line, 1024);
@@ -355,31 +165,37 @@ sub strategyListener {
 # reporter -- report the result to the generator
 
 sub start {
+    ################  get ready
     $quit = 0;
+    $listenerStarted = 0;
     my $strListener = threads->create('strategyListener', '');
+    while ($listenerStarted != 1) {
+        sleep 1;
+    }
     $strListener->detach();
-    prepareMessages(); # TODO make it local
+    prepareMessages(); # TODO make it local?? what does this mean?
 
-    Utils::updateSnapshot(-1);
-    Utils::pauseVMs();
-    Utils::snapshotVMs();
-    Utils::reportGC("ready:$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort");
+    #Utils::updateSnapshot(-1);
+    #Utils::pauseVMs();
+    #Utils::snapshotVMs();
+    Utils::reportGC("ready");
     my $trial=0;
     $benignAttackScore=0;
 
-    while (1) {
-        if ($quit == 1) {last;}
+    # ROUTINE STARTS
+    while ($quit != 1) { # set by listener, GC should command
         if (@WaitingStrategyList) {
             my $strategy=shift(@WaitingStrategyList);
             my $attackscore;
             print "Current strategy: $strategy\n";
 
             #Setup VMs/NS-3	
-            Utils::killVMs();
-            sleep(1);
-            Utils::restoreVMs(-1);
+            #Utils::killVMs();
+            print "3 seconds later, VMs will be loaded\n";
+            sleep(3);
+            #Utils::restoreVMs(-1);
             $GatlingConfig::watch_ns3=1;
-            $ns3_thread = threads->create( 'ns3_thread',
+            my $ns3_thr = threads->create( 'ns3_thread',
                     "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms $GatlingConfig::num_vms -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\""
                     );
             sleep ($GatlingConfig::start_attack);
@@ -413,6 +229,7 @@ sub start {
             $command = "C GatlingSendStateStats";
             Utils::logTime("command $command");
             my $statstr=Utils::directTopology($command);
+            print "Got StateStats: $statstr\n";
             my %db=Utils::makeMetricDB($statstr);
 
             #Wait for system to normally close resources... i.e. TIMEWAIT
@@ -433,52 +250,32 @@ sub start {
                 $resourceusage = Utils::PingHost("$hostserverip");
             }
 
-            #Check if this is an attack
-            $attackscore=Utils::computeAttackScore($perfscore,$resourceusage);
-            if($idx_str+1 > $numBenignRuns && isAttack($attackscore,$benignAttackScore)){
-                if($trial < $numtrials){
-                    $trial++;
-                    unshift(@WaitingStrategyList,$strategy);
-                    print "possible attack-- $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
-                    next;
-                }else{
-                    print "FOUND ATTACK: strategy $idx_str---$perfscore for strategy $strategy used $resourceusage\n";
-                    print NEW_LEARNED "FOUND $idx_str,$perfscore,$strategy,$resourceusage,$attackscore\n";
-                }
-            }elsif($idx_str+1 < $numBenignRuns){
-                $benignAttackScore+=$attackscore;
-            }elsif($idx_str+1  == $numBenignRuns){
-                $benignAttackScore+=$attackscore;
-                $benignAttackScore=$benignAttackScore/$numBenignRuns;
-                print "Averaged Benign Score: $benignAttackScore\n";
-            }
-            $trial=0;
-
-            # report result
+            # report result 
             reportResult($strategy, $perfscore, $resourceusage);
 
-
             #Join NS-3 Thread (so it goes away)
-            $ns3_thread->join();
+            $ns3_thr->join();
 
-
+            # report additional information:
             #Debug State Results
             if ( $GatlingConfig::debug > 0 ) {
-                foreach $host (keys %db){
-                    foreach $metric (keys %{$db{$host}}){
-                        foreach $state (keys %{$db{$host}{$metric}}){
+                foreach my $host (keys %db){
+                    foreach my $metric (keys %{$db{$host}}){
+                        foreach my $state (keys %{$db{$host}{$metric}}){
                             print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
+                            Utils::reportGC("info:metric:$metric,$host,$state,$db{$host}{$metric}{$state}");
                         }
                     }
                 }
             }
-
             $idx_str++;
         }
         else {
-            print "no strategy in the queue. waiting... $#WaitingStrategyList\n";
+            print "no strategy in the queue.";
+            print " waiting at $GatlingConfig::ListenAddr:$GatlingConfig::ListenPort ... $#WaitingStrategyList\n";
             # TODO wait signal (otherwise it will be busy waiting)
             sleep 1;
+            Utils::reportGC("ready");
         }
     }
 

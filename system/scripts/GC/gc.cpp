@@ -53,7 +53,7 @@ void gc::reportCollector() {
     memset((char *)&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(9999);
+    serv_addr.sin_port = htons(MAINGC_PORT);
 
     if (bind(sd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
         perror("Failed to bind\n");
@@ -70,6 +70,7 @@ void gc::reportCollector() {
             // message format - IP:PORT:MSG
             LOG(DEBUG) << "accept";
             char buff[1025];
+            memset(buff, 0, 1024);
             int len = read (sock, buff, 1024);
             int len2 = 0;
             struct sockaddr_in dest;
@@ -110,14 +111,25 @@ void gc::reportCollector() {
                 }
                 else if (startsWith(msg, "ready") == 0) {
                     LOG(DEBUG) << "ready " << msg;
-                    // XXX what if there's status mismatch?
-                    // if there was a strategy being tested -- retry the strategy
-                    // if a strategy retried too many times, report the user, it might need investigation
-                    if (ti->status != TurretInstance::Status::ready) {
-                        availableTurret++;
-                        ti->status = TurretInstance::Status::ready;
+                    switch(ti->status) {
+                        case TurretInstance::Status::ready:
+                            pthread_cond_signal(&distributor_cond);
+                            break;
+                        case TurretInstance::Status::running:
+                            ti->status = TurretInstance::Status::ready;
+                            ti->sendStrategy(); // repeat the previous 
+                            break;
+                        case TurretInstance::Status::error:
+                            ti->status = TurretInstance::Status::ready;
+                            availableTurret++;
+                            pthread_cond_signal(&distributor_cond);
+                            break;
+                        default:
+                            ti->status = TurretInstance::Status::ready;
+                            availableTurret++;
+                            pthread_cond_signal(&distributor_cond);
+                            break;
                     }
-                    pthread_cond_signal(&distributor_cond);
                 } else {
                     LOG(ERROR) << "received " << buff << " from Turret " << inet_ntoa(dest.sin_addr);
                 }
@@ -154,7 +166,7 @@ void gc::reportCollector() {
 void gc::strategyComposer() {
     // XXX load from saved
     if (waitingStrategy.empty()) { // put benign
-        strategy benign = strategy(0, "BENIGN");
+        strategy benign = strategy(0, "*?*?BaseMessage NONE 0"); // basic benign strategy twice
         waitingStrategy.push_front(benign);
     }
     while (!quit) {
@@ -243,6 +255,23 @@ TurretInstance * gc::nextAvailableTurret() {
     return NULL;
 }
 
+void TurretInstance::sendStrategy() {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) perror("Error opening socket");
+    LOG(DEBUG) << "connecting TurretInstance " << id << " addr: " << inet_ntoa(addr.sin_addr) << " port: " << ntohs(addr.sin_port);
+    if (connect(sockfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)) < 0) {
+        perror("Error connecting Turret");
+        LOG(ERROR) << "can't connect turret : " << id;
+    }
+    else {
+        LOG(DEBUG) << "will writte: " << curStrategy->content.c_str();
+        int n = write(sockfd, curStrategy->content.c_str(), strlen(curStrategy->content.c_str())+1);
+        LOG(DEBUG) << "wrote " << n;
+        // XXX maybe read back?
+    }
+    close(sockfd);
+}
+
 void gc::distributor() {
     while (!quit) {
         pthread_mutex_lock(&strategy_mutex);
@@ -259,21 +288,9 @@ void gc::distributor() {
             runningTurretCnt++;
             pthread_mutex_unlock(&strategy_mutex);
 
+            ti->setCurStrategy(nextStr);
+            ti->sendStrategy();
             // XXX send the strategy to the instance
-            int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            if (sockfd < 0) perror("Error opening socket");
-            LOG(DEBUG) << "connecting TurretInstance " << ti->id << " addr: " << inet_ntoa(ti->addr.sin_addr) << " port: " << ntohs(ti->addr.sin_port);
-            if (connect(sockfd, (struct sockaddr*)&ti->addr, sizeof(struct sockaddr_in)) < 0) {
-                perror("Error connecting Turret");
-                LOG(ERROR) << "can't connect turret : " << ti->id;
-            }
-            else {
-                LOG(DEBUG) << "will writte: " << nextStr.content.c_str();
-                int n = write(sockfd, nextStr.content.c_str(), strlen(nextStr.content.c_str())+1);
-                LOG(DEBUG) << "wrote " << n;
-                // XXX maybe read back?
-            }
-            close(sockfd);
 
             pthread_mutex_lock(&strategy_mutex);
             runningTurretCnt++;

@@ -7,6 +7,8 @@
 #include <queue>
 #include <set>
 
+#define MAINGC_PORT 9991
+
 pthread_mutex_t history_mutex;
 pthread_mutex_t strategy_mutex;
 pthread_cond_t  strategy_cond;
@@ -21,6 +23,10 @@ class strategy {
     strategy(int w, std::string c) {
         content = c;
         weight = w;
+    }
+    strategy(const strategy &s2) {
+        content = s2.content;
+        weight = s2.weight;
     }
 };
 
@@ -38,6 +44,8 @@ class TurretInstance {
         int port;
         int id;
         Status status;
+        strategy *curStrategy;
+        void setCurStrategy(strategy str) { curStrategy = new strategy(str); }
         TurretInstance(struct sockaddr_in* addrP, int pt, Status st) {
             memcpy(&addr, addrP, sizeof(struct sockaddr_in));
             status = st;
@@ -47,7 +55,7 @@ class TurretInstance {
             if (memcmp(&addr, addrP, sizeof(struct sockaddr_in)) == 0) return true;
             return false;
         }
-
+        void sendStrategy();
 };
 
 class comp 

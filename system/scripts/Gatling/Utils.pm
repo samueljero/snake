@@ -21,7 +21,7 @@ BEGIN {
   }
 }
 
-sub reportGC()
+sub reportGC
 {
     my $msg = shift;
     my $toread = shift;
@@ -31,7 +31,7 @@ sub reportGC()
             PeerPort => $GatlingConfig::GlobalCollectorPort,
             Proto => 'tcp');
     die "Could not create socket to connect NS3: $!\n" unless $sock;
-    print $sock "$msg";
+    print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort:$msg";
     if ($toread == 1) {
         while(my $tmp=<$sock>){
             $res=$res.$tmp;

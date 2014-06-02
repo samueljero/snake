@@ -4,10 +4,10 @@ use strict;
 use POSIX;
 my $str = "";
 foreach my $arg (@ARGV) {
-    $str .= "+$arg";
+    $str .= "$arg";
 }
 my $i;
-for ($i = 1; $i < 3; $i++) {
+#for ($i = 1; $i < 3; $i++) {
     my $n = ceil(rand(100));
 print "$n:$str$n\n";
-}
+#}
