@@ -1,0 +1,187 @@
+struct seq48 {
+	uint8_t ress;
+	uint16_t seqh;
+	uint32_t seql;
+}
+
+struct ack48 {
+	uint16_t resa;
+	uint16_t ackh;
+	uint32_t ackl;
+}
+
+struct seq24 {
+	uint8_t seqh;
+	uint16_t seql;
+}
+
+struct ack24 {
+	uint8_t resa;
+	uint8_t ackh;
+	uint16_t ackl;
+}
+
+BaseMessage {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 10;
+	uint8_t res:3;
+}
+
+DEFINE CHECKSUM_FIELD chk
+//DEFINE SEQUENCE_FIELD seql
+//DEFINE ACKNOWLEDGEMENT_FIELD ackl
+DEFINE TYPE_FIELD type
+DEFINE SIZE_FIELD size
+DEFINE SIZE_MULT  4
+DEFINE SOURCE_PORT_FIELD sport
+DEFINE DEST_PORT_FIELD dport
+
+Request {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 0;
+	uint8_t res:3;
+	struct seq48 seq;
+	uint32_t service_code;
+}
+
+Response {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 1;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+Data {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 2;
+	uint8_t res:3;
+	struct seq48 seq;
+}
+
+DataAck {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 4;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+Ack {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 3;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+CloseReq {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 5;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+Close {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 6;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+Reset {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 7;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+	uint8_t code;
+	uint8_t data1;
+	uint8_t data2;
+	uint8_t data3;
+}
+
+
+Sync {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 8;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
+
+SyncAck {
+	uint16_t sport;
+	uint16_t dport;
+	uint8_t size;
+	uint8_t cscov:4;
+	uint8_t ccval:4;
+	uint16_t chk;
+	uint8_t x:1;
+	uint8_t type:4 = 9;
+	uint8_t res:3;
+	struct seq48 seq;
+	struct ack48 ack;
+}
