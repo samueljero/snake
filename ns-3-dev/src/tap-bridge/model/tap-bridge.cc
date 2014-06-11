@@ -1205,12 +1205,17 @@ int TapBridge::MaliciousProcess
 (Ptr<Packet> p, Address src, Address dest, uint16_t type, bool direction)
 {
 	uint16_t protocol = 0;
+	UdpHeader udpHeader;
+	uint16_t udpdestPort, udpsrcPort;
 	Application *ptr;
+	lowerLayers ll;
+	maloptions res;
 	Mac48Address destination = Mac48Address::ConvertFrom (dest);
 	Mac48Address source = Mac48Address::ConvertFrom (src);
 	Ptr<Packet> packet = p->Copy(); // copy one time
-	lowerLayers ll;
-	maloptions res;
+
+
+	//Setup malicious options for no modifications
 	res.action=NONE;
 	res.divert=false;
 	res.replay=-1;
@@ -1218,36 +1223,21 @@ int TapBridge::MaliciousProcess
 	res.duptimes=1;
 	res.burst=false;
 
+	//Get pointer to proxy
+	Ptr<Application> app = m_node->GetApplication(0);
+	ptr = GetPointer(app);
+	Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
+
 	// 1. get IP header
 	Ipv4Header ipHeader;
 	packet->PeekHeader(ipHeader);
 	protocol = ipHeader.GetProtocol();
-	if (protocol != UdpL4Protocol::PROT_NUMBER && protocol != TcpL4Protocol::PROT_NUMBER) {
+	if (protocol != UdpL4Protocol::PROT_NUMBER && protocol != proxy->IPprotoNum()) {
 		return 0;
 	}
 	packet->RemoveHeader(ipHeader);
 
-	//2. UDP or TCP
-	UdpHeader udpHeader;
-	int UDP = 0;
-	TcpHeader tcpHeader;
-	uint16_t destPort, srcPort;
-	if (protocol == UdpL4Protocol::PROT_NUMBER) {
-	  packet->PeekHeader (udpHeader);
-	  UDP = 1;
-	  destPort = udpHeader.GetDestinationPort();
-	  srcPort = udpHeader.GetSourcePort();
-	} else {
-	  UDP = 0;
-	  packet->PeekHeader (tcpHeader);
-	  destPort = tcpHeader.GetDestinationPort();
-	  srcPort = tcpHeader.GetSourcePort();
-	}
-
-	//3. To Malproxy
-	Ptr<Application> app = m_node->GetApplication(0);
-	ptr = GetPointer(app);
-	Ptr<MalProxy> proxy = Ptr<MalProxy>((MalProxy*)ptr);
+	//2. To Malproxy
 	int action = NONE;
 	if(direction==SENDING){
 		ll.dir=FROMTAP;
@@ -1259,32 +1249,23 @@ int TapBridge::MaliciousProcess
 	ll.ethsrc=src;
 	ll.ethtype=type;
 	ll.obj=this;
-	if(protocol==TcpL4Protocol::PROT_NUMBER){
-		action = proxy->MalTCP(packet, ll, &res);
+	if(protocol== proxy->IPprotoNum() && proxy->ShouldDoTransport()){
+		action = proxy->MalTransportProtocol(packet, ll, &res);
 	}
 
 
-	//4. Old Malicious Actions (UDP Only)
-	uint8_t *msg = new uint8_t[packet->GetSize()];
-	msg = packet->PeekDataForMal();
-	uint32_t offset = 20;
-	if (protocol == TcpL4Protocol::PROT_NUMBER) {
-		offset += 20;
-	}else{
-		offset += 8;
-	}
-	Message *m = new Message(msg+offset);
-	if (protocol == UdpL4Protocol::PROT_NUMBER && direction==SENDING){
-#if 0
-		if(proxy->MalMsg(m) == true) {
-			action = proxy->MaliciousStrategy(m, &res);
-		} else {
-			return 0; // normal processing
-		}
-#endif
+	//3. Old Malicious Actions (UDP Only)
+	if (protocol == UdpL4Protocol::PROT_NUMBER && direction==SENDING && proxy->ShouldDoUDP()){
+		packet->PeekHeader(udpHeader);
+		udpdestPort = udpHeader.GetDestinationPort();
+		udpsrcPort = udpHeader.GetSourcePort();
+		uint8_t *msg = new uint8_t[packet->GetSize()];
+		msg = packet->PeekDataForMal();
+		Message *m = new Message(msg+20+8);
+		action = proxy->MalUDPMsg(m, ll.dir, &res);
 	}
 
-	//5. Process Actions
+	//4. Process Actions
 	if(action==RETRY){
 		return -2;
 	}
@@ -1320,16 +1301,16 @@ int TapBridge::MaliciousProcess
 			ipdest = ipHeader.GetDestination();
 			ipsource = ipHeader.GetSource();
 		}
-        if (UDP) {
+        if (protocol == UdpL4Protocol::PROT_NUMBER) {
 			packet_send->RemoveHeader(udpHeader);
 			udpHeader.EnableChecksums();
 			udpHeader.InitializeChecksum(ipsource, ipdest, UdpL4Protocol::PROT_NUMBER);
-			udpHeader.SetDestinationPort (destPort);
-			udpHeader.SetSourcePort (srcPort);
+			udpHeader.SetDestinationPort (udpdestPort);
+			udpHeader.SetSourcePort (udpsrcPort);
 			packet_send->AddHeader(udpHeader);
         }else {
-			msg = packet->PeekDataForMal();
-			m = new Message(msg);
+        	uint8_t *msg = packet->PeekDataForMal();
+			Message *m = new Message(msg);
 			m->DoChecksum(ipHeader.GetPayloadSize(),ipsource,ipdest,TcpL4Protocol::PROT_NUMBER);
         }
 		Ipv4Header ipHeadernew = ipHeader;

@@ -616,6 +616,14 @@ int MalProxy::CommunicateController(Message *m)
 #endif
 }
 
+int MalProxy::MalUDPMsg(Message *m, int dir,maloptions *res)
+{
+	if(MalMsg(m,dir)==true){
+		return MaliciousStrategy(m,dir,res);
+	}
+	return NONE;
+}
+
 int MalProxy::MalMsg(Message *m, int dir)
 {
 	int state=sm_server.GetStateAsInt();
@@ -826,7 +834,7 @@ int MalProxy::MaliciousStrategy(Message *m, int dir,maloptions *res)
 	return DELAY;
 }
 
-int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
+int MalProxy::MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 {
 	connection *c;
 	std::vector<seq_state> *seq_list;
@@ -1187,6 +1195,29 @@ void MalProxy::ShouldInject(){
 		windowStates[sm_server.GetStateAsInt()]=NULL;
 	}
 	return;
+}
+
+
+bool MalProxy::ShouldDoUDP(){
+#ifdef IS_UDP
+	return true;
+#else
+	return false;
+#endif
+}
+bool MalProxy::ShouldDoTransport(){
+#ifdef IS_TRANSPORT
+	return true;
+#else
+	return false;
+#endif
+}
+int  MalProxy::IPprotoNum(){
+#ifdef IP_PROTO_NUM
+	return IP_PROTO_NUM;
+#else
+	return 0;
+#endif
 }
 
 

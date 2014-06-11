@@ -73,9 +73,11 @@ public:
 
   MalProxy ();
   virtual ~MalProxy ();
-	int MalMsg(Message *m, int dir);
-	int MaliciousStrategy(Message *m, int dir, maloptions *res) ;
-	int MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
+	int MalUDPMsg(Message *m, int dir, maloptions *res);
+	int MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloptions *res);
+	bool ShouldDoUDP();
+	bool ShouldDoTransport();
+	int  IPprotoNum();
 	void StoreEvent(EventImpl *event);
 	void InjectPacket(int type, const char *spec);
 	void Burst(int type, int dir);
@@ -102,6 +104,8 @@ private:
   void DoInjectPacket(Ptr<Packet> p,Ipv4Address src, Ipv4Address dest);
   void RunStateMachines(Message *m, lowerLayers *ll,maloptions *res);
   void ShouldInject();
+  int MalMsg(Message *m, int dir);
+  int MaliciousStrategy(Message *m, int dir, maloptions *res);
 
   bool deliveryActions[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
   double deliveryValues[MAX_STATES][DIRECTIONS][MSG][NUMDELIVERYACTIONS];
