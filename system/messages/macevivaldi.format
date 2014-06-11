@@ -1,3 +1,5 @@
+DEFINE IS_UDP yes
+
 # format is:
 #   [type]:[# of type]:
 

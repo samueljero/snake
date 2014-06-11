@@ -1,3 +1,5 @@
+DEFINE IS_UDP yes
+
 //#define DIGEST_SIZE        20
 //#define SIGNATURE_SIZE     128
 //#define SIG_SHARE_PROOF_SIZE   128

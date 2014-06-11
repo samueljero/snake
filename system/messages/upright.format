@@ -1,3 +1,5 @@
+DEFINE IS_UDP yes
+
 BaseMessage {
   int size;
   short type = 0;
