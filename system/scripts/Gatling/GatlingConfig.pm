@@ -137,7 +137,7 @@ sub systemBFT()
   $runTime = 100000;
   #$mal = " -mal 0 -mal 1 ";
   $mal = " -mal 0 ";
-  $watchPort = " -udp_port 3669 ";
+  $watchPort = " -port 3669 ";
   $alreadyLearned = "BFT/pre_learned.txt";
   $prePerf = "BFT/pre_perf.txt";
   $perfMeasured = "BFT/perf.txt";
@@ -158,8 +158,8 @@ sub systemPrime()
   $s_parallel = 4;
   $c_parallel = 1;
   $runTime = 100;
-  #$watchPort = "  -udp_port 7100 -udp_port 7101 -udp_port 7102 -udp_port 7200 -udp_port 7250 -udp_port 7300 -udp_port 7350 -udp_port 7400 -udp_port 8900 -udp_port 7401 -udp_port 7402 -udp_port 7403 -udp_port 7301 -udp_port 7302 -udp_port 7303 -udp_port 7201 -tcp_port 7103 -udp_port 7251 -udp_port 7252 -udp_port 7203 -udp_port 7253 -udp_port 7204 -udp_port 7254 -udp_port 7202 ";
-  $watchPort = " -udp_port 7200 -udp_port 7250 -udp_port 7300 ";
+  #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
+  $watchPort = " -port 7200 -port 7250 -port 7300 ";
   $mal = " -mal 1 ";
   #$mal = " -mal 0  -mal 1";
   $alreadyLearned = "Prime/pre_learned.txt";
@@ -182,8 +182,8 @@ sub systemPrime_bug()
   $s_parallel = 4;
   $c_parallel = 1;
   $runTime = 100;
-  #$watchPort = "  -udp_port 7100 -udp_port 7101 -udp_port 7102 -udp_port 7200 -udp_port 7250 -udp_port 7300 -udp_port 7350 -udp_port 7400 -udp_port 8900 -udp_port 7401 -udp_port 7402 -udp_port 7403 -udp_port 7301 -udp_port 7302 -udp_port 7303 -udp_port 7201 -tcp_port 7103 -udp_port 7251 -udp_port 7252 -udp_port 7203 -udp_port 7253 -udp_port 7204 -udp_port 7254 -udp_port 7202 ";
-  $watchPort = " -udp_port 7200 -udp_port 7250 -udp_port 7300 ";
+  #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
+  $watchPort = " -port 7200 -port 7250 -port 7300 ";
   $mal = " -mal 0 ";
   #$mal = " -mal 0  -mal 1";
   $alreadyLearned = "Prime_bug/pre_learned.txt";
@@ -210,7 +210,7 @@ sub systemSteward()
   $s_parallel = 12;
   $c_parallel = 1;
   $runTime = 100;
-  $watchPort = " -udp_port 100 ";
+  $watchPort = " -port 100 ";
   #$mal = " -mal 0 -mal 4 -mal 8 ";
   $mal = " -mal 1 -mal 5 -mal 9 ";
   #$mal = " -mal 0  -mal 1";
@@ -236,7 +236,7 @@ sub systemTCP()
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
-  $watchPort = " -tcp_port 80";
+  $watchPort = " -port 80";
   $mal = " -mal 0 ";
   $alreadyLearned = "TCP/pre_learned.txt";
   $prePerf = "TCP/pre_perf.txt";
@@ -250,6 +250,39 @@ sub systemTCP()
   $s_parallel = 2;
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
+  $serverhavessh=1;
+  $useGlobal=1;
+}
+
+sub systemDCCP()
+{
+  $setupCommand = "mkdir DCCP";
+  $server_command = "";
+  $client_command = "/root/DCCP/client.sh";
+  $serverList = "pssh_servers.txt";
+  $clientList = "pssh_clients.txt";
+  if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
+      $serverList = "pssh_servers0.txt";
+      $clientList = "pssh_clients0.txt";
+  }
+  print "using $serverList $host\n";
+  $runTime = 90;
+  $window_size=70;
+  $waitTime = 60;
+  $watchPort = " -port 80";
+  $mal = " -mal 0 ";
+  $alreadyLearned = "DCCP/pre_learned.txt";
+  $prePerf = "DCCP/pre_perf.txt";
+  $perfMeasured = "DCCP/perf.txt";
+  $newlyLearned = "DCCP/new_learned.txt";
+  $num_vms = 4;
+  $learning_threashold = 1;
+  $formatFile = "$format_dir/dccp.format";
+  $start_attack = 1;
+  $brokenPerf = 99999999;
+  $s_parallel = 2;
+  $c_parallel = 2;
+  $statediagramFile = "$format_dir/dccp.dot";
   $serverhavessh=1;
   $useGlobal=1;
 }
