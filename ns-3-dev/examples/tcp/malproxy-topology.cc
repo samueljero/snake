@@ -169,12 +169,12 @@ void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int run
 	
 	if (ifMalicious) {
 		for (set<int>::iterator pi=udp_ports.begin(); pi!= udp_ports.end(); pi++) {
-			MalProxyHelper server (Ipv4Address(ip_addr_str), *pi, 0);
+			MalProxyHelper server (Ipv4Address(ip_addr_str), *pi);
 			apps->Add(server.Install (terminals.Get(i)));
 			if (i == 0) NS_LOG_INFO(" UDP port : " << *pi);
 		}
 		for (set<int>::iterator pi=tcp_ports.begin(); pi!= tcp_ports.end(); pi++) {
-			MalProxyHelper server (Ipv4Address(ip_addr_str), 0, *pi);
+			MalProxyHelper server (Ipv4Address(ip_addr_str), *pi);
 			apps->Add(server.Install (terminals.Get(i)));
 			if (i == 0) NS_LOG_INFO(" TCP port : " << *pi);
 		}

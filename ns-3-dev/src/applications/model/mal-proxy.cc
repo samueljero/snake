@@ -354,11 +354,7 @@ TypeId MalProxy::GetTypeId(void)
 					MakeIpv4AddressChecker()).AddAttribute("UDPPort",
 					"Port on which we listen for incoming packets.",
 					UintegerValue(9),
-					MakeUintegerAccessor(&MalProxy::m_udp_port),
-					MakeUintegerChecker<uint16_t>()).AddAttribute("TCPPort",
-					"Port on which we listen for incoming packets.",
-					UintegerValue(9),
-					MakeUintegerAccessor(&MalProxy::m_tcp_port),
+					MakeUintegerAccessor(&MalProxy::m_port),
 					MakeUintegerChecker<uint16_t>());
 	return tid;
 }
@@ -374,8 +370,6 @@ MalProxy::MalProxy()
 MalProxy::~MalProxy()
 {
 	NS_LOG_FUNCTION_NOARGS ();
-	m_udp_socket = 0;
-	m_tcp_socket = 0;
 }
 
 void MalProxy::DoDispose(void)
@@ -503,40 +497,13 @@ void MalProxy::StartApplication(void) {
 	NS_LOG_FUNCTION_NOARGS ();
 
 	ClearStrategy();
-	if (m_udp_port != 0) {
-		if (m_udp_socket == 0) {
-			TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
-			m_udp_socket = Socket::CreateSocket(GetNode(), tid);
-			InetSocketAddress local = InetSocketAddress(m_local, m_udp_port);
-			//InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), m_udp_port);
-			m_udp_socket->Bind(local);
-		}
-	}
-
-	if (m_tcp_port != 0) {
-		if (m_tcp_socket == 0) {
-			TypeId tid = TypeId::LookupByName("ns3::TcpSocketFactory");
-			m_tcp_socket = Socket::CreateSocket(GetNode(), tid);
-			InetSocketAddress local = InetSocketAddress(m_local, m_tcp_port);
-			int res = m_tcp_socket->Bind(local);
-			m_tcp_socket->Listen();
-			NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_tcp_port << " bind: " << res );
-		}
-	}
+	NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_port);
 	srand((unsigned) time(0));
 }
 
 void MalProxy::StopApplication()
 {
 	NS_LOG_FUNCTION_NOARGS ();
-
-	if (m_udp_socket != 0) {
-		m_udp_socket->Close();
-	}
-
-	if (m_tcp_socket != 0) {
-		m_tcp_socket->Close();
-	}
 }
 
 /*Communicate back to the Controller. Currently only used for Greedy Search.*/
@@ -850,8 +817,8 @@ int MalProxy::MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloption
 
 	/*Check ports*/
 #if (defined SOURCE_PORT_FIELD) && (defined DEST_PORT_FIELD)
-	if ((ll.dir == FROMTAP && m->GetDestPort() != this->m_tcp_port)
-			|| (ll.dir == TOTAP && m->GetSourcePort() != this->m_tcp_port)) {
+	if ((ll.dir == FROMTAP && m->GetDestPort() != this->m_port)
+			|| (ll.dir == TOTAP && m->GetSourcePort() != this->m_port)) {
 		/*Packet we don't care about*/
 		res->action = NONE;
 		return NONE;

@@ -116,10 +116,7 @@ private:
   int windowMsg[MAX_STATES];
 
   uint64_t num_processed;
-  uint16_t m_udp_port;
-  uint16_t m_tcp_port;
-  Ptr<Socket> m_udp_socket;
-  Ptr<Socket> m_tcp_socket;
+  uint16_t m_port;
   Ipv4Address m_local;
   std::map<Ptr<Socket>, Ipv4Address> m_tcp_conn;
   std::map<Ptr<Socket>, Ptr<Socket> > m_pair;
