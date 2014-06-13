@@ -351,7 +351,7 @@ TypeId MalProxy::GetTypeId(void)
 					"The Address on which to Bind the rx socket.",
 					Ipv4AddressValue(),
 					MakeIpv4AddressAccessor(&MalProxy::m_local),
-					MakeIpv4AddressChecker()).AddAttribute("UDPPort",
+					MakeIpv4AddressChecker()).AddAttribute("Port",
 					"Port on which we listen for incoming packets.",
 					UintegerValue(9),
 					MakeUintegerAccessor(&MalProxy::m_port),
