@@ -119,6 +119,9 @@ sub setSystem()
   if($systemname eq "TCP"){
 	systemTCP();
   }
+  if($systemname eq "DCCP"){
+  	systemDCCP();
+  }
   system("$setupCommand");
 }
 

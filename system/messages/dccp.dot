@@ -1,6 +1,6 @@
 digraph DCCP {
 CLOSED -> LISTEN [rcvd="A_LISTEN", send="-"];
-LISTEN -> RESPOND [rcv="M_Request", send="M_Response"];
+LISTEN -> RESPOND [rcvd="M_Request", send="M_Response"];
 RESPOND -> OPEN [rcvd="M_Ack,M_DataAck", send="-"];
 CLOSED -> REQUEST [ rcvd="A_CONNECT", send="M_Request"];
 REQUEST -> PARTOPEN [ rcvd="M_Response", send="M_Ack"];
