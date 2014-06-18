@@ -30,7 +30,7 @@ sub parseMessage {
   my $structName;
   my $name;
   my $flen;
-  open FILE, $GatlingConfig::formatFile or die "Can't open format file $GatlingConfig::formatFile\n$!";
+  open FILE, $GatlingConfig::formatFile or die "Can't open format file [$GatlingConfig::formatFile\n]$!";
 
   while(<FILE>) {
     s/;//;
