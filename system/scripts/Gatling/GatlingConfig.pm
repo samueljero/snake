@@ -51,7 +51,7 @@ $serverList = "pssh_servers.txt";
 $clientList = "pssh_clients.txt";
 $allList = "pssh_all.txt";
 my $host = Sys::Hostname::hostname();
-print "hostname: $host\n";
+print STDERR "hostname: $host\n";
 if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
     $serverList = "pssh_servers0.txt";
     $clientList = "pssh_clients0.txt";
@@ -86,23 +86,23 @@ sub prepare()
 
 sub runSystem()
 {
-	print("pssh -p $s_parallel -h $serverList \"pkill server\"\n");
+	print STDERR ("pssh -p $s_parallel -h $serverList \"pkill server\"\n");
 	system("pssh -p $s_parallel -h $serverList \"pkill server\"");
 	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
-	print "About to execute server command: $server_command\n";
+	print STDERR "About to execute server command: $server_command\n";
 	system("pssh -p $s_parallel -h $serverList -t $runTime \"$server_command\"  &");
 }
 
 sub runClient()
 {
-	print "About to execute client command: $client_command\n";
+	print  STDERR "About to execute client command: $client_command\n";
 	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
 	system("pssh -p $c_parallel -h $clientList -t $runTime \"$client_command &\" &");
 }
 
 sub setSystem() 
 {
-  print "System $systemname\n";
+  print STDERR "System $systemname\n";
   if ($systemname eq "BFT") {
     systemBFT();
   }
@@ -197,7 +197,7 @@ sub systemPrime_bug()
 }
 sub movePrevPerf()
 {
-  print ("cat $perfMeasured >> $prePerf\n");
+  print STDERR ("cat $perfMeasured >> $prePerf\n");
   system ("cat $perfMeasured >> $prePerf\n");
   system ("cat $newlyLearned >> $alreadyLearned\n");
 }
@@ -235,7 +235,7 @@ sub systemTCP()
       $serverList = "pssh_servers0.txt";
       $clientList = "pssh_clients0.txt";
   }
-  print "using $serverList $host\n";
+  print STDERR "using $serverList $host\n";
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
@@ -268,7 +268,7 @@ sub systemDCCP()
       $serverList = "pssh_servers0.txt";
       $clientList = "pssh_clients0.txt";
   }
-  print "using $serverList $host\n";
+  print  STDERR "using $serverList $host\n";
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
