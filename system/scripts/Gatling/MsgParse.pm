@@ -39,11 +39,6 @@ sub parseMessage {
     if ($#token < 0 or $token[0] =~ /^\/\//) {
       next;
   }
-#make sure first message is base message type
-  if ($parsing == 0 and $#msgName == -1 and $token[0] ne "BaseMessage") {
-    print STDERR "First message type is not BaseMessage!\n";
-    exit;
-  } 
   $field = "";
   $type = "";
   $index = "1";

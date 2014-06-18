@@ -1,5 +1,6 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
+use warnings;
 use strict;
 use IO::Socket::INET;
 use Time::Local;
@@ -24,7 +25,7 @@ while (1) {
 
 	my $buffer = '';
 
-	my $sock = new IO::Socket::INET->new( PeerAddr => '10.0.0.1:7778',
+	my $sock = new IO::Socket::INET->new( PeerAddr => '10.0.0.1:7779',
 			#PeerPort => '7777', 
 			Proto => 'udp');
 	die "Could not create socket: $!\n" unless $sock;

@@ -1,3 +1,5 @@
+DEFINE IS_UDP yes
+
 // BaseMessage is added
 // because of the demand of the script
 BaseMessage {

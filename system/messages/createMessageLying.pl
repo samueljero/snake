@@ -48,9 +48,9 @@ int Message::FindMsgType() {
 
 int Message::FindMsgSize() {
 #ifdef SIZE_MULT
-	return ((BaseMessage*)msg)->size*SIZE_MULT + $addToSize;
+	return ((BaseMessage*)msg)->SIZE_FIELD*SIZE_MULT + $addToSize;
 #else
-	return ((BaseMessage*)msg)->size + $addToSize;
+	return ((BaseMessage*)msg)->SIZE_FIELD + $addToSize;
 #endif
 }
 
@@ -86,16 +86,6 @@ while(<FILE>) {
 		next;
 }
 
-#if ($token[0] eq "#define") {
-#	print "$_\n";
-#	next;
-#}
-
-#make sure first message is base message type
-if ($parsing == 0 and $#msgName == -1 and $token[0] ne "BaseMessage") {
-	print STDERR "First message type is not BaseMessage!\n";
-	exit;
-}
 $flen= "";
 $field = "";
 $type = "";
@@ -211,17 +201,17 @@ if ($parsing == 0) {
 				if ($fieldNum > $maxField) {
 					$maxField = $fieldNum;
 				}
+
 				if (!$needOffset) {
 					print DOTH "\t$type $field;\n";
 				}
 
 				print DOTC "\tif (field == $fieldNum) {\n";
-				print DOTC "\t\tstruct $token[1] *cur ";
 
 				if (!$needOffset) {
-					print DOTC "= &(ptr->$token[2]);\n";
+					print DOTC "\t\t$name *cur = ptr;\n";
 				} else {
-					print DOTC "= (struct $token[1]*)($fieldOffset);\n";
+					print DOTC "\t\tstruct $token[1] *cur = (struct $token[1]*)($fieldOffset);\n";
 				}
 
 
@@ -280,7 +270,7 @@ if ($parsing == 0) {
 							print DOTC "$tabs";
 							print DOTC "}\n";
 						} elsif($type eq "uint16_t"){
-							print DOTC "$tabs$type tmp=ntohs(*cur);\n";
+							print DOTC "$tabs$type tmp=ntohs(cur->$field);\n";
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
 							print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
@@ -301,9 +291,9 @@ if ($parsing == 0) {
 							print DOTC "$tabs\ttmp = ($type)rand();\n";
 							print DOTC "$tabs";
 							print DOTC "}\n";
-							print DOTC "$tabs *cur=htons(tmp);\n";
+							print DOTC "$tabs cur->$field=htons(tmp);\n";
 						} elsif($type eq "uint32_t"){
-							print DOTC "$tabs$type tmp=ntohl(*cur);\n";
+							print DOTC "$tabs$type tmp=ntohl(cur->$field);\n";
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
 							print DOTC "$tabs\ttmp = ($type)atoi(value+1);\n";
@@ -324,7 +314,7 @@ if ($parsing == 0) {
 							print DOTC "$tabs\ttmp = ($type)rand();\n";
 							print DOTC "$tabs";
 							print DOTC "}\n";
-							print DOTC "$tabs *cur=htonl(tmp);\n";
+							print DOTC "$tabs cur->$field=htonl(tmp);\n";
 						} else {
 							print DOTC "$tabs";
 							print DOTC "if (value[0] == '=') {\n";
@@ -353,7 +343,6 @@ if ($parsing == 0) {
 						print DOTC "\t\t}\n";
 					}
 				}
-#print DOTC "\t\treturn;\n";
 				print DOTC "\t}\n";
 
 			}
@@ -529,7 +518,6 @@ if ($parsing == 0) {
 				print DOTC "\t\t\tcur++;\n";
 				print DOTC "\t\t}\n";
 			}
-#print DOTC "\t\treturn;\n";
 			print DOTC "\t}\n";
 		}
 	}

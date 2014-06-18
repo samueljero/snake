@@ -1,3 +1,4 @@
+DEFINE IS_UDP yes
 
 BaseMessage {
     char sig[128];
