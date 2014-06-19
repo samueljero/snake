@@ -423,7 +423,7 @@ int MalProxy::Command(string command, std::string &output)
 		sm_client.Start(State("CLOSED"), Simulator::Now().GetMilliSeconds());
 		return 1;
 	}
-	if(command.compare("GatlingSendStateStats\n")==0){
+	if(command.compare(0, strlen("GatlingSendStateStats"), "GatlingSendStateStats")==0){
 		/* TODO: Return to controller! */
 		stringstream ss;
 		ss.str("");

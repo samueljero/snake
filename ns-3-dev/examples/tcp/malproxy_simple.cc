@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
 
 	LogComponentEnable("MalProxyApplication", LOG_INFO);
 	//LogComponentEnable("MalProxyApplication", LOG_LOGIC);
-	//LogComponentEnable("MalSimple", LOG_INFO);
+	LogComponentEnable("MalSimple", LOG_INFO);
 	//LogComponentEnable("SimpleNetDevice", LOG_INFO);
 	//LogComponentEnable("SimpleNetDevice", LOG_FUNCTION);
 	//LogComponentEnable("Icmpv4L4Protocol", LOG_INFO);
@@ -532,14 +532,17 @@ int main(int argc, char *argv[]) {
 	apps = &appCon;
 	for (int i = 0; i < num_terminal; i++) {
 		bool ifMalicious = false;
-		if (malNodes.find(i) != malNodes.end())
+		if (malNodes.find(i) != malNodes.end()) {
+            std::cout << "malicious\n";
 			ifMalicious = true;
+        }
 		MalProxyTap(i, ip_base, ifMalicious, tap_base, runtime);
 	}
 
 	/*Start Mal-proxy application*/
 	apps->Start(Seconds(0.0));
 	apps->Stop(Seconds(runtime));
+    printf("starting apps\n");
 
 	/*Setup routing tables*/
 	if (globalRouting)
