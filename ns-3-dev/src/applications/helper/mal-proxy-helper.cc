@@ -25,12 +25,11 @@
 
 namespace ns3 {
 
-MalProxyHelper::MalProxyHelper (Ipv4Address address, uint16_t udp_port, uint16_t tcp_port)
+MalProxyHelper::MalProxyHelper (Ipv4Address address, uint16_t port)
 {
   m_factory.SetTypeId (MalProxy::GetTypeId ());
   SetAttribute ("Local", Ipv4AddressValue (address));
-  SetAttribute ("UDPPort", UintegerValue (udp_port));
-  SetAttribute ("TCPPort", UintegerValue (tcp_port));
+  SetAttribute ("Port", UintegerValue (port));
 }
 
 void 

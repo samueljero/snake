@@ -47,8 +47,7 @@ NS_LOG_COMPONENT_DEFINE("MalSimple");
 NodeContainer terminals;
 NetDeviceContainer terminalDevices;
 std::vector<Ptr<SimpleNetDevice> > simpleDevices;
-set<int> udp_ports;
-set<int> tcp_ports;
+set<int> ports;
 std::vector<string> ip_addrs;
 std::vector<string> tap_names;
 std::vector<string> mac_addresses;
@@ -191,17 +190,11 @@ void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int run
 
 	/*Configure mal-proxy, if this node needs one*/
 	if (ifMalicious) {
-		for (set<int>::iterator pi = udp_ports.begin(); pi != udp_ports.end(); pi++) {
-			MalProxyHelper server(Ipv4Address(ip_addr_str), *pi, 0);
+		for (set<int>::iterator pi = ports.begin(); pi != ports.end(); pi++) {
+			MalProxyHelper server(Ipv4Address(ip_addr_str), *pi);
 			apps->Add(server.Install(terminals.Get(i)));
 			if (i == 0)
-				NS_LOG_INFO(" UDP port : " << *pi);
-		}
-		for (set<int>::iterator pi = tcp_ports.begin(); pi != tcp_ports.end(); pi++) {
-			MalProxyHelper server(Ipv4Address(ip_addr_str), 0, *pi);
-			apps->Add(server.Install(terminals.Get(i)));
-			if (i == 0)
-				NS_LOG_INFO(" TCP port : " << *pi);
+				NS_LOG_INFO("Protocol Port : " << *pi);
 		}
 	}
 
@@ -380,8 +373,7 @@ int main(int argc, char *argv[]) {
 
 	CommandLine cmd;
 	int num_terminal = 4;
-	uint16_t tcp_port = 22;
-	uint16_t udp_port = 5377;
+	uint16_t port = 22;
 	set<int> malNodes;
 	char *ip_base = "10.1.1";
 	char ip_base_str[20];
@@ -396,14 +388,10 @@ int main(int argc, char *argv[]) {
 	SystemThread commandProcessor = SystemThread(MakeCallback(&commandListener));
 	commandProcessor.Start();
 	for (int i = 0; i < argc; i++) {
-		if (strcmp(argv[i], "-tcp_port") == 0) {
+		if (strcmp(argv[i], "-port") == 0) {
 			i++;
-			tcp_port = atoi(argv[i]);
-			tcp_ports.insert(tcp_port);
-		} else if (strcmp(argv[i], "-udp_port") == 0) {
-			i++;
-			udp_port = atoi(argv[i]);
-			udp_ports.insert(udp_port);
+			port = atoi(argv[i]);
+			ports.insert(port);
 		} else if (strcmp(argv[i], "-mal") == 0) {
 			i++;
 			malNodes.insert(atoi(argv[i]));

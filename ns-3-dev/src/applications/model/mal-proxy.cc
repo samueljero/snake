@@ -351,14 +351,10 @@ TypeId MalProxy::GetTypeId(void)
 					"The Address on which to Bind the rx socket.",
 					Ipv4AddressValue(),
 					MakeIpv4AddressAccessor(&MalProxy::m_local),
-					MakeIpv4AddressChecker()).AddAttribute("UDPPort",
+					MakeIpv4AddressChecker()).AddAttribute("Port",
 					"Port on which we listen for incoming packets.",
 					UintegerValue(9),
-					MakeUintegerAccessor(&MalProxy::m_udp_port),
-					MakeUintegerChecker<uint16_t>()).AddAttribute("TCPPort",
-					"Port on which we listen for incoming packets.",
-					UintegerValue(9),
-					MakeUintegerAccessor(&MalProxy::m_tcp_port),
+					MakeUintegerAccessor(&MalProxy::m_port),
 					MakeUintegerChecker<uint16_t>());
 	return tid;
 }
@@ -374,8 +370,6 @@ MalProxy::MalProxy()
 MalProxy::~MalProxy()
 {
 	NS_LOG_FUNCTION_NOARGS ();
-	m_udp_socket = 0;
-	m_tcp_socket = 0;
 }
 
 void MalProxy::DoDispose(void)
@@ -503,40 +497,13 @@ void MalProxy::StartApplication(void) {
 	NS_LOG_FUNCTION_NOARGS ();
 
 	ClearStrategy();
-	if (m_udp_port != 0) {
-		if (m_udp_socket == 0) {
-			TypeId tid = TypeId::LookupByName("ns3::UdpSocketFactory");
-			m_udp_socket = Socket::CreateSocket(GetNode(), tid);
-			InetSocketAddress local = InetSocketAddress(m_local, m_udp_port);
-			//InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), m_udp_port);
-			m_udp_socket->Bind(local);
-		}
-	}
-
-	if (m_tcp_port != 0) {
-		if (m_tcp_socket == 0) {
-			TypeId tid = TypeId::LookupByName("ns3::TcpSocketFactory");
-			m_tcp_socket = Socket::CreateSocket(GetNode(), tid);
-			InetSocketAddress local = InetSocketAddress(m_local, m_tcp_port);
-			int res = m_tcp_socket->Bind(local);
-			m_tcp_socket->Listen();
-			NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_tcp_port << " bind: " << res );
-		}
-	}
+	NS_LOG_INFO("MalProxy local address:  " << m_local << " port: " << m_port);
 	srand((unsigned) time(0));
 }
 
 void MalProxy::StopApplication()
 {
 	NS_LOG_FUNCTION_NOARGS ();
-
-	if (m_udp_socket != 0) {
-		m_udp_socket->Close();
-	}
-
-	if (m_tcp_socket != 0) {
-		m_tcp_socket->Close();
-	}
 }
 
 /*Communicate back to the Controller. Currently only used for Greedy Search.*/
@@ -614,6 +581,14 @@ int MalProxy::CommunicateController(Message *m)
 	return n;
 #endif
 #endif
+}
+
+int MalProxy::MalUDPMsg(Message *m, int dir,maloptions *res)
+{
+	if(MalMsg(m,dir)==true){
+		return MaliciousStrategy(m,dir,res);
+	}
+	return NONE;
 }
 
 int MalProxy::MalMsg(Message *m, int dir)
@@ -826,7 +801,7 @@ int MalProxy::MaliciousStrategy(Message *m, int dir,maloptions *res)
 	return DELAY;
 }
 
-int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
+int MalProxy::MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 {
 	connection *c;
 	std::vector<seq_state> *seq_list;
@@ -842,8 +817,8 @@ int MalProxy::MalTCP(Ptr<Packet> packet, lowerLayers ll, maloptions *res)
 
 	/*Check ports*/
 #if (defined SOURCE_PORT_FIELD) && (defined DEST_PORT_FIELD)
-	if ((ll.dir == FROMTAP && m->GetDestPort() != this->m_tcp_port)
-			|| (ll.dir == TOTAP && m->GetSourcePort() != this->m_tcp_port)) {
+	if ((ll.dir == FROMTAP && m->GetDestPort() != this->m_port)
+			|| (ll.dir == TOTAP && m->GetSourcePort() != this->m_port)) {
 		/*Packet we don't care about*/
 		res->action = NONE;
 		return NONE;
@@ -1105,8 +1080,8 @@ void MalProxy::Window(int type, const char* spec)
 
 	seq = 0;
 	for (int i = 0; i < itter; i++) {
-		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i 6=%i", sec, ip_src,
-				ip_dest, p_src, p_dest, seq, size, type);
+		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i 6=%i 10=%i", sec, ip_src,
+				ip_dest, p_src, p_dest, seq, size, type, window);
 		InjectPacket(type,pspec);
 		seq += window;
 		sec+=inc;
@@ -1187,6 +1162,29 @@ void MalProxy::ShouldInject(){
 		windowStates[sm_server.GetStateAsInt()]=NULL;
 	}
 	return;
+}
+
+
+bool MalProxy::ShouldDoUDP(){
+#ifdef IS_UDP
+	return true;
+#else
+	return false;
+#endif
+}
+bool MalProxy::ShouldDoTransport(){
+#ifdef IS_TRANSPORT
+	return true;
+#else
+	return false;
+#endif
+}
+int  MalProxy::IPprotoNum(){
+#ifdef IP_PROTO_NUM
+	return IP_PROTO_NUM;
+#else
+	return 0;
+#endif
 }
 
 
