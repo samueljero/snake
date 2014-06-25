@@ -33,24 +33,23 @@ GatlingConfig::setSystem();
 share($GatlingConfig::watch_ns3);
 share($GatlingConfig::watch_turret);
 
-if ($GatlingConfig::attackModule eq "GreedyAttack") {
-    require GreedyAttack
-}
-if ($GatlingConfig::attackModule eq "StateBasedAttack") {
-    require StateBasedAttack;
-}
-if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
-    require StateBasedExecutor;
-}
-
 #Start VMs
-#system("./startNclean.sh");
+#./startNclean.sh
 
 #Initialize Turret system
 GatlingConfig::movePrevPerf();
 GatlingConfig::prepare();
 
-#Do Attack
-#GreedyAttack::start();
-StateBasedAttack::start();
+if ($GatlingConfig::attackModule eq "GreedyAttack") {
+    require GreedyAttack
+    GreedyAttack::start();
+}
+if ($GatlingConfig::attackModule eq "StateBasedAttack") {
+    require StateBasedAttack;
+    StateBasedAttack::start();
+}
+if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
+    require StateBasedExecutor;
+    StateBasedExecutor::start();
+}
 exit;

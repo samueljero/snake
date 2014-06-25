@@ -3,18 +3,20 @@
 use Cwd 'abs_path';
 use File::Basename;
 use Sys::Hostname;
+use Socket;
 
 package GatlingConfig;
 
 # for the global collector
-$GlobalCollectorAddr = "cloud14.cs.purdue.edu";
+$GlobalCollectorAddr = "cloud15.cs.purdue.edu";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
-$attackModule = "StateBasedAttack";
-#$attackModule = "StateBasedExecutor";
+#$attackModule = "StateBasedAttack";
+$attackModule = "StateBasedExecutor";
 #$attackModule = "StateBasedExecutor";
 $host = Sys::Hostname::hostname(); #Get hostname
-$ListenAddr = $host;
+my $ip=gethostbyname($host);
+$ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
 
 
@@ -260,7 +262,7 @@ sub systemTCP()
 sub systemDCCP()
 {
   $setupCommand = "mkdir DCCP";
-  $server_command = "";
+  $server_command = "/root/DCCP/server.sh &";
   $client_command = "/root/DCCP/client.sh";
   $serverList = "pssh_servers.txt";
   $clientList = "pssh_clients.txt";
@@ -272,7 +274,7 @@ sub systemDCCP()
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
-  $watchPort = " -port 80";
+  $watchPort = " -port 5001";
   $mal = " -mal 0 ";
   $alreadyLearned = "DCCP/pre_learned.txt";
   $prePerf = "DCCP/pre_perf.txt";

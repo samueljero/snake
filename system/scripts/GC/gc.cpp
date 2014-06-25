@@ -264,7 +264,7 @@ void TurretInstance::sendStrategy() {
         LOG(ERROR) << "can't connect turret : " << id;
     }
     else {
-        LOG(DEBUG) << "will writte: " << curStrategy->content.c_str();
+        LOG(DEBUG) << "will write: " << curStrategy->content.c_str();
         int n = write(sockfd, curStrategy->content.c_str(), strlen(curStrategy->content.c_str())+1);
         LOG(DEBUG) << "wrote " << n;
         // XXX maybe read back?
