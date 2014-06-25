@@ -62,7 +62,7 @@ while (<STDIN>) {
 my $weight=0;
 my @strArray;
 
-my $short = 1;
+my $short = 0;
 if ($gotany == 0) {
 ### WHEN NO FEEDBACK IS GIVEN
     my $i = 0;
