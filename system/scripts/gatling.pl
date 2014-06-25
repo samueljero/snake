@@ -47,6 +47,7 @@ share($GatlingConfig::watch_turret);
 
 #Start VMs
 system("./startNclean.sh offset $GatlingConfig::offset");
+#./startNclean.sh
 
 #Initialize Turret system
 GatlingConfig::movePrevPerf();
@@ -64,5 +65,4 @@ if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
     require StateBasedExecutor;
     StateBasedExecutor::start();
 }
-
 exit;

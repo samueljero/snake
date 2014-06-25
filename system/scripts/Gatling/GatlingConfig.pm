@@ -3,6 +3,7 @@
 use Cwd 'abs_path';
 use File::Basename;
 use Sys::Hostname;
+use Socket;
 
 package GatlingConfig;
 
@@ -17,6 +18,8 @@ $host = Sys::Hostname::hostname(); #Get hostname
 
 # Local address to listen for strategies. needs to be IP, not hostname.
 $ListenAddr = "128.10.132.182";
+my $ip=gethostbyname($host);
+$ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
 
 
@@ -308,7 +311,7 @@ sub systemTCP()
 sub systemDCCP()
 {
   $setupCommand = "mkdir DCCP";
-  $server_command = "";
+  $server_command = "/root/DCCP/server.sh &";
   $client_command = "/root/DCCP/client.sh";
   undef(@serverNumbers);
   push (@serverNumbers, 3);
@@ -319,9 +322,9 @@ sub systemDCCP()
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
-  $watchPort = " -port 80";
   undef(@malNumbers);
   push (@malNumbers, 0);
+  $watchPort = " -port 5001";
   $alreadyLearned = "DCCP/pre_learned.txt";
   $prePerf = "DCCP/pre_perf.txt";
   $perfMeasured = "DCCP/perf.txt";
