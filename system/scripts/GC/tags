@@ -24,12 +24,17 @@ INFO	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3
 LOG	log.h	129;"	d
 Log	log.h	/^Log<T>::Log()$/;"	f	class:Log
 Log	log.h	/^class Log$/;"	c
+MAINGC_PORT	gc.h	10;"	d
+MsgParse	Prepare.pm	/^package MsgParse;$/;"	p
 NowTime	log.h	/^inline std::string NowTime()$/;"	f
 Output	log.h	/^inline void Output2FILE::Output(const std::string& msg)$/;"	f	class:Output2FILE
 Output2FILE	log.h	/^class Output2FILE$/;"	c
+PREAD	gc.cpp	232;"	d	file:
+PWRITE	gc.cpp	233;"	d	file:
 ReportingLevel	log.h	/^TLogLevel& Log<T>::ReportingLevel()$/;"	f	class:Log
 SRC	Makefile	/^SRC=gc.cpp$/;"	m
 Status	gc.h	/^        enum Status {$/;"	g	class:TurretInstance
+Strategy	Strategy.pm	/^package Strategy;$/;"	p
 Stream	log.h	/^inline FILE*& Output2FILE::Stream()$/;"	f	class:Output2FILE
 TLogLevel	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEBUG3, DEBUG4};$/;"	g
 ToString	log.h	/^std::string Log<T>::ToString(TLogLevel level)$/;"	f	class:Log
@@ -39,15 +44,34 @@ WARNING	log.h	/^enum TLogLevel {ERROR, WARNING, INFO, DEBUG, DEBUG1, DEBUG2, DEB
 _GC	gc.h	2;"	d
 __LOG_H__	log.h	2;"	d
 addr	gc.h	/^        struct sockaddr_in addr;$/;"	m	class:TurretInstance	typeref:struct:TurretInstance::sockaddr_in
-availableTurret	gc.h	/^    int availableTurret;$/;"	m	class:gc
 comp	gc.h	/^class comp $/;"	c
 content	gc.h	/^    std::string content;$/;"	m	class:strategy
+curStrategy	gc.h	/^        strategy *curStrategy;$/;"	m	class:TurretInstance
 distributor	gc.cpp	/^void gc::distributor() {$/;"	f	class:gc
+distributor_cond	gc.h	/^pthread_cond_t  distributor_cond;$/;"	v
 error	gc.h	/^            error$/;"	e	enum:TurretInstance::Status
+executePipeToFillWaitingStrategy	gc.cpp	/^int gc::executePipeToFillWaitingStrategy(std::string &line) $/;"	f	class:gc
 expanding	gc.h	/^    bool expanding;$/;"	m	class:gc
-finishCondition	gc.cpp	/^bool gc::finishCondition() {$/;"	f	class:gc
+feedback	gc.h	/^    std::list<std::string> feedback;$/;"	m	class:gc
+fillStateDir	state.pl	/^sub fillStateDir {$/;"	s
+fillStateMsgPair	state.pl	/^sub fillStateMsgPair {$/;"	s
 gc	gc.h	/^    gc() {$/;"	f	class:gc
 gc	gc.h	/^class gc {$/;"	c
+getCoarseStrategyList	Strategy.pm	/^sub getCoarseStrategyList {$/;"	s
+getFlenList	Prepare.pm	/^sub getFlenList{$/;"	s
+getFlenList	Strategy.pm	/^sub getFlenList{$/;"	s
+getFlenNumList	Prepare.pm	/^sub getFlenNumList{$/;"	s
+getFlenNumList	Strategy.pm	/^sub getFlenNumList{$/;"	s
+getMsgFlenList	Prepare.pm	/^sub getMsgFlenList{$/;"	s
+getMsgFlenList	Strategy.pm	/^sub getMsgFlenList{$/;"	s
+getMsgNameClount	Prepare.pm	/^sub getMsgNameClount{$/;"	s
+getMsgNameClount	Strategy.pm	/^sub getMsgNameClount{$/;"	s
+getMsgNameRes	Prepare.pm	/^sub getMsgNameRes{$/;"	s
+getMsgNameRes	Strategy.pm	/^sub getMsgNameRes{$/;"	s
+getStrategyCount	Prepare.pm	/^sub getStrategyCount{$/;"	s
+getStrategyCount	Strategy.pm	/^sub getStrategyCount{$/;"	s
+getTypeStrategyList	Prepare.pm	/^sub getTypeStrategyList{$/;"	s
+getTypeStrategyList	Strategy.pm	/^sub getTypeStrategyList{$/;"	s
 history_mutex	gc.h	/^pthread_mutex_t history_mutex;$/;"	v
 id	gc.h	/^        int id;$/;"	m	class:TurretInstance
 ifMatch	gc.h	/^        bool ifMatch(struct sockaddr_in* addrP) {$/;"	f	class:TurretInstance
@@ -56,26 +80,39 @@ nextAvailableTurret	gc.cpp	/^TurretInstance * gc::nextAvailableTurret() {$/;"	f	
 operator ()	gc.h	/^        bool operator() (const TurretInstance &lhs, const TurretInstance &rhs) const$/;"	f	class:comp
 operator ()	gc.h	/^        bool operator() (const strategy &lhs, const strategy &rhs) const$/;"	f	class:comp
 operator <	gc.cpp	/^bool strategy::operator<(const strategy &s2) {$/;"	f	class:strategy
+operator <<	gc.h	/^        friend std::ostream& operator<< (std::ostream& stream, const TurretInstance & ti) {$/;"	f	class:TurretInstance
 operator ==	gc.cpp	/^bool strategy::operator ==(const strategy &s2) {$/;"	f	class:strategy
 os	log.h	/^    std::ostringstream os;$/;"	m	class:Log
-perfCollector	gc.cpp	/^void gc::perfCollector() {$/;"	f	class:gc
+parseMessage	Prepare.pm	/^sub parseMessage {$/;"	s
+parseMessage	Strategy.pm	/^sub parseMessage {$/;"	s
 performanceResult	gc.h	/^    std::queue<std::string> performanceResult;$/;"	m	class:gc
 port	gc.h	/^        int port;$/;"	m	class:TurretInstance
 quit	gc.cpp	/^int quit = 0;$/;"	v
 ready	gc.h	/^            ready,$/;"	e	enum:TurretInstance::Status
 ready_to_send	gc.cpp	/^bool gc::ready_to_send() {$/;"	f	class:gc
+ready_to_stop	gc.cpp	/^bool gc::ready_to_stop() {$/;"	f	class:gc
+reportCollector	gc.cpp	/^void gc::reportCollector() {$/;"	f	class:gc
+reporting	gc.h	/^            reporting,$/;"	e	enum:TurretInstance::Status
 running	gc.h	/^            running,$/;"	e	enum:TurretInstance::Status
-runningTurretCnt	gc.h	/^    int runningTurretCnt;$/;"	m	class:gc
+sendMessage	gc.cpp	/^void TurretInstance::sendMessage(const char *message, size_t message_len) {$/;"	f	class:TurretInstance
+send_feedback	gc.cpp	/^void gc::send_feedback(int fd) $/;"	f	class:gc
+sending	gc.h	/^            sending,$/;"	e	enum:TurretInstance::Status
+setCurStrategy	gc.h	/^        void setCurStrategy(strategy str) { curStrategy = new strategy(str); }$/;"	f	class:TurretInstance
 sin_port	gc.h	/^        int sin_port;$/;"	m	class:TurretInstance
-startsWith	gc.h	66;"	d
+startsWith	gc.h	83;"	d
 status	gc.h	/^        Status status;$/;"	m	class:TurretInstance
-strategy	gc.h	/^    strategy(std::string c, int w) {$/;"	f	class:strategy
+statusname	gc.h	/^char *statusname[] = {"ready", "running", "reporting", "sending", "error"};$/;"	v
+strCmp	gc.cpp	/^bool strCmp (const strategy& first, const strategy& second)$/;"	f
+strategy	gc.h	/^    strategy(const strategy &s2) {$/;"	f	class:strategy
+strategy	gc.h	/^    strategy(int w, std::string c) {$/;"	f	class:strategy
 strategy	gc.h	/^class strategy {$/;"	c
+strategyComposeScript	gc.cpp	/^char *strategyComposeScript = NULL;$/;"	v
 strategyComposer	gc.cpp	/^void gc::strategyComposer() {$/;"	f	class:gc
 strategy_cond	gc.h	/^pthread_cond_t  strategy_cond;$/;"	v
 strategy_mutex	gc.h	/^pthread_mutex_t strategy_mutex;$/;"	v
+turretIList	gc.h	/^    std::list<TurretInstance> turretIList;$/;"	m	class:gc
 turretInstanceId	gc.cpp	/^int turretInstanceId = 0;$/;"	v
-turretInstances	gc.h	/^    std::list<TurretInstance> turretInstances;$/;"	m	class:gc
+updatePerformance	gc.cpp	/^void gc::updatePerformance(TurretInstance * ti, std::string perfString) {$/;"	f	class:gc
 waitingStrategy	gc.h	/^    std::list<strategy> waitingStrategy;$/;"	m	class:gc
 weight	gc.h	/^    int weight;$/;"	m	class:strategy
 ~Log	log.h	/^Log<T>::~Log()$/;"	f	class:Log

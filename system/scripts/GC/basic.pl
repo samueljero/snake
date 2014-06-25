@@ -62,6 +62,7 @@ while (<STDIN>) {
 my $weight=0;
 my @strArray;
 
+my $short = 1;
 if ($gotany == 0) {
 ### WHEN NO FEEDBACK IS GIVEN
     my $i = 0;
@@ -76,14 +77,17 @@ if ($gotany == 0) {
             push(@strArray, "$prefix WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5");
             push(@strArray, "$prefix WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5");
         }
-#       if ($i == 1) { # XXX - to keep it short
-#           last;
-#       }
+       if ($short == 1 && $i == 1) { # XXX - to keep it short
+           last;
+       }
         $i++;
     }
 
 } else {
     foreach my $line (@feedback) {
+        if ($short == 1) {
+            last;
+        }
         # pkt_cnt_Ack,client,CLOSED,3768,1
         my @tokens = split(/,/, $line);
         my $metric = $tokens[0];
@@ -140,7 +144,7 @@ sub strategyCompose {
         case (1) 
         {
             print STDERR "fine strategy for $msg,$state\n";
-            my $weight = 1;
+            my $weight = 5;
             my $prefix = "$weight:$state?$msg";
 
             my $msgType = $msgTypeRef->{$msg};

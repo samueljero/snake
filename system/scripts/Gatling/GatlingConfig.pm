@@ -7,14 +7,16 @@ use Sys::Hostname;
 package GatlingConfig;
 
 # for the global collector
-$GlobalCollectorAddr = "cloud14.cs.purdue.edu";
+$GlobalCollectorAddr = "128.10.132.182";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
-$attackModule = "StateBasedAttack";
-#$attackModule = "StateBasedExecutor";
+#$attackModule = "StateBasedAttack";
+$attackModule = "StateBasedExecutor";
 #$attackModule = "StateBasedExecutor";
 $host = Sys::Hostname::hostname(); #Get hostname
-$ListenAddr = $host;
+
+# Local address to listen for strategies. needs to be IP, not hostname.
+$ListenAddr = "128.10.132.182";
 $ListenPort = 9992;
 
 
@@ -47,23 +49,38 @@ $learning_threashold = 2;
 $start_attack = 1;
 $server_command = "./counter.pl | ~/logcollector.pl";
 $client_command = "./counter.pl | ~/logcollector.pl ";
-$serverList = "pssh_servers.txt";
-$clientList = "pssh_clients.txt";
-$allList = "pssh_all.txt";
+#$serverList = "pssh_servers.txt";
+#$clientList = "pssh_clients.txt";
+#$allList = "pssh_all.txt";
+
+# HYO: changed pssh to strings for easier management
+$serverListString = "";
+$clientListString = "";
+$allListString = "";
+$baseIP = "10.1.1";
+
+push (@clientNumbers, 1);
+push (@clientNumbers, 2);
+
+push (@serverNumbers, 3);
+push (@serverNumbers, 4);
+
 my $host = Sys::Hostname::hostname();
 print STDERR "hostname: $host\n";
 if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
-    $serverList = "pssh_servers0.txt";
-    $clientList = "pssh_clients0.txt";
-    $allList = "pssh_all0.txt";
+    $baseIP = "10.0.1";
 }
 $s_parallel = 4;
 $c_parallel = 1;
-$num_vms = 8;
+$num_vms = 4;
 $runTime = 2000000;
 $waitTime = 0;
 $watchPort = " ";
-$mal = " -mal 0 ";
+
+@malNumbers;
+push (@malNumbers, 0);
+$malString = "";
+
 $timeLog = "timing.txt";
 $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
@@ -86,18 +103,18 @@ sub prepare()
 
 sub runSystem()
 {
-	print STDERR ("pssh -p $s_parallel -h $serverList \"pkill server\"\n");
-	system("pssh -p $s_parallel -h $serverList \"pkill server\"");
-	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
+	print STDERR ("pssh -p $s_parallel $serverListString \"pkill server\"\n");
+	system("pssh -p $s_parallel $serverListString \"pkill server\"");
+	system("pssh -p $c_parallel $clientListString \"pkill client\"");
 	print STDERR "About to execute server command: $server_command\n";
-	system("pssh -p $s_parallel -h $serverList -t $runTime \"$server_command\"  &");
+	system("pssh -p $s_parallel $serverListString -t $runTime \"$server_command\"  &");
 }
 
 sub runClient()
 {
 	print  STDERR "About to execute client command: $client_command\n";
-	system("pssh -p $c_parallel -h $clientList \"pkill client\"");
-	system("pssh -p $c_parallel -h $clientList -t $runTime \"$client_command &\" &");
+	system("pssh -p $c_parallel $clientListString \"pkill client\"");
+	system("pssh -p $c_parallel $clientListString -t $runTime \"$client_command &\" &");
 }
 
 sub setSystem() 
@@ -123,6 +140,7 @@ sub setSystem()
   	systemDCCP();
   }
   system("$setupCommand");
+  makeNS3Com();
 }
 
 sub systemBFT()
@@ -130,16 +148,24 @@ sub systemBFT()
   $formatFile = "$format_dir/bft.format";
   $server_command = "cd /root/BFT/bin; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
   $client_command = "cd /root/BFT/bin; stdbuf -i 0 -o 0 ./run_client.sh | ~/perfcollector.pl ";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
+  undef(@serverNumbers);
+  push (@serverNumbers, 1);
+  push (@serverNumbers, 2);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  #$serverListString = "pssh_servers.txt";
+  undef(@clientNumbers);
+  push (@clientNumbers, 5);
+  #$clientList = "pssh_clients.txt";
   #$s_parallel = 7;
   $s_parallel = 4;
   $c_parallel = 1;
   #$num_vms = 8;
   $num_vms = 5;
   $runTime = 100000;
-  #$mal = " -mal 0 -mal 1 ";
-  $mal = " -mal 0 ";
+  undef(@malNumbers);
+  push (@malNumbers, 0);
+
   $watchPort = " -port 3669 ";
   $alreadyLearned = "BFT/pre_learned.txt";
   $prePerf = "BFT/pre_perf.txt";
@@ -156,15 +182,21 @@ sub systemPrime()
   $setupCommand = "mkdir Prime";
   $server_command = "cd /root/Prime/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
   $client_command = "cd /root/Prime/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
+  undef(@serverNumbers);
+  push (@serverNumbers, 1);
+  push (@serverNumbers, 2);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  #$serverListString = "pssh_servers.txt";
+  undef(@clientNumbers);
+  push (@clientNumbers, 5);
   $s_parallel = 4;
   $c_parallel = 1;
   $runTime = 100;
   #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
   $watchPort = " -port 7200 -port 7250 -port 7300 ";
-  $mal = " -mal 1 ";
-  #$mal = " -mal 0  -mal 1";
+  undef(@malNumbers);
+  push (@malNumbers, 1);
   $alreadyLearned = "Prime/pre_learned.txt";
   $prePerf = "Prime/pre_perf.txt";
   $perfMeasured = "Prime/perf.txt";
@@ -180,15 +212,21 @@ sub systemPrime_bug()
   $setupCommand = "mkdir Prime_bug; cp pre_learn* Prime_bug;";
   $server_command = "cd /root/Prime_bug/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
   $client_command = "cd /root/Prime_bug/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
+  undef(@serverNumbers);
+  push (@serverNumbers, 1);
+  push (@serverNumbers, 2);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  #$serverListString = "pssh_servers.txt";
+  undef(@clientNumbers);
+  push (@clientNumbers, 5);
   $s_parallel = 4;
   $c_parallel = 1;
   $runTime = 100;
   #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
   $watchPort = " -port 7200 -port 7250 -port 7300 ";
-  $mal = " -mal 0 ";
-  #$mal = " -mal 0  -mal 1";
+  undef(@malNumbers);
+  push (@malNumbers, 0);
   $alreadyLearned = "Prime_bug/pre_learned.txt";
   $prePerf = "Prime_bug/pre_perf.txt";
   $perfMeasured = "Prime_bug/perf.txt";
@@ -208,15 +246,23 @@ sub systemSteward()
   $setupCommand = "mkdir Steward";
   $server_command = "cd /root/Steward/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
   $client_command = "cd /root/Steward/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
+  undef(@serverNumbers);
+  push (@serverNumbers, 1);
+  push (@serverNumbers, 2);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  #$serverListString = "pssh_servers.txt";
+  undef(@clientNumbers);
+  push (@clientNumbers, 5);
   $s_parallel = 12;
   $c_parallel = 1;
   $runTime = 100;
   $watchPort = " -port 100 ";
-  #$mal = " -mal 0 -mal 4 -mal 8 ";
-  $mal = " -mal 1 -mal 5 -mal 9 ";
-  #$mal = " -mal 0  -mal 1";
+
+  undef(@malNumbers);
+  push (@malNumbers, 1);
+  push (@malNumbers, 5);
+  push (@malNumbers, 9);
   $alreadyLearned = "Steward/pre_learned.txt";
   $prePerf = "Steward/pre_perf.txt";
   $perfMeasured = "Steward/perf.txt";
@@ -229,18 +275,20 @@ sub systemTCP()
   $setupCommand = "mkdir TCP";
   $server_command = "";
   $client_command = "/root/TCP/client.sh";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
-  if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
-      $serverList = "pssh_servers0.txt";
-      $clientList = "pssh_clients0.txt";
-  }
+  undef(@serverNumbers);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  #$serverListString = "pssh_servers.txt";
+  undef(@clientNumbers);
+  push (@clientNumbers, 1);
+  push (@clientNumbers, 2);
   print STDERR "using $serverList $host\n";
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
-  $watchPort = " -port 80";
-  $mal = " -mal 0 ";
+  $watchPort = " -tcp_port 80 -port 80";
+  undef(@malNumbers);
+  push (@malNumbers, 0);
   $alreadyLearned = "TCP/pre_learned.txt";
   $prePerf = "TCP/pre_perf.txt";
   $perfMeasured = "TCP/perf.txt";
@@ -262,18 +310,18 @@ sub systemDCCP()
   $setupCommand = "mkdir DCCP";
   $server_command = "";
   $client_command = "/root/DCCP/client.sh";
-  $serverList = "pssh_servers.txt";
-  $clientList = "pssh_clients.txt";
-  if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) {
-      $serverList = "pssh_servers0.txt";
-      $clientList = "pssh_clients0.txt";
-  }
-  print  STDERR "using $serverList $host\n";
+  undef(@serverNumbers);
+  push (@serverNumbers, 3);
+  push (@serverNumbers, 4);
+  undef(@clientNumbers);
+  push (@clientNumbers, 1);
+  push (@clientNumbers, 2);
   $runTime = 90;
   $window_size=70;
   $waitTime = 60;
   $watchPort = " -port 80";
-  $mal = " -mal 0 ";
+  undef(@malNumbers);
+  push (@malNumbers, 0);
   $alreadyLearned = "DCCP/pre_learned.txt";
   $prePerf = "DCCP/pre_perf.txt";
   $perfMeasured = "DCCP/perf.txt";
@@ -288,6 +336,47 @@ sub systemDCCP()
   $statediagramFile = "$format_dir/dccp.dot";
   $serverhavessh=1;
   $useGlobal=1;
+}
+
+# XXX : check if these are really used and change it 
+# HYO: moved from StateBaseExecutor
+$ServerIP = "10.1.2.3";
+$hostserverip=$ServerIP;
+if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
+	$hostserverip = "10.0.1.3";
+}elsif ($host =~ /^cloud15/ ){
+	$hostserverip = $ServerIP;
+}
+
+
+# CHANGE IN IP_BASE and TAP_BASE: need change in malproxy
+$IP_base = "10.1.2";
+#$watchPort = " -port 80";
+$offset = 0;
+
+sub formPsshStrings {
+    foreach my $i (@serverNumbers) {
+        $i = $i + $offset;
+        $serverListString .= " --host=root\@$baseIP.$i";
+        $allListString .= " --host=root\@$baseIP.$i";
+    }
+    foreach my $i (@clientNumbers) {
+        $i = $i + $offset;
+        $clientListString .= " --host=root\@$baseIP.$i";
+        $allListString .= " --host=root\@$baseIP.$i";
+    }
+    foreach my $i (@malNumbers) {
+        $i = $i;# + $offset;
+        $malString .= " -mal $i";
+    }
+   
+}
+
+sub makeNS3Com {
+    formPsshStrings();
+    $NS3_command = "./run_command.sh \"malproxy_simple $malString -num_vms $num_vms -ip_base $IP_base -tap_base tap-ns $watchPort -offset $offset -runtime $runTime\"";
+    $ListenPort = $ListenPort + $offset;
+    print  STDERR "using $serverListString $host\n";
 }
 
 1;

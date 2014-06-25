@@ -13,19 +13,16 @@ use Sys::Hostname;
 my $host = Sys::Hostname::hostname(); #Get hostname
 
 #Attack topology/connection details
-my $serverip = "10.1.2.3";
-my $hostserverip=$serverip;
-if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
-	$hostserverip = "10.0.1.3";
-}elsif ($host =~ /^cloud15/ ){
-	$hostserverip = $serverip;
-}
-my $clientip = "10.1.2.2";
-my $malip = "10.1.2.1";
-my $clientport= 5555;
-my $serverport= 80;
-my $malport = 5556;
-my $defaultwindow=20000;
+
+my $serverip = $GatlingConfig::ServerIP;
+my $hostserverip = $GatlingConfig::hostserverip;
+# below not used
+#my $clientip = "10.1.2.2";
+#my $malip = "10.1.2.1";
+#my $clientport= 5555;
+#my $serverport= 80;
+#my $malport = 5556;
+#my $defaultwindow=20000;
 
 
 my $fieldsPerMsgRef 	= MsgParse::parseMessage();
@@ -151,7 +148,7 @@ sub strategyListener {
         $sock->recv($line, 1024);
         chop($line);
         push (@WaitingStrategyList, $line);
-        if ($line =~ "stop") {
+        if ($line =~ "STOP") {
             $quit = 1;
             last;
         }
@@ -192,12 +189,11 @@ sub start {
             #Setup VMs/NS-3	
             #Utils::killVMs();
             print "3 seconds later, VMs will be loaded\n";
-            sleep(3);
+            sleep(1);
             #Utils::restoreVMs(-1);
             $GatlingConfig::watch_ns3=1;
-            my $ns3_thr = threads->create( 'ns3_thread',
-                    "./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms $GatlingConfig::num_vms -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\""
-                    );
+            my $ns3_thr = threads->create( 'ns3_thread', $GatlingConfig::NS3_command);
+                    #"./run_command.sh \"malproxy_simple $GatlingConfig::mal -num_vms $GatlingConfig::num_vms -ip_base 10.1.2 -tap_base tap-ns $GatlingConfig::watchPort -runtime $GatlingConfig::runTime\"");
             sleep ($GatlingConfig::start_attack);
             if($GatlingConfig::watch_ns3==0){
                 print "PANIC: NS-3 didn't start!!\n";
@@ -229,17 +225,20 @@ sub start {
             $command = "C GatlingSendStateStats";
             Utils::logTime("command $command");
             my $statstr=Utils::directTopology($command);
-            print "Got StateStats: $statstr\n";
+            print STDERR "Got StateStats: after $command --> $statstr\n";
             my %db=Utils::makeMetricDB($statstr);
 
             #Wait for system to normally close resources... i.e. TIMEWAIT
+            print STDERR "sleep for $GatlingConfig::waitTime\n";
             sleep($GatlingConfig::waitTime);
             while($GatlingConfig::watch_ns3 !=0){
+                print STDERR "sleep until ns3 done\n";
                 sleep(1);
             }
 
             #Measure perf
             my $perfscore = Utils::getPerfScore();
+            print STDERR "PerfScore $perfscore\n";
             Utils::resetPerfScore();
 
             #Measure Resource Utilization
@@ -263,19 +262,20 @@ sub start {
                     foreach my $metric (keys %{$db{$host}}){
                         foreach my $state (keys %{$db{$host}{$metric}}){
                             print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
-                            Utils::reportGC("info:metric:$metric,$host,$state,$db{$host}{$metric}{$state}");
+                            Utils::reportGC("info:$metric,$host,$state:$db{$host}{$metric}{$state}");
                         }
                     }
                 }
             }
+            Utils::reportGC("info:end");
             $idx_str++;
         }
         else {
             print "no strategy in the queue.";
             print " waiting at $GatlingConfig::ListenAddr:$GatlingConfig::ListenPort ... $#WaitingStrategyList\n";
             # TODO wait signal (otherwise it will be busy waiting)
-            sleep 1;
             Utils::reportGC("ready");
+            sleep 1;
         }
     }
 

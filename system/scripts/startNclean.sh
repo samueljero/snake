@@ -1,6 +1,12 @@
 #!/bin/bash
-./kvm_scripts/CloneManager.pl start 1 4
-./kvm_scripts/SnapshotManager.pl resume 1 4
+
+OFFSET="offset 0"
+if [ $# -gt 1 ]
+then
+OFFSET="$1 $2"
+fi
+./kvm_scripts/CloneManager.pl start 1 4 $OFFSET
+./kvm_scripts/SnapshotManager.pl resume 1 4 $OFFSET
 echo "Waiting for VMs to start..."
 sleep 30
 echo "killing server"

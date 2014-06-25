@@ -24,33 +24,45 @@ no warnings 'once';
 
 $GatlingConfig::systemname = "TCP";
 if ( $#ARGV != -1 ) {
-	$GatlingConfig::systemname = $ARGV[0];
+    if (not $ARGV[0] =~ /-/) {
+        $GatlingConfig::systemname = $ARGV[0];
+    }
 }
-print "Target system name: $GatlingConfig::systemname\n";
+
+for (my $i = 0; $i < $#ARGV; $i++) {
+    if ($ARGV[$i] =~ "-offset") {
+        $GatlingConfig::offset = $ARGV[$i+1];
+    }
+    if ($ARGV[$i] =~ "-special") {
+        $GatlingConfig::specialVMoption = "-special $ARGV[$i+1]";
+    }
+}
+
+print "Target system name: $GatlingConfig::systemname offset: $GatlingConfig::offset\n";
 
 Utils::useKVM();
 GatlingConfig::setSystem();
 share($GatlingConfig::watch_ns3);
 share($GatlingConfig::watch_turret);
 
-if ($GatlingConfig::attackModule eq "GreedyAttack") {
-    require GreedyAttack
-}
-if ($GatlingConfig::attackModule eq "StateBasedAttack") {
-    require StateBasedAttack;
-}
-if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
-    require StateBasedExecutor;
-}
-
 #Start VMs
-#system("./startNclean.sh");
+system("./startNclean.sh offset $GatlingConfig::offset");
 
 #Initialize Turret system
 GatlingConfig::movePrevPerf();
 GatlingConfig::prepare();
 
-#Do Attack
-#GreedyAttack::start();
-StateBasedAttack::start();
+if ($GatlingConfig::attackModule eq "GreedyAttack") {
+    require GreedyAttack;
+    GreedyAttack::start();
+}
+if ($GatlingConfig::attackModule eq "StateBasedAttack") {
+    require StateBasedAttack;
+    StateBasedAttack::start();
+}
+if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
+    require StateBasedExecutor;
+    StateBasedExecutor::start();
+}
+
 exit;

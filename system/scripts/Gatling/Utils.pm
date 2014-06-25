@@ -30,7 +30,7 @@ sub reportGC
     my $sock = new IO::Socket::INET->new( PeerAddr => $GatlingConfig::GlobalCollectorAddr,
             PeerPort => $GatlingConfig::GlobalCollectorPort,
             Proto => 'tcp');
-    die "Could not create socket to connect NS3: $!\n" unless $sock;
+    die "Could not create socket to ctrl connect NS3: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
     print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort:$msg";
     if ($toread == 1) {
         while(my $tmp=<$sock>){
@@ -64,10 +64,11 @@ sub logTime
 sub directTopology($)
 {
   my ($comm) = @_;
+  my $topoPort = 8000 + $GatlingConfig::offset;
   my $sock = new IO::Socket::INET->new( PeerAddr => '127.0.0.1',
-      PeerPort => '8000', 
+      PeerPort => $topoPort,
       Proto => 'tcp');
-  die "Could not create socket to connect NS3: $!\n" unless $sock;
+  die "Could not create topo socket to connect NS3: $topoPort $!\n" unless $sock;
   print $sock "$comm\n";
   my $tmp;
   $res="";
