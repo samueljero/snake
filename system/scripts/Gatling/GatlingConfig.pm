@@ -13,15 +13,10 @@ $GlobalCollectorPort = 9991;
 $useGlobal = 0;
 #$attackModule = "StateBasedAttack";
 $attackModule = "StateBasedExecutor";
-#$attackModule = "StateBasedExecutor";
-$host = Sys::Hostname::hostname(); #Get hostname
-
-# Local address to listen for strategies. needs to be IP, not hostname.
-$ListenAddr = "128.10.132.182";
+$host = Sys::Hostname::hostname();
 my $ip=gethostbyname($host);
 $ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
-
 
 ## Configurations
 #pick VM env
@@ -61,6 +56,8 @@ print STDERR "hostname: $host\n";
 if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
     $baseIP = "10.0.1";
 }
+$NS3_IP_base="10.1.2";
+$offset=0;
 $s_parallel = 4;
 $c_parallel = 1;
 $num_vms = 4;
@@ -348,7 +345,7 @@ sub formPsshStrings {
 
 sub makeNS3Com {
     formPsshStrings();
-    $NS3_command = "./run_command.sh \"malproxy_simple $malString -num_vms $num_vms -ip_base $IP_base -tap_base tap-ns $watchPort -offset $offset -runtime $runTime\"";
+    $NS3_command = "./run_command.sh \"malproxy_simple $malString -num_vms $num_vms -ip_base $NS3_IP_base -tap_base tap-ns $watchPort -offset $offset -runtime $runTime\"";
     $ListenPort = $ListenPort + $offset;
     print  STDERR "using $serverListString $host\n";
 }
