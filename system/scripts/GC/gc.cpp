@@ -133,7 +133,7 @@ void gc::reportCollector() {
                         std::string feedback_line = key;
                         feedback_line += ",";
                         feedback_line += value;
-                        feedback_line += "," + std::to_string(prev_feedback[key]);
+                        feedback_line += "," + std::to_string((long long)prev_feedback[key]);
                         feedback_line += "\n";
 
                         feedback.push_back(feedback_line);
