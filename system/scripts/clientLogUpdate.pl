@@ -107,6 +107,17 @@ sub TCP_Perf{
 	close SCORE;
 }
 
+sub DCCP_Perf{
+	my $eachline = shift;
+	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
+	my @cnt= $eachline =~ qr/\[ +([0-9]+)\] +([0-9\.]+- *[0-9\.]+) sec +([0-9\.]+) KBytes + ([0-9\.]+) Kbits\/sec/;
+	if (@cnt) {
+		print SCORE "$cnt[2]\n";
+		print "PERF: $cnt[2]\n";
+	}
+	close SCORE;
+}
+
 while (1) 
 {
     #my $sock = $socket->accept();
@@ -123,5 +134,6 @@ while (1)
         #BFTPerf($eachline);
         #StewardPerf($eachline);
         TCP_Perf($eachline);
+        #DCCP_Perf($eachline);
     }
 }
