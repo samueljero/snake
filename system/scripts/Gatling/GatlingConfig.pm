@@ -101,7 +101,10 @@ sub prepare()
   system("pkill serverLog");
   system("pkill clientLog");
   system("screen -S serverLog -p 0 -X stuff '\ncd $basedir/..;\n./serverLog.pl\n'");
-  system("screen -S serverLog -p 1 -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl\n'");
+  system("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
+  print("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
+  #system("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
+  #print("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
 }
 
 sub runSystem()
@@ -277,7 +280,7 @@ sub systemTCP()
 {
   $setupCommand = "mkdir TCP";
   $server_command = "";
-  $client_command = "/root/TCP/client.sh";
+  $client_command = "/root/TCP/client.sh $offset";
   undef(@serverNumbers);
   push (@serverNumbers, 3);
   push (@serverNumbers, 4);
@@ -379,6 +382,7 @@ sub makeNS3Com {
     formPsshStrings();
     $NS3_command = "./run_command.sh \"malproxy_simple $malString -num_vms $num_vms -ip_base $IP_base -tap_base tap-ns $watchPort -offset $offset -runtime $runTime\"";
     $ListenPort = $ListenPort + $offset;
+    $scoreFile = "$basedir/score_$offset.client";
     print  STDERR "using $serverListString $host\n";
 }
 

@@ -9,19 +9,27 @@ use Scalar::Util qw(looks_like_number);
 use lib ("./Gatling/");
 require GatlingConfig;
 
+for (my $i = 0; $i < $#ARGV; $i++) {
+    if ($ARGV[$i] =~ "-offset") {
+        $GatlingConfig::offset = $ARGV[$i+1];
+    }
+}
+my $socknumber = 7779 + $GatlingConfig::offset;
+
+
+
 my $socket = new IO::Socket::INET (
 		LocalHost => '10.0.0.1',
-		LocalPort => '7779',
+		LocalPort => $socknumber,
 		Proto => 'udp',
 		#Listen => 50,
 		#Reuse => 1
 		) or die "Error in Socket Creation for perfMonitor : $!\n";
 
-
 open (PERFFILE, ">$GatlingConfig::scoreFile");
 print PERFFILE "0\n";
 close (PERFFILE);
-print "perfMonitor listens on port 7779\n";
+print "perfMonitor listens on port $socknumber\n";
 
 my $line;
 my $next = 0;
@@ -92,27 +100,28 @@ sub Prime_bugPerf {
 sub TCP_Perf{
 	my $eachline = shift;
 	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
+    print STDERR "line: $eachline\n";
 	my $cnt= $eachline =~ tr/.//;
 	print SCORE "$cnt\n";
-	print "PERF: $cnt\n";
+    STDOUT->printflush("PERF: $cnt\n");
 	close SCORE;
 }
 
 while (1) 
 {
-	#my $sock = $socket->accept();
-	$socket->recv($line, 1024);
-	#chop($line);
-	$tmp = $tmp + 1;
-	if ($tmp % 10 == 1) {
-		system("date");
-	}
-	my @lines = split /\n/, $line;
-  foreach my $eachline (@lines) {
-    #Prime_bugPerf($eachline);
-    #PrimePerf($eachline);
-    #BFTPerf($eachline);
-    #StewardPerf($eachline);
-    TCP_Perf($eachline);
-  }
+    #my $sock = $socket->accept();
+    $socket->recv($line, 1024);
+    #chop($line);
+    $tmp = $tmp + 1;
+    if ($tmp % 10 == 1) {
+        system("date");
+    }
+    my @lines = split /\n/, $line;
+    foreach my $eachline (@lines) {
+        #Prime_bugPerf($eachline);
+        #PrimePerf($eachline);
+        #BFTPerf($eachline);
+        #StewardPerf($eachline);
+        TCP_Perf($eachline);
+    }
 }
