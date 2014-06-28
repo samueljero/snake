@@ -1311,7 +1311,7 @@ int TapBridge::MaliciousProcess
         }else {
         	uint8_t *msg = packet->PeekDataForMal();
 			Message *m = new Message(msg);
-			m->DoChecksum(ipHeader.GetPayloadSize(),ipsource,ipdest,TcpL4Protocol::PROT_NUMBER);
+			m->DoChecksum(ipHeader.GetPayloadSize(),ipsource,ipdest,proxy->IPprotoNum());
         }
 		Ipv4Header ipHeadernew = ipHeader;
 		ipHeadernew.EnableChecksum();

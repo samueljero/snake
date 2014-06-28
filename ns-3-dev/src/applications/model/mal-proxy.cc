@@ -826,7 +826,7 @@ int MalProxy::MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloption
 #endif
 
 	/*Debug output to display packet*/
-	//std::cout << ntohs(((BaseMessage*) m->msg)->src) << "-->"<< ntohs(((BaseMessage*) m->msg)->dest) << std::endl;
+	//std::cout << ntohs(((BaseMessage*) m->msg)->SOURCE_PORT_FIELD) << "-->"<< ntohs(((BaseMessage*) m->msg)->DEST_PORT_FIELD) << std::endl;
 	//std::cout << "Type: " << m->FindMsgType() << " (" << m->TypeToStr(m->FindMsgType()) << ")" << std::endl;
 	//std::cout << "Size: " << m->FindMsgSize() << std::endl;
 

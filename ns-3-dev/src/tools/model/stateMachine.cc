@@ -139,11 +139,11 @@ namespace ns3 {
                 // and cover both send == -1 , rcvd == -1 cases
                 return t;
             }
-            if (t->m_rcvdType == rcvd && t->m_sendType > 0 && rcvd != -1) {
+            if (t->m_rcvdType == rcvd && t->m_sendType >= 0 && rcvd != -1) {
                 // cache it
                 m_cachedRcvdMsg = rcvd;
             }
-            if (m_cachedRcvdMsg > 0 && t->m_rcvdType == m_cachedRcvdMsg && t->m_sendType == send) {
+            if (m_cachedRcvdMsg >= 0 && t->m_rcvdType == m_cachedRcvdMsg && t->m_sendType == send) {
                 // rule match the the cached rcvd
                 m_cachedRcvdMsg = -1;
                 return t;

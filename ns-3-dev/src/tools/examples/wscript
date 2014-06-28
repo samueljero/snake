@@ -8,5 +8,5 @@ def build(bld):
     obj.source = 'gnuplot-example.cc'
 
 
-    obj = bld.create_ns3_program('dotParser-example', ['tools'])
+    obj = bld.create_ns3_program('dotParser-example', ['tools', 'applications'])
     obj.source = 'dotParser-example.cc'
