@@ -288,7 +288,7 @@ sub systemDCCP()
 {
   $setupCommand = "mkdir DCCP";
   $server_command = "/root/DCCP/server.sh &";
-  $client_command = "/root/DCCP/client.sh";
+  $client_command = "/root/DCCP/client.sh $offset";
   undef(@serverNumbers);
   push (@serverNumbers, 3);
   push (@serverNumbers, 4);
