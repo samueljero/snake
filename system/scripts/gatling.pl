@@ -16,7 +16,6 @@ use threads (
 use threads::shared;
 use lib ("./Gatling/");
 
-require MsgParse;
 require Utils;
 require GatlingConfig;
 
@@ -47,7 +46,6 @@ share($GatlingConfig::watch_turret);
 
 #Start VMs
 system("./startNclean.sh offset $GatlingConfig::offset");
-#./startNclean.sh
 
 #Initialize Turret system
 GatlingConfig::movePrevPerf();
@@ -61,8 +59,8 @@ if ($GatlingConfig::attackModule eq "StateBasedAttack") {
     require StateBasedAttack;
     StateBasedAttack::start();
 }
-if ($GatlingConfig::attackModule eq "StateBasedExecutor") {
-    require StateBasedExecutor;
-    StateBasedExecutor::start();
+if ($GatlingConfig::attackModule eq  "Executor") {
+    require Executor;
+    Executor::start();
 }
 exit;
