@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 ########################
 # STATELESS ATTACKS
@@ -7,29 +7,19 @@
 use strict;
 use POSIX;
 use Switch;
-my $str = "";
 
-######################
-# Some static setting - make it configurable later
-######################
-my $clientip = "10.1.2.2";
-my $serverip = "10.1.2.3";
-my $malip = "10.1.2.1";
-my $clientport= 5555;
-my $serverport= 80;
-my $malport = 5556;
-my $defaultwindow=20000;
+my $system = "TCP";
 
 ######################
 # LOAD MSG TYPES
 ######################
 
 use lib ("../Gatling/");
-#require MsgParse;
 require Strategy;
 require GatlingConfig;
 
-GatlingConfig::systemTCP();
+$GatlingConfig::systemname = $system;
+GatlingConfig::setSystem();
 my $fieldsPerMsgRef 	= Strategy::parseMessage();
 my $msgTypeRef      	= Strategy::getMsgTypeRef();
 my $msgNameRef = Strategy::getMsgNameRes();
@@ -41,10 +31,6 @@ my $fieldRef = Strategy::getFlenList();
 # for each types (e.g. int8_t, bool, etc.)
 my $coarseStrategyRef = Strategy::getCoarseStrategyList();
 my $fineStrategyRef = Strategy::getFineStrategyList();
-
-foreach my $arg (@ARGV) {
-    $str .= "$arg";
-}
 
 my @feedback;
 my $gotany = 0;
@@ -72,10 +58,10 @@ if ($gotany == 0) {
             push (@strArray, "$prefix NONE 0");
             $weight++;
         } else {
-            push(@strArray, "$prefix INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow");
-            push(@strArray, "$prefix INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow");
-            push(@strArray, "$prefix WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5");
-            push(@strArray, "$prefix WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5");
+            push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow");
+            push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=111 5=5 10=$GatlingConfig::defaultwindow");
+            push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip $GatlingConfig::clientport $GatlingConfig::serverport 5");
+            push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip $GatlingConfig::serverport $GatlingConfig::clientport 5");
         }
        if ($short == 1 && $i == 1) { # XXX - to keep it short
            last;

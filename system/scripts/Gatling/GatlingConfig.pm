@@ -7,7 +7,7 @@ use Socket;
 
 package GatlingConfig;
 
-# for the global collector
+## Global collector
 $GlobalCollectorAddr = "128.10.132.182";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
@@ -18,14 +18,13 @@ my $ip=gethostbyname($host);
 $ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
 
-## Configurations
+## VM Configurations
 #pick VM env
 $VM = "KVM";
 #$VM = "XEN";
-
 $basedir = Cwd::abs_path(File::Basename::dirname(__FILE__));
 
-## if NS3 is started already, set 0
+## Implementation Settings
 $exit_when_break = 0;
 $systemname = "";
 $startNS3 = 1;
@@ -34,14 +33,18 @@ $watch_ns3 = 1;
 $watch_turret = 1;
 $brokenPerf = 9999;
 $debug = 1;
+$start_attack = 1;
+$learning_threashold = 2;
+
+## Protocol Settings
 $formatFile = "";
 $scoreFile = "$basedir/score.client";
 $tmpFile = "$basedir/tmp";
 $format_dir = "$basedir/../../messages";
 $statediagramFile = "diagram.dot";
+
+##Testing Settings
 $window_size = 7;
-$learning_threashold = 2;
-$start_attack = 1;
 $server_command = "./counter.pl | ~/logcollector.pl";
 $client_command = "./counter.pl | ~/logcollector.pl ";
 $serverListString = "";
@@ -67,13 +70,24 @@ $watchPort = " ";
 @malNumbers;
 push (@malNumbers, 0);
 $malString = "";
+$serverhavessh = 1;
+$setupCommand = "";
+
+##NS-3 Intercept Settings
+$clientip = "10.1.2.2";
+$serverip = "10.1.2.3";
+$malip = "10.1.2.1";
+$clientport= 5555;
+$serverport= 80;
+$malport = 5556;
+$defaultwindow=20000;
+
+#Logging Settings
 $timeLog = "timing.txt";
 $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
 $perfMeasured = "perfMeasured.txt";
 $newlyLearned = "new_learned.txt";
-$serverhavessh = 1;
-$setupCommand = "";
 
 sub changeServerCommand($@) {
 	$server_command = $_[0];
@@ -281,6 +295,13 @@ sub systemTCP()
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
+  $clientip = "10.1.2.2";
+  $serverip = "10.1.2.3";
+  $malip = "10.1.2.1";
+  $clientport= 5555;
+  $serverport= 80;
+  $malport = 5556;
+  $defaultwindow=20000;
   $useGlobal=1;
 }
 
@@ -315,6 +336,13 @@ sub systemDCCP()
   $statediagramFile = "$format_dir/dccp.dot";
   $serverhavessh=1;
   $useGlobal=1;
+  $clientip = "10.1.2.2";
+  $serverip = "10.1.2.3";
+  $malip = "10.1.2.1";
+  $clientport= 5050;
+  $serverport= 5001;
+  $malport = 5050;
+  $defaultwindow=20000;
 }
 
 # XXX : check if these are really used and change it 
