@@ -97,11 +97,9 @@ sub prepare()
 {
   system("pkill serverLog");
   system("pkill clientLog");
-  system("screen -S serverLog -p 0 -X stuff '\ncd $basedir/..;\n./serverLog.pl\n'");
-  system("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
-  print("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
-  #system("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
-  #print("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
+  #system("screen -S serverLog -p 0 -X stuff '\ncd $basedir/..;\n./serverLog.pl\n'");
+  system("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > ./client$offset.log &");
+  print("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > ./client$offset.log &");
 }
 
 sub runSystem()
