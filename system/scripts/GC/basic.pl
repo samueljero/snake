@@ -42,7 +42,6 @@ while (<STDIN>) {
     }
     push (@feedback, $line);
     $gotany = 1;
-    print STDERR "got from stdin: $line-----------\n";
 }
 
 my $weight=0;
@@ -104,7 +103,7 @@ sub strategyCompose {
     switch ($level) {
         case (0)
         {
-            print STDERR "coarse strategy for $msg,$state\n";
+            print STDERR "Selecting Coarse Strategy for $msg,$state\n";
             my $weight = 1;
             my $prefix = "$weight:$state?$msg";
 
@@ -129,7 +128,7 @@ sub strategyCompose {
         }
         case (1) 
         {
-            print STDERR "fine strategy for $msg,$state\n";
+            print STDERR "Selecting Fine Strategy for $msg,$state\n";
             my $weight = 5;
             my $prefix = "$weight:$state?$msg";
 
@@ -147,7 +146,7 @@ sub strategyCompose {
         }
         # default
         {
-            print STDERR "already exercised $msg,$state\n";
+            print STDERR "Already Exercised $msg,$state\n";
         }
     }
 }

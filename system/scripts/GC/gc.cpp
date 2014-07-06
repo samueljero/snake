@@ -178,7 +178,7 @@ void gc::reportCollector() {
                 if (startsWith(msg, "ready") == 0) { 
                     // add new turret instance
                     TurretInstance ti_new = TurretInstance(&dest, port, TurretInstance::ready);
-                    LOG(DEBUG) << " new turret instance added: " << inet_ntoa(dest.sin_addr) << ":" << ntohs(dest.sin_port) <<" id" << ti_new.id;
+                    LOG(INFO) << "New Turret Instance Added: " << inet_ntoa(dest.sin_addr) << ":" << ntohs(dest.sin_port) <<"   ID: " << ti_new.id;
                     turretIList.push_front(ti_new);
                     pthread_cond_signal(&distributor_cond);
                 }
@@ -191,7 +191,7 @@ void gc::reportCollector() {
             while (len-len2 > 0) {
                  int cur = write(sock, buff + len2, len - len2);
                  if (cur <= 0) {
-                     LOG(INFO) << "Fail to write to " << inet_ntoa(dest.sin_addr);
+                     LOG(DEBUG) << "Fail to write to " << inet_ntoa(dest.sin_addr);
                      break;
                  }
                  len2 += cur;
@@ -227,7 +227,7 @@ void gc::strategyComposer() {
             performanceResult.pop();
             expanding = true;
             //pthread_mutex_unlock(&strategy_mutex);
-
+            LOG(INFO) << "Looking for more Strategies...";
             executePipeToFillWaitingStrategy(line);
 
             //pthread_mutex_lock(&strategy_mutex);
@@ -405,6 +405,7 @@ void gc::distributor() {
             ti->setCurStrategy(nextStr);
             ti->sendMessage(ti->curStrategy->content.c_str(), strlen(ti->curStrategy->content.c_str()));
             ti->status = TurretInstance::Status::running;
+	    LOG(INFO) << "Sending Strategy to be Run on ID " << ti->id << ": " << nextStr.content;
             // XXX send the strategy to the instance
 
             pthread_cond_signal(&distributor_cond);
@@ -418,7 +419,7 @@ void gc::updatePerformance(TurretInstance * ti, std::string perfString) {
     // XXX what if there's status mismatch?
     // update the strategy finished
     // signal appropriate threads and update this instance ready
-    LOG(DEBUG) << "performanceResult added - ti: " << ti->id << " perf: " << perfString << " size: " << performanceResult.size();
+    LOG(INFO) << "Received Performance Score from ID " << ti->id << ": " << perfString;
     performanceResult.push(perfString);
 }
 
@@ -432,7 +433,7 @@ int main(int argc, char **argv)
     quit = 0;
 
     // LOGGING
-    FILELog::ReportingLevel() = FILELog::FromString("DEBUG");
+    FILELog::ReportingLevel() = FILELog::FromString("INFO");
 
     std::thread th_distributor(&gc::distributor, std::ref(gc_instance));
     std::thread th_strComposer(&gc::strategyComposer, std::ref(gc_instance));
