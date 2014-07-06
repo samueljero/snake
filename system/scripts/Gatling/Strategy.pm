@@ -525,8 +525,8 @@ sub getStrategyCount{
 	return \%strategyCount;
 }
 
-sub getTypeStrategyList{
-	return \%strategyList;
+sub getTypeStrategyList {
+	return \%coarseStrategyList;
 }
 
 sub getCoarseStrategyList {
