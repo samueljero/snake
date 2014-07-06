@@ -155,19 +155,3 @@ sub strategyCompose {
 foreach my $strategy (@strArray) {
     print "$strategy\n";
 }
-
-#foreach my $typename (keys %{$msgTypeRef}) {
-#    print "$typename\n";
-#}
-#
-#
-#foreach my $typename (keys %{$coarseStrategyRef}) {
-#    print "$typename\n";
-#}
-
-#foreach my $key (keys %{$fieldsPerMsgRef}) {
-#    my $arrref = $fieldsPerMsgRef->{$key};
-#    foreach my $arritem (@{$arrref}) {
-#    print "$key $arritem\n";
-#    }
-#}

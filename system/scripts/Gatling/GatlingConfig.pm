@@ -71,6 +71,7 @@ $watchPort = " ";
 push (@malNumbers, 0);
 $malString = "";
 $serverhavessh = 1;
+$NumConnsCmd = "echo t; echo t; echo t";
 $setupCommand = "";
 
 ##NS-3 Intercept Settings
@@ -95,11 +96,7 @@ sub changeServerCommand($@) {
 
 sub prepare()
 {
-  system("pkill serverLog");
-  system("pkill clientLog");
-  #system("screen -S serverLog -p 0 -X stuff '\ncd $basedir/..;\n./serverLog.pl\n'");
-  system("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > ./client$offset.log &");
-  print("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > ./client$offset.log &");
+  system("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > /dev/null &");
 }
 
 sub runSystem()
@@ -293,6 +290,7 @@ sub systemTCP()
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
+  $NumConnsCmd = "netstat --inet --inet6 -n";
   $clientip = "10.1.2.2";
   $serverip = "10.1.2.3";
   $malip = "10.1.2.1";
@@ -306,7 +304,7 @@ sub systemTCP()
 sub systemDCCP()
 {
   $setupCommand = "mkdir DCCP";
-  $server_command = "/root/DCCP/server.sh &";
+  $server_command = "/root/DCCP/server.sh $offset";
   $client_command = "/root/DCCP/client.sh $offset";
   undef(@serverNumbers);
   push (@serverNumbers, 3);
@@ -332,13 +330,14 @@ sub systemDCCP()
   $s_parallel = 2;
   $c_parallel = 2;
   $statediagramFile = "$format_dir/dccp.dot";
+  $NumConnsCmd = "echo t;echo t; ss -d";
   $serverhavessh=1;
   $useGlobal=1;
   $clientip = "10.1.2.2";
   $serverip = "10.1.2.3";
   $malip = "10.1.2.1";
   $clientport= 5050;
-  $serverport= 5001;
+  $serverport= 5002;
   $malport = 5050;
   $defaultwindow=20000;
 }

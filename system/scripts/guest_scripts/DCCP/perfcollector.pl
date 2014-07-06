@@ -27,11 +27,11 @@ my $rout;
 my $sockBase = 7779 + $offset;
 while (1) {
 	select($rout=$rin, undef, undef, undef);
-	last if eof();
+	last if eof(STDIN);
 
 	my $buffer = '';
 
-	my $sock = new IO::Socket::INET->new( PeerAddr => '10.0.0.1:$sockBase',
+	my $sock = new IO::Socket::INET->new( PeerAddr => "10.0.0.1:$sockBase",
 			#PeerPort => '7777', 
 			Proto => 'udp');
 	die "Could not create socket: $!\n" unless $sock;

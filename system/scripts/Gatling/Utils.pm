@@ -160,7 +160,7 @@ sub getPerfScore()
 sub getNumConnections
 {
 	my $host=shift;
-	system("ssh $host \"netstat --inet --inet6 -n\" > $GatlingConfig::tmpFile");
+	system("ssh $host \"$GatlingConfig::NumConnsCmd\" > $GatlingConfig::tmpFile");
 	if($GatlingConfig::debug > 0){
 		system("cat $GatlingConfig::tmpFile");
 	}
