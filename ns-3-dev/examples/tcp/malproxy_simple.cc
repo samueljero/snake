@@ -56,6 +56,8 @@ ifstream topology;
 ApplicationContainer* apps;
 map<int, int> delayMap;
 int debug = 0;
+int cmd_port = 8000;
+int offset = 0;
 
 void PopulateArpCache() {
 	Ptr<ArpCache> arp = CreateObject<ArpCache>();
@@ -168,7 +170,7 @@ void setAddressStrings(int num, char *ip_base, char* tap_base) {
 	for (i = 0; i < num; i++) {
 		sprintf(ip_addr_str, "%s.%d", ip_base, i + 1);
 		ip_addrs.push_back(string(ip_addr_str));
-		sprintf(tap_name, "%s%d", tap_base, i + 1);
+		sprintf(tap_name, "%s%d", tap_base, i + 1 + offset);
 		tap_names.push_back(string(tap_name));
 		sprintf(mac_addr, "00:00:00:02:00:%02d", i + 1);
 		mac_addresses.push_back(string(mac_addr));
@@ -209,10 +211,6 @@ void MalProxyTap(int i, char *ip_base, bool ifMalicious, char* tap_base, int run
 		terminals.Get(i)->SetMalicious();
 }
 
-#ifndef CMD_PORT
-#define CMD_PORT 8000
-#endif
-
 /*Entry point for controller commands!*/
 void commandListener(void) {
 	int sockfd, n, newsockfd, tr = 1;
@@ -228,7 +226,7 @@ void commandListener(void) {
 	bzero((char *) &serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(CMD_PORT);
+	serv_addr.sin_port = htons(cmd_port + offset);
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &tr, sizeof(int))) {
 		perror("setsockopt");
 		exit(1);
@@ -410,6 +408,9 @@ int main(int argc, char *argv[]) {
 		} else if (strcmp(argv[i], "-network") == 0) {
 			i++;
 			network = string(argv[i]);
+		} else if (strcmp(argv[i], "-offset") == 0){
+			i++;
+			offset = atoi(argv[i]);
 		}
 	}
 
@@ -541,6 +542,7 @@ int main(int argc, char *argv[]) {
 	for (set<int>::iterator it = malNodes.begin(); it != malNodes.end(); it++) {
 		NS_LOG_INFO(" mal : " << *it);
 	} NS_LOG_INFO(" number of vms : " << num_terminal); NS_LOG_INFO(" IP base : " << ip_base_str); NS_LOG_INFO(" Tap base : " << tap_base); NS_LOG_INFO(" Network : " << network);
+	NS_LOG_INFO(" Offset: "<< offset);
 	NS_LOG_INFO("APPS: " << apps->GetN());
 	NS_LOG_INFO("====================================");
 
