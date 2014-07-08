@@ -68,7 +68,7 @@ sub directTopology($)
   my $sock = new IO::Socket::INET->new( PeerAddr => '127.0.0.1',
       PeerPort => $topoPort,
       Proto => 'tcp');
-  die "Could not create topo socket to connect NS3: $topoPort $!\n" unless $sock;
+  die "Executor: Could not create socket to talk to NS3 ($topoPort): $!\n" unless $sock;
   print $sock "$comm\n";
   my $tmp;
   $res="";

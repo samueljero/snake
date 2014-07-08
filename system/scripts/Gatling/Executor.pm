@@ -110,9 +110,9 @@ sub start {
     $strListener->detach();
     prepareLogs();
 
-    #Utils::updateSnapshot(-1);
-    #Utils::pauseVMs();
-    #Utils::snapshotVMs();
+    Utils::updateSnapshot(-1);
+    Utils::pauseVMs();
+    Utils::snapshotVMs();
     Utils::reportGC("ready");
 
     # ROUTINE STARTS
@@ -123,10 +123,11 @@ sub start {
             print "Current strategy: $strategy\n";
 
             #Setup VMs/NS-3	
-            #Utils::killVMs();
+            Utils::killVMs();
             print "3 seconds later, VMs will be loaded\n";
             sleep(1);
-            #Utils::restoreVMs(-1);
+            Utils::restoreVMs(-1);
+	    sleep(3);
             $GatlingConfig::watch_ns3=1;
             my $ns3_thr = threads->create( 'ns3_thread', $GatlingConfig::NS3_command);
             sleep ($GatlingConfig::start_attack);
@@ -149,6 +150,7 @@ sub start {
             #Start clients
             print "Starting System\n";
             GatlingConfig::runSystem();
+	    sleep(1);
             GatlingConfig::runClient();
             Utils::logTime("system start");
 
