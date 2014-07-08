@@ -73,6 +73,8 @@ $malString = "";
 $serverhavessh = 1;
 $NumConnsCmd = "echo t; echo t; echo t";
 $setupCommand = "";
+my $tmp = 3 + $offset;
+$hostserverip="$baseIP.$tmp";
 
 ##NS-3 Intercept Settings
 $clientip = "10.1.2.2";
@@ -340,17 +342,6 @@ sub systemDCCP()
   $serverport= 5002;
   $malport = 5050;
   $defaultwindow=20000;
-}
-
-# XXX : check if these are really used and change it 
-# HYO: moved from StateBaseExecutor
-# sjero: Needed for strategy generation
-$ServerIP = "10.1.2.3";
-$hostserverip=$ServerIP;
-if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
-	$hostserverip = "10.0.1.3";
-}elsif ($host =~ /^cloud15/ ){
-	$hostserverip = $ServerIP;
 }
 
 sub formPsshStrings {
