@@ -48,15 +48,16 @@ share($GatlingConfig::watch_turret);
 system("./startNclean.sh offset $GatlingConfig::offset");
 
 #Initialize Turret system
-GatlingConfig::movePrevPerf();
 GatlingConfig::prepare();
 
 if ($GatlingConfig::attackModule eq "GreedyAttack") {
     require GreedyAttack;
+    GatlingConfig::movePrevPerf();
     GreedyAttack::start();
 }
 if ($GatlingConfig::attackModule eq "StateBasedAttack") {
     require StateBasedAttack;
+    GatlingConfig::movePrevPerf();
     StateBasedAttack::start();
 }
 if ($GatlingConfig::attackModule eq  "Executor") {

@@ -24,19 +24,6 @@ sub term_handler {
 }
 
 
-# in executor, we do not make local decisions
-sub prepareLogs {
-	#Prepare perfLog
-	open PERF_LOG, "+>", $GatlingConfig::perfMeasured
-	  or die "Can't create $GatlingConfig::perfMeasured $!";
-	print PERF_LOG "#Sequence,Performance,Strategy,Resources\n";
-
-	#Prepare decision log
-	open NEW_LEARNED, "+>", $GatlingConfig::newlyLearned
-	  or die "Can't create $GatlingConfig::newlyLearned $!";
-
-    # TODO if unreported logs, report to the GC
-}
 
 sub ns3_thread {
 	my @args = @_;
@@ -50,7 +37,6 @@ sub ns3_thread {
 }
 
 # strategy listener -- get strategies from the generator
-my $idx_str;
 my $quit :shared;
 
 sub reportResult {
@@ -59,9 +45,7 @@ sub reportResult {
     my $resourceusage = shift;
 
     #Print results for local monitor
-    print "===perfScore $idx_str: $perfscore for strategy $strategy used $resourceusage\n";
-    print PERF_LOG "$idx_str,$perfscore,$strategy,$resourceusage\n";
-    
+    print "===perfScore $perfscore for strategy $strategy used $resourceusage\n";
     # send the result to the server
     Utils::reportGC("perf:$strategy:$perfscore:$resourceusage");
 }
@@ -108,7 +92,6 @@ sub start {
         sleep 1;
     }
     $strListener->detach();
-    prepareLogs();
 
     Utils::updateSnapshot(-1);
     Utils::pauseVMs();
@@ -205,7 +188,6 @@ sub start {
                 }
             }
             Utils::reportGC("info:end");
-            $idx_str++;
         }
         else {
             print "no strategy in the queue.";

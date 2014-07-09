@@ -86,7 +86,7 @@ $malport = 5556;
 $defaultwindow=20000;
 
 #Logging Settings
-$timeLog = "timing.txt";
+$timeLog = "$basedir/../timing.txt";
 $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
 $perfMeasured = "perfMeasured.txt";
@@ -263,7 +263,7 @@ sub systemSteward()
 
 sub systemTCP()
 {
-  $setupCommand = "mkdir TCP";
+  $setupCommand = "mkdir $basedir/../TCP";
   $server_command = "";
   $client_command = "/root/TCP/client.sh $offset";
   undef(@serverNumbers);
@@ -279,10 +279,10 @@ sub systemTCP()
   $watchPort = " -tcp_port 80 -port 80";
   undef(@malNumbers);
   push (@malNumbers, 0);
-  $alreadyLearned = "TCP/pre_learned.txt";
-  $prePerf = "TCP/pre_perf.txt";
-  $perfMeasured = "TCP/perf.txt";
-  $newlyLearned = "TCP/new_learned.txt";
+  $alreadyLearned = "$basedir/../TCP/pre_learned.txt";
+  $prePerf = "$basedir/../TCP/pre_perf.txt";
+  $perfMeasured = "$basedir/../TCP/perf.txt";
+  $newlyLearned = "$basedir/../TCP/new_learned.txt";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
@@ -305,7 +305,7 @@ sub systemTCP()
 
 sub systemDCCP()
 {
-  $setupCommand = "mkdir DCCP";
+  $setupCommand = "mkdir $basedir/../DCCP";
   $server_command = "/root/DCCP/server.sh $offset";
   $client_command = "/root/DCCP/client.sh $offset";
   undef(@serverNumbers);
@@ -320,10 +320,10 @@ sub systemDCCP()
   undef(@malNumbers);
   push (@malNumbers, 0);
   $watchPort = " -port 5001";
-  $alreadyLearned = "DCCP/pre_learned.txt";
-  $prePerf = "DCCP/pre_perf.txt";
-  $perfMeasured = "DCCP/perf.txt";
-  $newlyLearned = "DCCP/new_learned.txt";
+  $alreadyLearned = "$basedir/../DCCP/pre_learned.txt";
+  $prePerf = "$basedir/../DCCP/pre_perf.txt";
+  $perfMeasured = "$basedir/../DCCP/perf.txt";
+  $newlyLearned = "$basedir/../DCCP/new_learned.txt";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/dccp.format";

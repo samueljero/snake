@@ -17,21 +17,26 @@ my $system = "TCP";
 use lib ("../Gatling/");
 require Strategy;
 require GatlingConfig;
+require Utils;
 
 $GatlingConfig::systemname = $system;
 GatlingConfig::setSystem();
 my $fieldsPerMsgRef 	= Strategy::parseMessage();
 my $msgTypeRef      	= Strategy::getMsgTypeRef();
 my $msgNameRef = Strategy::getMsgNameRes();
-
-# %msgFlenList - 
 my $fieldRef = Strategy::getFlenList(); 
-# my $fieldRef = Strategy::getMsgFlenList(); 
 
 # for each types (e.g. int8_t, bool, etc.)
 my $coarseStrategyRef = Strategy::getCoarseStrategyList();
 my $fineStrategyRef = Strategy::getFineStrategyList();
 
+#Get perf from cmd line
+my $perfInput="";
+foreach my $arg (@ARGV) {
+	$perfInput .= "$arg";
+}
+
+#Get other feedback from stdin
 my @feedback;
 my $gotany = 0;
 while (<STDIN>) {
@@ -44,16 +49,51 @@ while (<STDIN>) {
     $gotany = 1;
 }
 
+
+
+# Analyize our perf score, if we got one
+if(length($perfInput)> 0){
+	my $benign = getBenignPerf();
+	chomp($perfInput);
+	my @token = split(':', $perfInput);
+	if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
+		#skip
+	}else{
+		my $perf = $token[2];
+		my $strategy = $token[1];
+		my $res   = $token[3];
+		my $score = Utils::computeAttackScore($perf,$res);
+
+		#Save Perf Score
+		my $f = open PERF, "+>>", $GatlingConfig::perfMeasured;
+		if($f){
+			print PERF "$strategy,$perf,$res\n";
+			close(PERF);
+		}
+
+		#Check for Attack
+		if($benign > 0 and isAttack($score, $benign)){
+			$f = open LEARNED, "+>>", $GatlingConfig::newlyLearned;
+			if($f){
+				print LEARNED "FOUND $strategy,$perf,$res,$benign\n";
+				close(LEARNED);
+			}
+		}
+	}
+}
+
+#Figure out more/new strategies
 my $weight=0;
 my @strArray;
-
 my $short = 0;
 if ($gotany == 0) {
-### WHEN NO FEEDBACK IS GIVEN
+    #No feedback---system start
     my $i = 0;
     foreach my $msgType (@$msgNameRef) {
         my $prefix = "$weight:*?*?$msgType";
         if ($msgType eq "BaseMessage") {
+            push (@strArray, "$prefix NONE 0");
+            push (@strArray, "$prefix NONE 0");
             push (@strArray, "$prefix NONE 0");
             $weight++;
         } else {
@@ -62,13 +102,14 @@ if ($gotany == 0) {
             push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip $GatlingConfig::clientport $GatlingConfig::serverport 5");
             push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip $GatlingConfig::serverport $GatlingConfig::clientport 5");
         }
-       if ($short == 1 && $i == 1) { # XXX - to keep it short
+       if ($short == 1 && $i == 1) { # debugging option - to keep it short
            last;
        }
         $i++;
     }
 
 } else {
+    #Examine feedback and suggest strategies
     foreach my $line (@feedback) {
         if ($short == 1) {
             last;
@@ -151,6 +192,50 @@ sub strategyCompose {
     }
 }
 
+sub getBenignPerf{
+	my $total = 0;
+	my $num = 0;
+	my $res = open PERF, "<", $GatlingConfig::perfMeasured;
+        if ($res) {
+                while ( my $line = <PERF> ) {
+                        chomp($line);
+                        my @token = split(',', $line );
+                        if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
+                                next;
+                        }
+                        my $perf = $token[1];
+                        my $strategy = $token[0];
+                        my $res   = $token[2];
+
+			if($strategy =~/NONE 0/){
+				$total += Utils::computeAttackScore($perf,$res);
+				$num +=1;
+			}
+                }
+                close PERF;
+        }
+
+	if($num==0){
+		return 0;
+	}
+	return $total/$num;
+}
+
+sub isAttack
+{
+	my $val=shift;
+	my $ref=shift;
+
+	if($val > 1.5*$ref){ #greater than 1.5 times reference
+		return 1;
+	}
+	if($val < 0.5*$ref){ #less than 0.5 times reference
+		return 1;
+	}
+	return 0;
+}
+
+# Dump new strategies to stdout
 foreach my $strategy (@strArray) {
     print "$strategy\n";
 }
