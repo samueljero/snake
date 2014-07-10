@@ -67,7 +67,7 @@ if(length($perfInput)> 0){
 		#Save Perf Score
 		my $f = open PERF, "+>>", $GatlingConfig::perfMeasured;
 		if($f){
-			print PERF "$strategy,$perf,$res\n";
+			print PERF "$strategy,$perf,$res,$benign\n";
 			close(PERF);
 		}
 
@@ -93,8 +93,8 @@ if ($gotany == 0) {
         my $prefix = "$weight:*?*?$msgType";
         if ($msgType eq "BaseMessage") {
             push (@strArray, "$prefix NONE 0");
-            push (@strArray, "$prefix NONE 0");
-            push (@strArray, "$prefix NONE 0");
+            push (@strArray, "$prefix NONE 1");
+            push (@strArray, "$prefix NONE 2");
             $weight++;
         } else {
             push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow");
@@ -207,7 +207,7 @@ sub getBenignPerf{
                         my $strategy = $token[0];
                         my $res   = $token[2];
 
-			if($strategy =~/NONE 0/){
+			if($strategy =~/ NONE /){
 				$total += Utils::computeAttackScore($perf,$res);
 				$num +=1;
 			}

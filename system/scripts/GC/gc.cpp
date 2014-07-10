@@ -183,7 +183,7 @@ void gc::reportCollector() {
                     pthread_cond_signal(&distributor_cond);
                 }
                 else {
-                    LOG(ERROR) << "rcvd " << buff << " from unknown";
+                    LOG(ERROR) << "rcvd " << msg << " from unknown (" << ip << ")";
                 }
             }
 
@@ -212,6 +212,7 @@ void gc::strategyComposer() {
         expanding = true;
         pthread_mutex_lock(&strategy_mutex);
         executePipeToFillWaitingStrategy(line);
+	LOG(INFO) << "Strategies Queued: " << waitingStrategy.size();
         pthread_mutex_unlock(&strategy_mutex);
         expanding = false;
     }
@@ -229,6 +230,7 @@ void gc::strategyComposer() {
             //pthread_mutex_unlock(&strategy_mutex);
             LOG(INFO) << "Looking for more Strategies...";
             executePipeToFillWaitingStrategy(line);
+	    LOG(INFO) << "Strategies Queued: " << waitingStrategy.size();
 
             //pthread_mutex_lock(&strategy_mutex);
             expanding = false;
@@ -316,6 +318,7 @@ int gc::executePipeToFillWaitingStrategy(std::string &line)
             }
         }
         waitingStrategy.sort(strCmp);
+	waitingStrategy.unique();
         for(std::list<strategy>::iterator it = waitingStrategy.begin(); it != waitingStrategy.end(); it++) {
             LOG(DEBUG) << "sorted: " << (*it).weight << " - " << (*it).content;
         }
