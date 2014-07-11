@@ -3,6 +3,7 @@
 #include <string.h>
 #include <error.h>
 #include <limits.h>
+#include <signal.h>
 
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -435,6 +436,12 @@ int main(int argc, char **argv)
     int t=1;
     quit = 0;
 
+    /* Don't keep around zombie processes for forked children */
+    struct sigaction sigchld_action;
+    sigchld_action.sa_handler = SIG_DFL,
+    sigchld_action.sa_flags = SA_NOCLDWAIT;
+    sigaction(SIGCHLD, &sigchld_action, NULL);
+
     // LOGGING
     FILELog::ReportingLevel() = FILELog::FromString("INFO");
 
@@ -456,6 +463,7 @@ int main(int argc, char **argv)
             quit = 1;
             break;
         }
+        sleep(1);
     }
 
     LOG(DEBUG) << "waiting distributor to join";
