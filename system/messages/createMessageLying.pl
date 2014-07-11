@@ -630,6 +630,22 @@ print DOTC "\t};\n";
 print DOTC "\t//std::cout<< \"Exiting CreateMessage\"<<std::endl;\n";
 print DOTC "};\n\n";
 
+#Message size function
+print DOTH "\tstatic int GetMessageHeaderSize(int type);\n";
+print DOTC "int Message::GetMessageHeaderSize(int type){\n";
+print DOTC "\t//std::cout<< \"Entering GetMessageHeaderSize\"<<std::endl;\n";
+print DOTC "\tswitch(type){\n";
+for (my $i = 0; $i <= $#msgName; $i++) {
+	my $temp = uc $msgName[$i];
+	print DOTC "\tcase $temp:\n";
+	print DOTC "\t\treturn sizeof($msgName[$i]);\n";
+}
+print DOTC "\tdefault:\n";
+print DOTC "\t\treturn 0;\n";
+print DOTC "\t}\n";
+print DOTC "\t//std::cout<< \"Exiting GetMessageHeaderSize\"<<std::endl;\n";
+print DOTC "};\n\n";
+
 #Important Accessors
 print DOTH <<END;
 	uint16_t GetSourcePort();
