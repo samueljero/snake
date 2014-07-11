@@ -983,18 +983,23 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	char sdest[100];
 	Ipv4Address src;
 	Ipv4Address dest;
+	int size;
 
 	sscanf(spec, "t=%lf %i %99s %99s%n", &sec, &databytes, ssrc, sdest, &len);
 	src = Ipv4Address(ssrc);
 	dest = Ipv4Address(sdest);
 	spec += len;
-	uint8_t *buf=(uint8_t*)malloc(sizeof(BaseMessage));
-	memset(buf,0,sizeof(BaseMessage));
-	p = new Packet(buf,sizeof(BaseMessage));
+	size = Message::GetMessageHeaderSize(type);
+	uint8_t *buf=(uint8_t*)malloc(size);
+	if(!buf){
+		return;
+	}
+	memset(buf,0,size);
+	p = new Packet(buf,size);
 	free(buf);
 	m = new Message(p->PeekDataForMal());
 	m->CreateMessage(type, spec);
-	m->DoChecksum(m->FindMsgSize()+databytes,src,dest,TcpL4Protocol::PROT_NUMBER);
+	m->DoChecksum(m->FindMsgSize()+databytes,src,dest,IPprotoNum());
 
 
 	Simulator::Schedule(Time(Seconds(sec)),
