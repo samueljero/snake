@@ -1068,25 +1068,25 @@ void MalProxy::Window(int type, const char* spec)
 	int window;
 	double sec;
 	int len;
-	int seq;
-	int itter;
+	unsigned int seq;
+	unsigned int itter;
 	char ip_src[100];
 	char ip_dest[100];
 	char p_src[100];
 	char p_dest[100];
 	char pspec[1000];
 	double inc=0.0001;
-	int size;
+	int strlen;
 
-	sscanf(spec, "w=%i t=%lf %99s %99s %99s %99s %i", &window, &sec, ip_src, ip_dest,
-			p_src, p_dest, &size);
+	sscanf(spec, "w=%i t=%lf %99s %99s%n", &window, &sec, ip_src, ip_dest, &strlen);
+	spec +=strlen;
 
 	itter = (0xFFFFFFFF) / window;
 
 	seq = 0;
 	for (int i = 0; i < itter; i++) {
-		snprintf(pspec, 1000, "t=%f 0 %s %s 0=%s 1=%s 2=%i 5=%i 6=%i 10=%i", sec, ip_src,
-				ip_dest, p_src, p_dest, seq, size, type, window);
+		snprintf(pspec, 1000, "t=%f 0 %s %s %i=%s %i=%s %s", sec, ip_src,
+				ip_dest, SEQUENCE_FIELD_NUM, seq, WINDOW_FIELD_NUM, window, spec);
 		InjectPacket(type,pspec);
 		seq += window;
 		sec+=inc;
