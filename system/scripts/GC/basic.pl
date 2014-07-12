@@ -100,12 +100,14 @@ if ($gotany == 0) {
 		if($GatlingConfig::systemname == "DCCP"){
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=6 6=1 11=111");
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=6 6=1 11=111");
+		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 6=1");
+	        push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip $GatlingConfig::serverport $GatlingConfig::clientport 6=1");
 		}elsif($GatlingConfig::systemname == "TCP"){
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow");
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=111 5=5 10=$GatlingConfig::defaultwindow");
+		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport");
+	        push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport");
 		}
-	        push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip $GatlingConfig::clientport $GatlingConfig::serverport 5");
-	       push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip $GatlingConfig::serverport $GatlingConfig::clientport 5");
         }
        if ($short == 1 && $i == 1) { # debugging option - to keep it short
            last;
