@@ -999,7 +999,7 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	free(buf);
 	m = new Message(p->PeekDataForMal());
 	m->CreateMessage(type, spec);
-	m->DoChecksum(m->FindMsgSize()+databytes,src,dest,IPprotoNum());
+	m->DoChecksum(size + databytes,src,dest,IPprotoNum());
 
 
 	Simulator::Schedule(Time(Seconds(sec)),
@@ -1029,7 +1029,7 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 
 		Ipv4Header header;
 		header.SetDestination(dest);
-		header.SetProtocol(TcpL4Protocol::PROT_NUMBER);
+		header.SetProtocol(IPprotoNum());
 		Socket::SocketErrno errno_;
 		Ptr<Ipv4Route> route;
 		Ptr<NetDevice> oif(0); //specify non-zero if bound to a source address
@@ -1040,7 +1040,7 @@ void MalProxy::DoInjectPacket(Ptr<Packet> p, Ipv4Address src, Ipv4Address dest)
 			NS_LOG_ERROR ("No IPV4 Routing Protocol");
 			route = 0;
 		}
-		ipv4->Send(p, src, dest, TcpL4Protocol::PROT_NUMBER, route);
+		ipv4->Send(p, src, dest, IPprotoNum(), route);
 	}
 }
 
