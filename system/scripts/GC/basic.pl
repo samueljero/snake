@@ -98,15 +98,27 @@ if ($gotany == 0) {
             $weight++;
         } else {
 		if($GatlingConfig::systemname == "DCCP"){
-		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=6 6=1 11=111");
-		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=6 6=1 11=111");
-		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 6=1");
-	        push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 6=1");
+		    my $size=0;
+		    if($msgType == "BaseMessage"){
+			    $size = 3;
+		    }elsif($msgType == "Data"){
+			    $size = 4;
+		    }elsif($msgType == "Request"){
+			    $size = 5;
+		    }elsif($msgType == "Reset"){
+			    $size = 7;
+		    }else{
+			    $size = 6;
+		    }
+		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1 11=111");
+		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1 11=111");
+		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1");
+	            push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1");
 		}elsif($GatlingConfig::systemname == "TCP"){
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow");
 		    push(@strArray, "$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=111 5=5 10=$GatlingConfig::defaultwindow");
-		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport");
-	        push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport");
+		    push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 5=5");
+	            push(@strArray, "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 5=5");
 		}
         }
        if ($short == 1 && $i == 1) { # debugging option - to keep it short
@@ -179,6 +191,7 @@ sub strategyCompose {
             print STDERR "Selecting Fine Strategy for $msg,$state\n";
             my $weight = 5;
             my $prefix = "$weight:$state?$msg";
+            push (@strArray, "$prefix BURST 1.0");
 
             my $msgType = $msgTypeRef->{$msg};
             my $fields = $fieldsPerMsgRef->{$msgType};
