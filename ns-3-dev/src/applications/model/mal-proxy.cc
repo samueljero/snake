@@ -241,7 +241,7 @@ void MalProxy::AddStrategy(string line)
 		/*Parse action value*/
 		avalue="";
 		if(action==DROP){
-			avalue="0";
+			avalue=actstr;
 		}else if(action==INJECT){
 			avalue=actstr;
 		}else if(action==WINDOW){
