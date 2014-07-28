@@ -41,7 +41,7 @@ for (my $i = 0; $i < $#ARGV; $i++) {
 }
 
 if ($#ARGV < 0) {
-	print "usage 1: ./SnapshotManager.pl pause|save|load|resume|kill (start) num\n";
+	print "usage 1: ./SnapshotManager.pl pause|save|load|resume|kill (start) end\n";
 	exit;
 }
 
@@ -115,72 +115,72 @@ sub load_and_start {
 
 
 my $command = $ARGV[0];
-my $num = $ARGV[1];
+my $end = $ARGV[1];
 my $start = 1;
 my $exec_command = $ARGV[2];
 if ($#ARGV == 2) {
   $start = $ARGV[1];
-  $num = $ARGV[2] + $start - 1;
+  $end = $ARGV[2];
 }
 
 if ($#ARGV == 3) {
   $start = $ARGV[1];
-  $num = $ARGV[2] + $start - 1;
+  $end = $ARGV[2];
   $exec_command = $ARGV[3];
 	$sn = $ARGV[3];
 }
 
 if($#ARGV == 4){
 	$start = $ARGV[1];
-	$num = $ARGV[2] + $start - 1;
+	$end = $ARGV[2];
 	$exec_command = $ARGV[3];
 	$sn = $ARGV[3];
 	$seq = $ARGV[4];
 }
 
 $start = $start + $offset;
-$num = $num + $offset;
+$end = $end + $offset;
 
-print "SNAP: $start --> $num -- $offset\n";
+print "SNAP: $start --> $end -- $offset\n";
 my $exec = "";
 my $batch_telnet = 1;
 if ($command eq "pause") {
 	if($savevmtime==1){
 	  system("ssh $ipbase.1 date > date_paused");
   	}
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i = $start; $i <= $end; $i++) {
 		my $telnetport = 10100 + $i;
     tellKVM($telnetport, "stop", 1);
 	}
 } elsif ($command eq "resume") {
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i = $start; $i <= $end; $i++) {
 		my $telnetport = 10100 + $i;
     tellKVM($telnetport, "c", 1);
 	}
 } elsif ($command eq "save") { # kill afer saving
 	print("Saving Snapshot: sn.$sn.#\n");
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i = $start; $i <= $end; $i++) {
 		my $telnetport = 10100 + $i;
 		my $snapshot = "$basedir/sn.$sn.$i";
 		$exec = "migrate \"exec:cat > $snapshot\"";
     tellKVM($telnetport, $exec, 1);
 	}
     sleep 5;
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i = $start; $i <= $end; $i++) {
 		my $telnetport = 10100 + $i;
     tellKVM($telnetport, "q", 0);
 	}
 } elsif ($command eq "load") {
 	print("Loading Snapshot: sn.$sn.#\n");
 	my @thr;
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i =$start; $i <= $end; $i++) {
 		push(@thr,threads->create('load_and_start', $i));
 	}
-	for(my $i = 0; $i <= $num - $start; $i++){
+	for(my $i = 0; $i <= $end - $start; $i++){
 		$thr[$i]->join();
 	}
 } elsif ($command eq "kill") {
-	for (my $i = $start; $i <= $num; $i++) {
+	for (my $i = $start; $i <= $end; $i++) {
 		my $telnetport = 10100+$i;
     tellKVM($telnetport, "quit", 0);
 	}

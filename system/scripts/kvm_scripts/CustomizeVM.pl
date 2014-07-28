@@ -27,14 +27,15 @@ close FILE;
 open(FILE, ">/etc/hosts");
 print FILE "127.0.0.1	localhost\n";
 print FILE "127.0.1.1	ubuntu-clone$clone\n\n";
-for(my $i = $start; $i <= $end; $i++)
-{
-  print FILE "10.1.2.$i	ubuntu-clone$i\n";
-}
+#for(my $i = $start; $i <= $end; $i++)
+#{
+#  print FILE "10.1.2.$i	ubuntu-clone$i\n";
+#}
 close FILE;
 
 system("hostname ubuntu-clone$clone");
 
+my $inner_ip = (($clone-1)%4) + 1;
 open(FILE, ">/etc/network/interfaces");
 print FILE <<END;
 auto lo
@@ -45,7 +46,7 @@ iface eth0 inet dhcp
 
 auto eth1
 iface eth1 inet static
-address 10.1.2.$clone
+address 10.1.2.$inner_ip
 netmask 255.255.255.0
 broadcast 10.1.2.255
 network 10.1.2.0
@@ -60,5 +61,5 @@ close(FILE);
 #print FILE "SUBSYSTEM==\"net\", ACTION==\"add\", DRIVERS==\"?*\", ATTR{address}==\"$mac\", ATTR{dev_id}==\"0x0\", ATTR{type}==\"1\", KERNEL==\"eth*\", NAME=\"eth0\"\n";
 #close(FILE);
 system("ifconfig eth1 down > /dev/null 2>\&1");
-system("ifconfig eth1 10.1.2.$clone netmask 255.255.255.0 broadcast 10.1.2.255 up");
+system("ifconfig eth1 10.1.2.$inner_ip netmask 255.255.255.0 broadcast 10.1.2.255 up");
 #system("/etc/init.d/networking restart");

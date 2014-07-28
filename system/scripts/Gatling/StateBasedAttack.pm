@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 package StateBasedAttack;
-require MsgParse;
+require Strategy;
 require Utils;
 require GatlingConfig;
 use Cwd;
@@ -26,15 +26,15 @@ my $malport = 5556;
 my $defaultwindow=20000;
 
 
-my $fieldsPerMsgRef 	= MsgParse::parseMessage();
-my $msgNameRef      	= $MsgParse::msgNameRef;
-my $messageCount        = MsgParse::getMsgNameClount();
-my $msgTypeRef          = $MsgParse::msgType;
-my $typeStrategyRef     = MsgParse::getStrategyCount();
-my $typeStrategyListRef = MsgParse::getTypeStrategyList();
-my $msgFlenList         = MsgParse::getMsgFlenList();
-my $FlenList            = MsgParse::getFlenList();
-my $FlenNumList         = MsgParse::getFlenNumList();
+my $fieldsPerMsgRef 	= Strategy::parseMessage();
+my $msgNameRef      	= $Strategy::msgNameRef;
+my $messageCount        = Strategy::getMsgNameClount();
+my $msgTypeRef          = $Strategy::msgType;
+my $typeStrategyRef     = Strategy::getStrategyCount();
+my $typeStrategyListRef = Strategy::getTypeStrategyList();
+my $msgFlenList         = Strategy::getMsgFlenList();
+my $FlenList            = Strategy::getFlenList();
+my $FlenNumList         = Strategy::getFlenNumList();
 
 print "Total $messageCount message types\n";
 
@@ -76,28 +76,28 @@ sub CreateStrategyList{
 	foreach $cl (keys %class2states){
 		foreach $st (@{$class2states{$cl}}){
 			for(my $i=0; $i < $messageCount; $i++){
-				if($db{"server"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
+				if($db{"server"}{"pkt_cnt_$Strategy::msgName[$i]"}{"$st"}){
 					my $found=$false;
 					foreach $val (@{$class2packets{$cl}}){
-						if ($val eq $MsgParse::msgName[$i]){
+						if ($val eq $Strategy::msgName[$i]){
 							$found=$true;
 							last;
 						}
 					}
 					if(!$found){
-						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
+						push(@{$class2packets{$cl}},$Strategy::msgName[$i]);
 					}
 				}
-				if($db{"client"}{"pkt_cnt_$MsgParse::msgName[$i]"}{"$st"}){
+				if($db{"client"}{"pkt_cnt_$Strategy::msgName[$i]"}{"$st"}){
 					my $found=$false;
 					foreach $val (@{$class2packets{$cl}}){
-						if($val eq $MsgParse::msgName[$i]){
+						if($val eq $Strategy::msgName[$i]){
 							$found=$true;
 							last;
 						}
 					}
 					if(!$found){
-						push(@{$class2packets{$cl}},$MsgParse::msgName[$i]);
+						push(@{$class2packets{$cl}},$Strategy::msgName[$i]);
 					}
 				}
 			}
@@ -107,7 +107,7 @@ sub CreateStrategyList{
 	# Build  Strategy List
 	foreach $cl (keys %class2packets){
 		for(my $i=0; $i < $messageCount; $i++){
-			if(grep /^$MsgParse::msgName[$i]$/, @{$class2packets{$cl}}){
+			if(grep /^$Strategy::msgName[$i]$/, @{$class2packets{$cl}}){
 				for(my $j=1; $j < $strategyMatrixCounts{$i}; $j++){
 					if($j > 11 and  $j < 20){
 						next;
@@ -161,33 +161,33 @@ sub prepareMessages {
 
 		#for each message
 		if ( $GatlingConfig::debug > 1 ) {
-			my $nameStr = $MsgParse::msgName[$i];
-			print "$i] - $nameStr - $MsgParse::msgType[$i] $MsgParse::msgTypeList{$nameStr}\n";
+			my $nameStr = $Strategy::msgName[$i];
+			print "$i] - $nameStr - $Strategy::msgType[$i] $Strategy::msgTypeList{$nameStr}\n";
 		}
 		my @messageStrategyList;
 		my $numMessageStrategies = 0;
 
 		#Add NONE, Drop, Dup, Delay, Divert commands for this message
-		$messageStrategyList[0] = "$MsgParse::msgName[$i] NONE 0";
-		$messageStrategyList[1] = "$MsgParse::msgName[$i] DROP 100";
-		$messageStrategyList[2] = "$MsgParse::msgName[$i] DROP 50";
-		$messageStrategyList[3] = "$MsgParse::msgName[$i] DUP 10";
-		$messageStrategyList[4] = "$MsgParse::msgName[$i] DUP 100";
-		$messageStrategyList[5] = "$MsgParse::msgName[$i] DELAY 1.0";
-		$messageStrategyList[6] = "$MsgParse::msgName[$i] DELAY 5.0";
-		$messageStrategyList[7] = "$MsgParse::msgName[$i] DIVERT 1.0";
-		$messageStrategyList[8] = "$MsgParse::msgName[$i] REPLAY 1";
-		$messageStrategyList[9] = "$MsgParse::msgName[$i] BURST 1.0";
-		$messageStrategyList[10] = "$MsgParse::msgName[$i] BURST 2.0";
-		$messageStrategyList[11] = "$MsgParse::msgName[$i] BURST 0.5";
-		$messageStrategyList[12] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
-		$messageStrategyList[13] = "$MsgParse::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
-		$messageStrategyList[14] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $clientip $serverip $clientport $serverport 5";
-		$messageStrategyList[15] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=0.01 $serverip $clientip $serverport $clientport 5";
-		$messageStrategyList[16] = "$MsgParse::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
-		$messageStrategyList[17] = "$MsgParse::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
-		$messageStrategyList[18] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $clientip $serverip $clientport $serverport 5";
-		$messageStrategyList[19] = "$MsgParse::msgName[$i] WINDOW w=$defaultwindow t=10 $serverip $clientip $serverport $clientport 5";
+		$messageStrategyList[0] = "$Strategy::msgName[$i] NONE 0";
+		$messageStrategyList[1] = "$Strategy::msgName[$i] DROP 100";
+		$messageStrategyList[2] = "$Strategy::msgName[$i] DROP 50";
+		$messageStrategyList[3] = "$Strategy::msgName[$i] DUP 10";
+		$messageStrategyList[4] = "$Strategy::msgName[$i] DUP 100";
+		$messageStrategyList[5] = "$Strategy::msgName[$i] DELAY 1.0";
+		$messageStrategyList[6] = "$Strategy::msgName[$i] DELAY 5.0";
+		$messageStrategyList[7] = "$Strategy::msgName[$i] DIVERT 1.0";
+		$messageStrategyList[8] = "$Strategy::msgName[$i] REPLAY 1";
+		$messageStrategyList[9] = "$Strategy::msgName[$i] BURST 1.0";
+		$messageStrategyList[10] = "$Strategy::msgName[$i] BURST 2.0";
+		$messageStrategyList[11] = "$Strategy::msgName[$i] BURST 0.5";
+		$messageStrategyList[12] = "$Strategy::msgName[$i] INJECT t=0.01 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[13] = "$Strategy::msgName[$i] INJECT t=0.01 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[14] = "$Strategy::msgName[$i] WINDOW w=$defaultwindow t=0.01 $clientip $serverip 0=$clientport 1=$serverport 5=5";
+		$messageStrategyList[15] = "$Strategy::msgName[$i] WINDOW w=$defaultwindow t=0.01 $serverip $clientip 0=$serverport 1=$clientport 5=5";
+		$messageStrategyList[16] = "$Strategy::msgName[$i] INJECT t=10 0 $clientip $serverip 0=$clientport 1=$serverport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[17] = "$Strategy::msgName[$i] INJECT t=10 0 $serverip  $clientip 0=$serverport 1=$clientport 2=111 5=5 10=$defaultwindow";
+		$messageStrategyList[18] = "$Strategy::msgName[$i] WINDOW w=$defaultwindow t=10 $clientip $serverip 0=$clientport 1=$serverport 5=5";
+		$messageStrategyList[19] = "$Strategy::msgName[$i] WINDOW w=$defaultwindow t=10 $serverip $clientip 0=$serverport 1=$clientport 5=5";
 		$numMessageStrategies = 20;
 
 		#For each field in this message
@@ -202,8 +202,8 @@ sub prepareMessages {
 				  )
 				{
 					#Add this lie command for message
-					#print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
+					#print "$Strategy::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
+					push( @messageStrategyList,"$Strategy::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
 					$numMessageStrategies = $numMessageStrategies + 1;
 				}
 			}
@@ -216,7 +216,7 @@ sub prepareMessages {
 				  )
 				{
 					#Add this lie command for message
-					push( @messageStrategyList,"$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+					push( @messageStrategyList,"$Strategy::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
 					$numMessageStrategies = $numMessageStrategies + 1;
 				}
 			}
@@ -298,6 +298,7 @@ sub ns3_thread {
 }
 
 sub start {
+	print "Starting StageBasedAttack system...\n";
 	prepareMessages();
 	Utils::updateSnapshot(-1);
 	Utils::pauseVMs();

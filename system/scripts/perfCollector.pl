@@ -3,15 +3,17 @@
 use strict;
 use warnings;
 use IO::Socket::INET;
-#use Time::Local;
 use threads;
 use Scalar::Util qw(looks_like_number);
 use lib ("./Gatling/");
 require GatlingConfig;
 
+$GatlingConfig::systemname = "TCP";
+
 for (my $i = 0; $i < $#ARGV; $i++) {
     if ($ARGV[$i] =~ "-offset") {
         $GatlingConfig::offset = $ARGV[$i+1];
+	GatlingConfig::setSystem();
     }
 }
 my $socknumber = 7779 + $GatlingConfig::offset;
@@ -109,6 +111,7 @@ sub TCP_Perf{
 
 sub DCCP_Perf{
 	my $eachline = shift;
+	#print "$eachline\n";
 	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
 	my @cnt= $eachline =~ qr/\[ +([0-9]+)\] +([0-9\.]+- *[0-9\.]+) sec +([0-9\.]+) KBytes + ([0-9\.]+) Kbits\/sec/;
 	if (@cnt) {
@@ -129,11 +132,19 @@ while (1)
     }
     my @lines = split /\n/, $line;
     foreach my $eachline (@lines) {
-        #Prime_bugPerf($eachline);
-        #PrimePerf($eachline);
-        #BFTPerf($eachline);
-        #StewardPerf($eachline);
-        TCP_Perf($eachline);
-        #DCCP_Perf($eachline);
+	if($GatlingConfig::systemname eq "Prime"){
+       		Prime_bugPerf($eachline);
+		#PrimePerf($eachline);
+	}elsif($GatlingConfig::systemname eq "BFT"){
+		BFTPerf($eachline);
+	}elsif($GatlingConfig::systemname eq "Steward"){
+		StewardPerf($eachline);
+	}elsif($GatlingConfig::systemname eq "TCP"){
+		TCP_Perf($eachline);
+	}elsif($GatlingConfig::systemname eq "DCCP"){
+		DCCP_Perf($eachline);
+ 	}else{
+		print "ERROR: Unknown system!\n";
+	}
     }
 }

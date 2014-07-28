@@ -9,21 +9,16 @@ fi
 ./kvm_scripts/SnapshotManager.pl resume 1 4 $OFFSET -special 3
 echo "Waiting for VMs to start..."
 sleep 30
-echo "killing server"
+echo "connectivity test"
 if [[ `hostname -s ` = sound* ]] || [[ `hostname -s` = ocean1* ]]; then
-pssh -h pssh_all0.txt "pkill server"
+pssh -h pssh_all0.txt "echo 1"
 else
-pssh -h pssh_all.txt "pkill server"
+pssh -h pssh_all.txt "echo 1"
 fi
-echo "killing client"
+sleep 30
+echo "connectivity test"
 if [[ `hostname -s ` = sound* ]] || [[ `hostname -s` = ocean1* ]]; then
-pssh -h pssh_all0.txt "pkill client"
+pssh -h pssh_all0.txt "echo 1"
 else
-pssh -h pssh_all.txt "pkill client"
-fi
-echo "ifconfig"
-if [[ `hostname -s ` = sound* ]] || [[ `hostname -s` = ocean1* ]]; then
-pssh -h pssh_all0.txt "ifconfig eth1 mtu 1400"
-else
-pssh -h pssh_all.txt "ifconfig eth1 mtu 1400"
+pssh -h pssh_all.txt "echo 1"
 fi

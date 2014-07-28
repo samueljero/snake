@@ -7,25 +7,24 @@ use Socket;
 
 package GatlingConfig;
 
-# for the global collector
+## Global collector
 $GlobalCollectorAddr = "128.10.132.182";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
 #$attackModule = "StateBasedAttack";
-$attackModule = "StateBasedExecutor";
+$attackModule = "Executor";
 $host = Sys::Hostname::hostname();
 my $ip=gethostbyname($host);
 $ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
 
-## Configurations
+## VM Configurations
 #pick VM env
 $VM = "KVM";
 #$VM = "XEN";
-
 $basedir = Cwd::abs_path(File::Basename::dirname(__FILE__));
 
-## if NS3 is started already, set 0
+## Implementation Settings
 $exit_when_break = 0;
 $systemname = "";
 $startNS3 = 1;
@@ -34,14 +33,18 @@ $watch_ns3 = 1;
 $watch_turret = 1;
 $brokenPerf = 9999;
 $debug = 1;
+$start_attack = 1;
+$learning_threashold = 2;
+
+## Protocol Settings
 $formatFile = "";
 $scoreFile = "$basedir/score.client";
 $tmpFile = "$basedir/tmp";
 $format_dir = "$basedir/../../messages";
 $statediagramFile = "diagram.dot";
+
+##Testing Settings
 $window_size = 7;
-$learning_threashold = 2;
-$start_attack = 1;
 $server_command = "./counter.pl | ~/logcollector.pl";
 $client_command = "./counter.pl | ~/logcollector.pl ";
 $serverListString = "";
@@ -67,13 +70,27 @@ $watchPort = " ";
 @malNumbers;
 push (@malNumbers, 0);
 $malString = "";
-$timeLog = "timing.txt";
+$serverhavessh = 1;
+$NumConnsCmd = "echo t; echo t; echo t";
+$setupCommand = "";
+my $tmp = 3 + $offset;
+$hostserverip="$baseIP.$tmp";
+
+##NS-3 Intercept Settings
+$clientip = "10.1.2.2";
+$serverip = "10.1.2.3";
+$malip = "10.1.2.1";
+$clientport= 5555;
+$serverport= 80;
+$malport = 5556;
+$defaultwindow=20000;
+
+#Logging Settings
+$timeLog = "$basedir/../timing.txt";
 $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
 $perfMeasured = "perfMeasured.txt";
 $newlyLearned = "new_learned.txt";
-$serverhavessh = 1;
-$setupCommand = "";
 
 sub changeServerCommand($@) {
 	$server_command = $_[0];
@@ -81,13 +98,7 @@ sub changeServerCommand($@) {
 
 sub prepare()
 {
-  system("pkill serverLog");
-  system("pkill clientLog");
-  system("screen -S serverLog -p 0 -X stuff '\ncd $basedir/..;\n./serverLog.pl\n'");
-  system("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
-  print("cd $basedir/..;./clientLogUpdate.pl -offset $offset 2>&1 > ./client$offset.log &");
-  #system("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
-  #print("screen -S serverLog -p 1$offset -X stuff '\ncd $basedir/..;\n./clientLogUpdate.pl -offset $offset\n'");
+  system("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > /dev/null &");
 }
 
 sub runSystem()
@@ -252,7 +263,7 @@ sub systemSteward()
 
 sub systemTCP()
 {
-  $setupCommand = "mkdir TCP";
+  $setupCommand = "mkdir $basedir/../TCP";
   $server_command = "";
   $client_command = "/root/TCP/client.sh $offset";
   undef(@serverNumbers);
@@ -268,10 +279,10 @@ sub systemTCP()
   $watchPort = " -tcp_port 80 -port 80";
   undef(@malNumbers);
   push (@malNumbers, 0);
-  $alreadyLearned = "TCP/pre_learned.txt";
-  $prePerf = "TCP/pre_perf.txt";
-  $perfMeasured = "TCP/perf.txt";
-  $newlyLearned = "TCP/new_learned.txt";
+  $alreadyLearned = "$basedir/../TCP/pre_learned.txt";
+  $prePerf = "$basedir/../TCP/pre_perf.txt";
+  $perfMeasured = "$basedir/../TCP/perf.txt";
+  $newlyLearned = "$basedir/../TCP/new_learned.txt";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
@@ -281,14 +292,22 @@ sub systemTCP()
   $c_parallel = 2;
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
+  $NumConnsCmd = "netstat --inet --inet6 -n";
+  $clientip = "10.1.2.2";
+  $serverip = "10.1.2.3";
+  $malip = "10.1.2.1";
+  $clientport= 5555;
+  $serverport= 80;
+  $malport = 5556;
+  $defaultwindow=20000;
   $useGlobal=1;
 }
 
 sub systemDCCP()
 {
-  $setupCommand = "mkdir DCCP";
-  $server_command = "/root/DCCP/server.sh &";
-  $client_command = "/root/DCCP/client.sh";
+  $setupCommand = "mkdir $basedir/../DCCP";
+  $server_command = "/root/DCCP/server.sh $offset";
+  $client_command = "/root/DCCP/client.sh $offset";
   undef(@serverNumbers);
   push (@serverNumbers, 3);
   push (@serverNumbers, 4);
@@ -301,10 +320,10 @@ sub systemDCCP()
   undef(@malNumbers);
   push (@malNumbers, 0);
   $watchPort = " -port 5001";
-  $alreadyLearned = "DCCP/pre_learned.txt";
-  $prePerf = "DCCP/pre_perf.txt";
-  $perfMeasured = "DCCP/perf.txt";
-  $newlyLearned = "DCCP/new_learned.txt";
+  $alreadyLearned = "$basedir/../DCCP/pre_learned.txt";
+  $prePerf = "$basedir/../DCCP/pre_perf.txt";
+  $perfMeasured = "$basedir/../DCCP/perf.txt";
+  $newlyLearned = "$basedir/../DCCP/new_learned.txt";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/dccp.format";
@@ -313,19 +332,16 @@ sub systemDCCP()
   $s_parallel = 2;
   $c_parallel = 2;
   $statediagramFile = "$format_dir/dccp.dot";
+  $NumConnsCmd = "echo t;echo t; ss -d";
   $serverhavessh=1;
   $useGlobal=1;
-}
-
-# XXX : check if these are really used and change it 
-# HYO: moved from StateBaseExecutor
-# sjero: Needed for strategy generation
-$ServerIP = "10.1.2.3";
-$hostserverip=$ServerIP;
-if ( $host =~ /^sound/ or $host =~ /^ocean1/ ){
-	$hostserverip = "10.0.1.3";
-}elsif ($host =~ /^cloud15/ ){
-	$hostserverip = $ServerIP;
+  $clientip = "10.1.2.2";
+  $serverip = "10.1.2.3";
+  $malip = "10.1.2.1";
+  $clientport= 5050;
+  $serverport= 5002;
+  $malport = 5050;
+  $defaultwindow=20000;
 }
 
 sub formPsshStrings {

@@ -27,7 +27,7 @@ my $rout;
 my $sockBase = 7779 + $offset;
 while (1) {
 	select($rout=$rin, undef, undef, undef);
-	last if eof();
+	last if eof(STDIN);
 
 	my $buffer = '';
 

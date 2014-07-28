@@ -3,6 +3,7 @@
 #include <string.h>
 #include <error.h>
 #include <limits.h>
+#include <signal.h>
 
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -178,12 +179,12 @@ void gc::reportCollector() {
                 if (startsWith(msg, "ready") == 0) { 
                     // add new turret instance
                     TurretInstance ti_new = TurretInstance(&dest, port, TurretInstance::ready);
-                    LOG(DEBUG) << " new turret instance added: " << inet_ntoa(dest.sin_addr) << ":" << ntohs(dest.sin_port) <<" id" << ti_new.id;
+                    LOG(INFO) << "New Turret Instance Added: " << inet_ntoa(dest.sin_addr) << ":" << ntohs(dest.sin_port) <<"   ID: " << ti_new.id;
                     turretIList.push_front(ti_new);
                     pthread_cond_signal(&distributor_cond);
                 }
                 else {
-                    LOG(ERROR) << "rcvd " << buff << " from unknown";
+                    LOG(ERROR) << "rcvd " << msg << " from unknown (" << ip << ")";
                 }
             }
 
@@ -191,7 +192,7 @@ void gc::reportCollector() {
             while (len-len2 > 0) {
                  int cur = write(sock, buff + len2, len - len2);
                  if (cur <= 0) {
-                     LOG(INFO) << "Fail to write to " << inet_ntoa(dest.sin_addr);
+                     LOG(DEBUG) << "Fail to write to " << inet_ntoa(dest.sin_addr);
                      break;
                  }
                  len2 += cur;
@@ -212,6 +213,7 @@ void gc::strategyComposer() {
         expanding = true;
         pthread_mutex_lock(&strategy_mutex);
         executePipeToFillWaitingStrategy(line);
+	LOG(INFO) << "Strategies Queued: " << waitingStrategy.size();
         pthread_mutex_unlock(&strategy_mutex);
         expanding = false;
     }
@@ -227,8 +229,9 @@ void gc::strategyComposer() {
             performanceResult.pop();
             expanding = true;
             //pthread_mutex_unlock(&strategy_mutex);
-
+            LOG(INFO) << "Looking for more Strategies...";
             executePipeToFillWaitingStrategy(line);
+	    LOG(INFO) << "Strategies Queued: " << waitingStrategy.size();
 
             //pthread_mutex_lock(&strategy_mutex);
             expanding = false;
@@ -316,6 +319,7 @@ int gc::executePipeToFillWaitingStrategy(std::string &line)
             }
         }
         waitingStrategy.sort(strCmp);
+	waitingStrategy.unique();
         for(std::list<strategy>::iterator it = waitingStrategy.begin(); it != waitingStrategy.end(); it++) {
             LOG(DEBUG) << "sorted: " << (*it).weight << " - " << (*it).content;
         }
@@ -405,6 +409,7 @@ void gc::distributor() {
             ti->setCurStrategy(nextStr);
             ti->sendMessage(ti->curStrategy->content.c_str(), strlen(ti->curStrategy->content.c_str()));
             ti->status = TurretInstance::Status::running;
+	    LOG(INFO) << "Sending Strategy to be Run on ID " << ti->id << ": " << nextStr.content;
             // XXX send the strategy to the instance
 
             pthread_cond_signal(&distributor_cond);
@@ -431,9 +436,14 @@ int main(int argc, char **argv)
     int t=1;
     quit = 0;
 
+    /* Don't keep around zombie processes for forked children */
+    struct sigaction sigchld_action;
+    sigchld_action.sa_handler = SIG_DFL,
+    sigchld_action.sa_flags = SA_NOCLDWAIT;
+    sigaction(SIGCHLD, &sigchld_action, NULL);
+
     // LOGGING
     FILELog::ReportingLevel() = FILELog::FromString("INFO");
-    //FILELog::ReportingLevel() = FILELog::FromString("INFO");
 
     std::thread th_distributor(&gc::distributor, std::ref(gc_instance));
     std::thread th_strComposer(&gc::strategyComposer, std::ref(gc_instance));
@@ -453,6 +463,7 @@ int main(int argc, char **argv)
             quit = 1;
             break;
         }
+        sleep(1);
     }
 
     LOG(DEBUG) << "waiting distributor to join";

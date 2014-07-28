@@ -4,21 +4,21 @@ use strict;
 use warnings;
 
 package GreedyAttack;
-require MsgParse;
+require Strategy;
 require Utils;
 require GatlingConfig;
 
-my $fieldsPerMsgRef = MsgParse::parseMessage();
-my $msgNameRef = $MsgParse::msgNameRef;
+my $fieldsPerMsgRef = Strategy::parseMessage();
+my $msgNameRef = $Strategy::msgNameRef;
 my $passone = 0;
 
-my $messageCount = MsgParse::getMsgNameClount();
-my $msgTypeRef = $MsgParse::msgType;
-my $typeStrategyRef = MsgParse::getStrategyCount();
-my $typeStrategyListRef = MsgParse::getTypeStrategyList();
-my $msgFlenList = MsgParse::getMsgFlenList();
-my $FlenList = MsgParse::getFlenList();
-my $FlenNumList = MsgParse::getFlenNumList();
+my $messageCount = Strategy::getMsgNameClount();
+my $msgTypeRef = $Strategy::msgType;
+my $typeStrategyRef = Strategy::getStrategyCount();
+my $typeStrategyListRef = Strategy::getTypeStrategyList();
+my $msgFlenList = Strategy::getMsgFlenList();
+my $FlenList = Strategy::getFlenList();
+my $FlenNumList = Strategy::getFlenNumList();
 
 print "Total $messageCount message types\n";
 
@@ -54,8 +54,8 @@ sub prepareMessages {
   for (my $i = 0; $i <= $messageCount; $i++) {
   	#for each message
     if ($GatlingConfig::debug > 1) {
-      my $nameStr = $MsgParse::msgName[$i];
-      print "$i] - $nameStr - $MsgParse::msgType[$i] $MsgParse::msgTypeList{$nameStr}\n";
+      my $nameStr = $Strategy::msgName[$i];
+      print "$i] - $nameStr - $Strategy::msgType[$i] $Strategy::msgTypeList{$nameStr}\n";
     }
     my @strategyListForMessage;
     my @score;
@@ -65,12 +65,12 @@ sub prepareMessages {
     $learned[$i] = -1;
     
     #Add NONE, Drop, Dup, Delay, Divert commands for this message
-    $strategyListForMessage[0]= "*?*?$MsgParse::msgName[$i] NONE 0";
-    $strategyListForMessage[1]= "*?*?$MsgParse::msgName[$i] DROP 100";
-    $strategyListForMessage[1]= "*?*?$MsgParse::msgName[$i] DROP 50";
-    $strategyListForMessage[2]= "*?*?$MsgParse::msgName[$i] DUP 10";
-    $strategyListForMessage[3]= "*?*?$MsgParse::msgName[$i] DELAY 1.0";
-    $strategyListForMessage[4]= "*?*?$MsgParse::msgName[$i] DIVERT 1.0";
+    $strategyListForMessage[0]= "*?*?$Strategy::msgName[$i] NONE 0";
+    $strategyListForMessage[1]= "*?*?$Strategy::msgName[$i] DROP 100";
+    $strategyListForMessage[1]= "*?*?$Strategy::msgName[$i] DROP 50";
+    $strategyListForMessage[2]= "*?*?$Strategy::msgName[$i] DUP 10";
+    $strategyListForMessage[3]= "*?*?$Strategy::msgName[$i] DELAY 1.0";
+    $strategyListForMessage[4]= "*?*?$Strategy::msgName[$i] DIVERT 1.0";
     for (my $j = 0; $j < 5; $j++) { # dup, delay, divert, benign, drop
       push(@score, 9999);
       push(@selected, 0);
@@ -85,8 +85,8 @@ sub prepareMessages {
       	#For each value it makes sense to lie on based on field type
       	for (my $k = 0; $k <= $FlenNumList->{$msgFlenList->{$i}[$j]}; $k++) {
           #Add this lie command for message
-	  #print "$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
-	  push(@strategyListForMessage, "*?*?$MsgParse::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
+	  #print "$Strategy::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j\n";
+	  push(@strategyListForMessage, "*?*?$Strategy::msgName[$i] LIE $FlenList->{$msgFlenList->{$i}[$j]}[$k] $j");
           push(@score, 9999);
           push(@selected, 0);
           push(@excluded, 0); 
@@ -96,7 +96,7 @@ sub prepareMessages {
       	#For each value it makes sense to lie on based on field type
         for (my $k = 0; $k <= $typeStrategyRef->{$fieldsPerMsgRef->{$i}[$j]}; $k++) {
           #Add this lie command for message
-          push(@strategyListForMessage, "*?*?$MsgParse::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
+          push(@strategyListForMessage, "*?*?$Strategy::msgName[$i] LIE $typeStrategyListRef->{$fieldsPerMsgRef->{$i}[$j]}[$k] $j");
           push(@score, 9999);
           push(@selected, 0);
           push(@excluded, 0); 
@@ -126,9 +126,9 @@ sub prepareMessages {
       }
       my $name = $token[0];
       
-      my $msgType = $MsgParse::msgTypeList{$name};
+      my $msgType = $Strategy::msgTypeList{$name};
       for (my $i = 0; $i <= $messageCount; $i++) {
-      	if($MsgParse::msgName[$i] eq $name){
+      	if($Strategy::msgName[$i] eq $name){
       		$msgType=$i;
       	}
       }	
@@ -191,11 +191,11 @@ sub prepareMessages {
   	print "Current Strategy Performance:\n";
     for (my $i = 0; $i <= $messageCount; $i++) {
       for (my $j =0 ; $j < $strategyCount{$i}; $j++) {
-        print "For Msg $MsgParse::msgName[$i] strategy $j -- tally: $tally{$i}[$j], ";
+        print "For Msg $Strategy::msgName[$i] strategy $j -- tally: $tally{$i}[$j], ";
         print " perf: $perfScore{$i}[$j], ";
         print " exclude: $excludeStrategy{$i}[$j]\n";
       }
-      print "Current Action Index for $MsgParse::msgName[$i] : $curActionIndex[$i]\n";
+      print "Current Action Index for $Strategy::msgName[$i] : $curActionIndex[$i]\n";
     }
   }
 
@@ -219,7 +219,7 @@ sub learnAction {
   my $now = shift; #tell Mal-proxy right now. Needed to handle pre-load before mal-proxy is running.
   
   $learned[$curMsgType] = $actionIndex;
-  my $curMsgName=$MsgParse::msgName[$curMsgType];
+  my $curMsgName=$Strategy::msgName[$curMsgType];
   $learnedStrategyString = $learnedStrategyString.",".$strategy;
   print "LEARNED STRATEGY FOR MSG $curMsgType action $actionIndex ($strategyList{$curMsgType}[$actionIndex])\n";
   
@@ -255,7 +255,7 @@ sub decisionMaker
 		return;
 	}
 	
-	print "decisionMaker for MsgType $curMsgType ($MsgParse::msgName[$curMsgType])\n";
+	print "decisionMaker for MsgType $curMsgType ($Strategy::msgName[$curMsgType])\n";
 	
 	if ($learned[$curMsgType] >= 0) { # message we've already picked a strategy for!
 		Utils::directTopology("C Learned $learnedStrategyString");
@@ -274,7 +274,7 @@ sub decisionMaker
 	Utils::logTime("start do gatling");
 	
 	#Loop over all strategies for this message
-	my $curMsgName=$MsgParse::msgName[$curMsgType];
+	my $curMsgName=$Strategy::msgName[$curMsgType];
 	my $repeat = 0;
 	my $worstScore = 0;
   	my $actionIndex = 0;
@@ -385,7 +385,7 @@ ACTION_TEST:
   Utils::restoreVMs(-1); # restore from checkpoint
   Utils::resumeNS3();
   Utils::logTime("start do gatling");
-  #print "Message Type: $curMsgType $MsgParse::msgName[$curMsgType] $learned[$curMsgType]\n";
+  #print "Message Type: $curMsgType $Strategy::msgName[$curMsgType] $learned[$curMsgType]\n";
   $passone = 1;
   return;
 }
