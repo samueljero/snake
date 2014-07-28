@@ -16,7 +16,7 @@ for (my $i = 0; $i < $#ARGV; $i++) {
 }
 my $socknumber = 7779 + $GatlingConfig::offset;
 
-
+GatlingConfig::offsetScoreFile();
 
 my $socket = new IO::Socket::INET (
 		LocalHost => '10.0.0.1',
@@ -99,10 +99,10 @@ sub Prime_bugPerf {
 
 sub TCP_Perf{
 	my $eachline = shift;
+    print STDERR "opening: $GatlingConfig::scoreFile\n";
 	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
-    print STDERR "line: $eachline\n";
 	my $cnt= $eachline =~ tr/.//;
-	print SCORE "$cnt\n";
+    SCORE->printflush("$cnt\n");
     STDOUT->printflush("PERF: $cnt\n");
 	close SCORE;
 }

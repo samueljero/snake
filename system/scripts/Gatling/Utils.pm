@@ -129,6 +129,7 @@ sub resetPerfScore()
 
 sub getPerfScore()
 {
+    print STDERR "open scorefile: $GatlingConfig::scoreFile\n";
   open SCORE, "$GatlingConfig::scoreFile" or return $GatlingConfig::brokenPerf;
   my $score = `cat $GatlingConfig::scoreFile | wc -l`;
   if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug") {

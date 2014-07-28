@@ -238,7 +238,7 @@ sub start {
 
             #Measure perf
             my $perfscore = Utils::getPerfScore();
-            print STDERR "PerfScore $perfscore\n";
+            print STDERR "PerfScore $perfscore from $GatlingConfig::scoreFile\n";
             Utils::resetPerfScore();
 
             #Measure Resource Utilization

@@ -8,6 +8,7 @@ use strict;
 use POSIX;
 use Switch;
 my $str = "";
+my $DEBUG = 0;
 
 ######################
 # Some static setting - make it configurable later
@@ -48,6 +49,14 @@ foreach my $arg (@ARGV) {
 
 my @feedback;
 my $gotany = 0;
+
+sub DEBUGPRINT{
+    my $line = shift;
+    if ($DEBUG) {
+        print STDERR "$line\n";
+    }
+}
+
 while (<STDIN>) {
     my $line = $_;
     chomp($line);
@@ -56,7 +65,7 @@ while (<STDIN>) {
     }
     push (@feedback, $line);
     $gotany = 1;
-    print STDERR "got from stdin: $line-----------\n";
+    DEBUGPRINT("got from stdin: $line-----------");
 }
 
 my $weight=0;
@@ -118,7 +127,7 @@ sub strategyCompose {
     switch ($level) {
         case (0)
         {
-            print STDERR "coarse strategy for $msg,$state\n";
+            DEBUGPRINT("coarse strategy for $msg,$state");
             my $weight = 1;
             my $prefix = "$weight:$state?$msg";
 
@@ -143,7 +152,7 @@ sub strategyCompose {
         }
         case (1) 
         {
-            print STDERR "fine strategy for $msg,$state\n";
+            DEBUGPRINT("fine strategy for $msg,$state");
             my $weight = 5;
             my $prefix = "$weight:$state?$msg";
 
@@ -161,7 +170,7 @@ sub strategyCompose {
         }
         # default
         {
-            print STDERR "already exercised $msg,$state\n";
+            DEBUGPRINT("already exercised $msg,$state");
         }
     }
 }

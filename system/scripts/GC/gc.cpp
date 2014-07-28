@@ -418,7 +418,7 @@ void gc::updatePerformance(TurretInstance * ti, std::string perfString) {
     // XXX what if there's status mismatch?
     // update the strategy finished
     // signal appropriate threads and update this instance ready
-    LOG(DEBUG) << "performanceResult added - ti: " << ti->id << " perf: " << perfString << " size: " << performanceResult.size();
+    LOG(INFO) << "performanceResult ti: " << ti->id << " perf: " << perfString << " size: " << performanceResult.size();
     performanceResult.push(perfString);
 }
 
@@ -432,7 +432,8 @@ int main(int argc, char **argv)
     quit = 0;
 
     // LOGGING
-    FILELog::ReportingLevel() = FILELog::FromString("DEBUG");
+    FILELog::ReportingLevel() = FILELog::FromString("INFO");
+    //FILELog::ReportingLevel() = FILELog::FromString("INFO");
 
     std::thread th_distributor(&gc::distributor, std::ref(gc_instance));
     std::thread th_strComposer(&gc::strategyComposer, std::ref(gc_instance));
