@@ -293,9 +293,16 @@ sub systemTCP()
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
   $NumConnsCmd = "netstat --inet --inet6 -n";
-  $clientip = "10.1.2.2";
-  $serverip = "10.1.2.3";
-  $malip = "10.1.2.1";
+
+# Make IPs should change based on offset
+  $client_offset = 2 + $offset;
+  $server_offset = 3 + $offset;
+  $mal_offset = 1 + $offset;
+
+  $clientip = "10.1.2.$client_offset";
+  $serverip = "10.1.2.$server_offset";
+  $malip = "10.1.2.$mal_offset";
+
   $clientport= 5555;
   $serverport= 80;
   $malport = 5556;
