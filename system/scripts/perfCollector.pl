@@ -16,9 +16,10 @@ for (my $i = 0; $i < $#ARGV; $i++) {
 	GatlingConfig::setSystem();
     }
 }
-my $socknumber = 7779 + $GatlingConfig::offset;
 
 GatlingConfig::offsetScoreFile();
+my $socknumber = 7779 + $GatlingConfig::offset;
+
 
 my $socket = new IO::Socket::INET (
 		LocalHost => '10.0.0.1',

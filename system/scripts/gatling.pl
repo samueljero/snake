@@ -45,7 +45,7 @@ share($GatlingConfig::watch_ns3);
 share($GatlingConfig::watch_turret);
 
 #Start VMs
-system("./startNclean.sh offset $GatlingConfig::offset");
+system("./startNclean.sh offset $GatlingConfig::offset pssh \"$GatlingConfig::allListString\"");
 
 #Initialize Turret system
 GatlingConfig::prepare();

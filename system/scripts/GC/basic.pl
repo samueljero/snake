@@ -93,43 +93,7 @@ if(length($perfInput)> 0){
 	}
 }
 
-=======
-}
 
-
-
-# Analyize our perf score, if we got one
-if(length($perfInput)> 0){
-	my $benign = getBenignPerf();
-	chomp($perfInput);
-	my @token = split(':', $perfInput);
-	if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
-		#skip
-	}else{
-		my $perf = $token[2];
-		my $strategy = $token[1];
-		my $res   = $token[3];
-		my $score = Utils::computeAttackScore($perf,$res);
-
-		#Save Perf Score
-		my $f = open PERF, "+>>", $GatlingConfig::perfMeasured;
-		if($f){
-			print PERF "$strategy,$perf,$res,$benign\n";
-			close(PERF);
-		}
-
-		#Check for Attack
-		if($benign > 0 and isAttack($score, $benign)){
-			$f = open LEARNED, "+>>", $GatlingConfig::newlyLearned;
-			if($f){
-				print LEARNED "FOUND $strategy,$perf,$res,$benign\n";
-				close(LEARNED);
-			}
-		}
-	}
-}
-
->>>>>>> b6333836d819d3dad97f2dd0fe8a62515c2027d0
 #Figure out more/new strategies
 my $weight=0;
 my @strArray;
