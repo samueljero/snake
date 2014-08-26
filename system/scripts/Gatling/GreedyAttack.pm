@@ -2,11 +2,13 @@
 
 use strict;
 use warnings;
+use IO::Socket::INET;
 
 package GreedyAttack;
 require Strategy;
 require Utils;
 require GatlingConfig;
+require Perf;
 
 my $fieldsPerMsgRef = Strategy::parseMessage();
 my $msgNameRef = $Strategy::msgNameRef;
@@ -40,6 +42,45 @@ sub term_handler {
   print "socket closed\n";
   $GatlingConfig::watch_ns3 = 2;
   exit;
+}
+
+sub perf_collection_thread {
+	GatlingConfig::offsetScoreFile();
+	my $socknumber = 7779 + $GatlingConfig::offset;
+
+	my $socket = new IO::Socket::INET (
+			LocalHost => '10.0.0.1',
+			LocalPort => $socknumber,
+			Proto => 'udp',
+			) or die "Error in Socket Creation for perfMonitor : $!\n";
+
+	open (PERFFILE, ">$GatlingConfig::scoreFile");
+	print PERFFILE "0\n";
+	close (PERFFILE);
+	print "perfMonitor listens on port $socknumber\n";
+
+	my $line;
+	while (1)
+	{
+		$socket->recv($line, 1024);
+		my @lines = split /\n/, $line;
+		foreach my $eachline (@lines) {
+			if($GatlingConfig::systemname eq "Prime"){
+				Perf::Prime_bugPerf($eachline);
+				#Perf::PrimePerf($eachline);
+			}elsif($GatlingConfig::systemname eq "BFT"){
+				Perf::BFTPerf($eachline);
+			}elsif($GatlingConfig::systemname eq "Steward"){
+				Perf::StewardPerf($eachline);
+			}elsif($GatlingConfig::systemname eq "TCP"){
+				Perf::TCP_Perf($eachline);
+			}elsif($GatlingConfig::systemname eq "DCCP"){
+				Perf::DCCP_Perf($eachline);
+			}else{
+				print "ERROR: Unknown system!\n";
+			}
+		}
+	}
 }
 
 sub prepareMessages {
@@ -467,6 +508,9 @@ sub ns3_thread {
 
 sub start {
   prepareMessages();
+  my $perfListener = threads->create('perf_collection_thread','');
+  $perfListener->detach();
+
   print "Starting NS-3\n";
   my $ns3_thread;
   if ($GatlingConfig::startNS3 == 1) {

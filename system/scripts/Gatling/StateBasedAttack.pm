@@ -4,9 +4,11 @@ package StateBasedAttack;
 require Strategy;
 require Utils;
 require GatlingConfig;
+require Perf;
 use Cwd;
 use List::Util qw(max min);
 use Sys::Hostname;
+use IO::Socket::INET;
 
 my $host = Sys::Hostname::hostname(); #Get hostname
 
@@ -58,6 +60,45 @@ sub term_handler {
 	print "term_handler\n";
 	$GatlingConfig::watch_ns3 = 2;
 	exit;
+}
+
+sub perf_collection_thread {
+	GatlingConfig::offsetScoreFile();
+	my $socknumber = 7779 + $GatlingConfig::offset;
+
+	my $socket = new IO::Socket::INET (
+			LocalHost => '10.0.0.1',
+			LocalPort => $socknumber,
+			Proto => 'udp',
+			) or die "Error in Socket Creation for perfMonitor : $!\n";
+
+	open (PERFFILE, ">$GatlingConfig::scoreFile");
+	print PERFFILE "0\n";
+	close (PERFFILE);
+	print "perfMonitor listens on port $socknumber\n";
+
+	my $line;
+	while (1)
+	{
+		$socket->recv($line, 1024);
+		my @lines = split /\n/, $line;
+		foreach my $eachline (@lines) {
+			if($GatlingConfig::systemname eq "Prime"){
+				Perf::Prime_bugPerf($eachline);
+				#Perf::PrimePerf($eachline);
+			}elsif($GatlingConfig::systemname eq "BFT"){
+				Perf::BFTPerf($eachline);
+			}elsif($GatlingConfig::systemname eq "Steward"){
+				Perf::StewardPerf($eachline);
+			}elsif($GatlingConfig::systemname eq "TCP"){
+				Perf::TCP_Perf($eachline);
+			}elsif($GatlingConfig::systemname eq "DCCP"){
+				Perf::DCCP_Perf($eachline);
+			}else{
+				print "ERROR: Unknown system!\n";
+			}
+		}
+	}
 }
 
 sub CreateStrategyList{
@@ -300,6 +341,9 @@ sub ns3_thread {
 sub start {
 	print "Starting StageBasedAttack system...\n";
 	prepareMessages();
+	my $perfListener = threads->create('perf_collection_thread','');
+    	$perfListener->detach();
+
 	Utils::updateSnapshot(-1);
 	Utils::pauseVMs();
 	Utils::snapshotVMs();

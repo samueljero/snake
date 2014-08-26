@@ -99,7 +99,6 @@ sub changeServerCommand($@) {
 
 sub prepare()
 {
-  system("cd $basedir/..;./perfCollector.pl -offset $offset 2>&1 > /dev/null &");
 }
 
 sub runSystem()

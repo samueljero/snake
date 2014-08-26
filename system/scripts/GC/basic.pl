@@ -8,7 +8,7 @@ use strict;
 use POSIX;
 use Switch;
 
-my $DEBUG = 1;
+my $DEBUG = 0;
 my $system = "TCP";
 
 
