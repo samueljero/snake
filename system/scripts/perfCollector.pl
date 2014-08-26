@@ -8,7 +8,7 @@ use Scalar::Util qw(looks_like_number);
 use lib ("./Gatling/");
 require GatlingConfig;
 
-$GatlingConfig::systemname = "TCP";
+$GatlingConfig::systemname = "DCCP";
 
 for (my $i = 0; $i < $#ARGV; $i++) {
     if ($ARGV[$i] =~ "-offset") {

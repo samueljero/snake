@@ -104,6 +104,7 @@ class gc {
     TurretInstance *nextAvailableTurret();
     int executePipeToFillWaitingStrategy(std::string &args);
     void send_feedback(int fd);
+    void handleMessage(TurretInstance *ti, char* msg);
 
     gc() {
         expanding = false;

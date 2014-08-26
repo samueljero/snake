@@ -1,4 +1,4 @@
-SRC=gc.cpp
+SRC=gc.cc
 CPP=g++
 CPPFLAGS=$(CFLAGS) -std=c++0x -g
 

@@ -21,24 +21,30 @@ BEGIN {
   }
 }
 
+sub openGC
+{
+my $sock = new IO::Socket::INET->new(
+	PeerAddr => $GatlingConfig::GlobalCollectorAddr,
+	PeerPort => $GatlingConfig::GlobalCollectorPort,
+	Proto => 'tcp');
+die "Could not create socket to GC: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
+print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort\n";
+return $sock;
+}
 sub reportGC
 {
+    my $sock = shift;
     my $msg = shift;
-    my $toread = shift;
-    my $res = "";
 
-    my $sock = new IO::Socket::INET->new( PeerAddr => $GatlingConfig::GlobalCollectorAddr,
-            PeerPort => $GatlingConfig::GlobalCollectorPort,
-            Proto => 'tcp');
-    die "Could not create socket to ctrl connect NS3: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
-    print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort:$msg";
-    if ($toread == 1) {
-        while(my $tmp=<$sock>){
-            $res=$res.$tmp;
-        }
-    }
-    $sock->close();
-    return $res;
+    print $sock "$msg\n";
+    return;
+}
+
+sub closeGC
+{
+	my $sock = shift;
+	$sock->close();
+	return;
 }
 
 sub useXEN()

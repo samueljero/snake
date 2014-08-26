@@ -8,7 +8,8 @@ use Socket;
 package GatlingConfig;
 
 ## Global collector
-$GlobalCollectorAddr = "128.10.132.182";
+#$GlobalCollectorAddr = "ocean1.cs.purdue.edu";
+$GlobalCollectorAddr = "cloud15.cs.purdue.edu";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
 #$attackModule = "StateBasedAttack";

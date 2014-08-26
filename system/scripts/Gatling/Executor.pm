@@ -40,6 +40,7 @@ sub ns3_thread {
 my $quit :shared;
 
 sub reportResult {
+    my $sock = shift;
     my $strategy = shift;
     my $perfscore = shift;
     my $resourceusage = shift;
@@ -47,7 +48,7 @@ sub reportResult {
     #Print results for local monitor
     print "===perfScore $perfscore for strategy $strategy used $resourceusage\n";
     # send the result to the server
-    Utils::reportGC("perf:$strategy:$perfscore:$resourceusage");
+    Utils::reportGC($sock, "perf:$strategy:$perfscore:$resourceusage");
 }
 
 my $listenerStarted: shared;
@@ -68,7 +69,7 @@ sub strategyListener {
         my $sock = $socket->accept();
         my $line = "";
         $sock->recv($line, 1024);
-        chop($line);
+        chomp $line;
         push (@WaitingStrategyList, $line);
         if ($line =~ "STOP") {
             $quit = 1;
@@ -86,6 +87,7 @@ sub strategyListener {
 sub start {
     ################  get ready
     $quit = 0;
+    my $sock;
     $listenerStarted = 0;
     my $strListener = threads->create('strategyListener', '');
     while ($listenerStarted != 1) {
@@ -96,7 +98,9 @@ sub start {
     Utils::updateSnapshot(-1);
     Utils::pauseVMs();
     Utils::snapshotVMs();
-    Utils::reportGC("ready");
+    $sock = Utils::openGC();
+    Utils::reportGC($sock,"ready");
+    Utils::closeGC($sock);
 
     # ROUTINE STARTS
     while ($quit != 1) { # set by listener, GC should command
@@ -169,33 +173,36 @@ sub start {
                 $resourceusage = Utils::PingHost("$hostserverip");
             }
 
-            # report result 
-            reportResult($strategy, $perfscore, $resourceusage);
+            # report result
+	    $sock = Utils::openGC();
+            reportResult($sock,$strategy, $perfscore, $resourceusage);
 
             #Join NS-3 Thread (so it goes away)
             $ns3_thr->join();
 
             # report additional information:
             #Debug State Results
-            if ( $GatlingConfig::debug > 0 ) {
-                foreach my $host (keys %db){
-                    foreach my $metric (keys %{$db{$host}}){
-                        foreach my $state (keys %{$db{$host}{$metric}}){
-                            print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
-                            Utils::reportGC("info:$metric,$host,$state:$db{$host}{$metric}{$state}");
-                        }
+	    foreach my $host (keys %db){
+	        foreach my $metric (keys %{$db{$host}}){
+		    foreach my $state (keys %{$db{$host}{$metric}}){
+			if ( $GatlingConfig::debug > 0 ) {
+			    print "$host,$metric,$state,$db{$host}{$metric}{$state}\n";
+			}
+			Utils::reportGC($sock,"info:$metric,$host,$state,$db{$host}{$metric}{$state}");
                     }
                 }
             }
-            Utils::reportGC("info:end");
+            Utils::reportGC($sock,"info:end");
         }
         else {
             print "no strategy in the queue.";
             print " waiting at $GatlingConfig::ListenAddr:$GatlingConfig::ListenPort ... $#WaitingStrategyList\n";
             # TODO wait signal (otherwise it will be busy waiting)
-            Utils::reportGC("ready");
+	    $sock = Utils::openGC();
+            Utils::reportGC($sock,"ready");
             sleep 1;
-        }
+    	}
+	Utils::closeGC($sock);
     }
 
     # TODO think if there's any post processing needed
