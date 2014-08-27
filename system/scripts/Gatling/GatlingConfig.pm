@@ -40,7 +40,7 @@ $learning_threashold = 2;
 ## Protocol Settings
 $formatFile = "";
 $scoreFile = "$basedir/score.client";
-$tmpFile = "$basedir/tmp";
+$resourcesFile = "$basedir/resources.client";
 $format_dir = "$basedir/../../messages";
 $statediagramFile = "diagram.dot";
 
@@ -375,6 +375,8 @@ sub makeNS3Com {
 
 sub offsetScoreFile {
     $scoreFile = "$basedir/score_$offset.client";
+    $resourcesFile = "$basedir/resources_$offset.client";
+
 }
 
 1;

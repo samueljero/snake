@@ -167,12 +167,12 @@ sub getPerfScore()
 sub getNumConnections
 {
 	my $host=shift;
-	system("ssh $host \"$GatlingConfig::NumConnsCmd\" > $GatlingConfig::tmpFile");
+	system("ssh $host \"$GatlingConfig::NumConnsCmd\" > $GatlingConfig::resourcesFile");
 	if($GatlingConfig::debug > 0){
-		system("cat $GatlingConfig::tmpFile");
+		system("cat $GatlingConfig::resourcesFile");
 	}
-	my $lines = `cat $GatlingConfig::tmpFile | wc -l`;
-	system("rm -f $GatlingConfig::tmpFile");
+	my $lines = `cat $GatlingConfig::resourcesFile | wc -l`;
+	system("rm -f $GatlingConfig::resourcesFile");
 	if($lines==0){
 		#Error, couldn't connect!
 		return -1;
