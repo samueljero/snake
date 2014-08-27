@@ -10,8 +10,6 @@ use List::Util qw(max min);
 use IO::Socket::INET;
 
 
-my $serverip = $GatlingConfig::ServerIP;
-my $hostserverip = $GatlingConfig::hostserverip;
 my @WaitingStrategyList :shared; # Queue of strategies waiting to execute
 
 
@@ -212,9 +210,9 @@ sub start {
             #Measure Resource Utilization
             my $resourceusage=0;
             if($GatlingConfig::serverhavessh==1){
-                $resourceusage = Utils::getNumConnections("root\@$hostserverip");
+                $resourceusage = Utils::getNumConnections("root\@$GatlingConfig::hostserverip");
             }else{
-                $resourceusage = Utils::PingHost("$hostserverip");
+                $resourceusage = Utils::PingHost("$GatlingConfig::hostserverip");
             }
 
             # report result

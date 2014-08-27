@@ -167,6 +167,7 @@ sub getPerfScore()
 sub getNumConnections
 {
 	my $host=shift;
+	print STDERR "checking connections on $host\n";
 	system("ssh $host \"$GatlingConfig::NumConnsCmd\" > $GatlingConfig::resourcesFile");
 	if($GatlingConfig::debug > 0){
 		system("cat $GatlingConfig::resourcesFile");

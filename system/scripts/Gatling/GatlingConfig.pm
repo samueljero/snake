@@ -369,6 +369,8 @@ sub makeNS3Com {
     formPsshStrings();
     $NS3_command = "./run_command.sh \"malproxy_simple $malString -num_vms $num_vms -ip_base $NS3_IP_base -tap_base tap-ns $watchPort -offset $offset -runtime $runTime\"";
     $ListenPort = $ListenPort + $offset;
+    my $tmp = 3 + $offset;
+    $hostserverip="$baseIP.$tmp";
     offsetScoreFile();
     print  STDERR "using $serverListString $host\n";
 }
