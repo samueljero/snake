@@ -43,7 +43,7 @@ sub tcpdump_thread {
 	my $tap = 3 + $GatlingConfig::offset;
 	my $interface = "tap-vm$tap";
 	my $path = "$GatlingConfig::state_dir/pcap_$GatlingConfig::offset/$filename.dmp";
-	system("timeout $timeout $GatlingConfig::tcpdump_cmd -i $interface -s $GatlingConfig::packet_cap_len -w -  ip > $path");
+	system("timeout -2 $timeout $GatlingConfig::tcpdump_cmd -i $interface -s $GatlingConfig::packet_cap_len -w -  ip > $path");
 	exit();
 }
 
@@ -136,6 +136,7 @@ sub strategyListener {
 
 sub start {
     ################  get ready
+    my $pcap_thr;
     $quit = 0;
     my $sock;
     $listenerStarted = 0;
@@ -188,8 +189,7 @@ sub start {
             Utils::directTopology("C Gatling Resume");
 
 	    if($GatlingConfig::capture_packets){
-            	my $pcap_thr = threads->create( 'tcpdump_thread', $strategy);
-		$pcap_thr->detach();
+            	$pcap_thr = threads->create( 'tcpdump_thread', $strategy);
 	    }
 
             #Start clients
@@ -237,6 +237,9 @@ sub start {
 
             #Join NS-3 Thread (so it goes away)
             $ns3_thr->join();
+	    if($GatlingConfig::capture_packets){
+            	$pcap_thr->join();
+	    }
 
             # report additional information:
             #Debug State Results
