@@ -24,7 +24,8 @@ GatlingConfig::setSystem();
 my $fieldsPerMsgRef   = Strategy::parseMessage();
 my $msgTypeRef        = Strategy::getMsgTypeRef();
 my $msgNameRef        = Strategy::getMsgNameRes();
-my $fieldRef          = Strategy::getFlenList();
+my $msgBitfieldRef    = Strategy::getMsgFlenList();
+my $bitfieldStrategyRef = Strategy::getFlenList();
 my $coarseStrategyRef = Strategy::getCoarseStrategyList();
 my $fineStrategyRef   = Strategy::getFineStrategyList();
 my @strategyList;
@@ -51,7 +52,7 @@ sub outputStrat {
 			#ignore---old strategy
 		} else{
 			push(@strategyList, $line);
-			print LEARNED_LOG "TRY,$line\n";
+			print TESTING_LOG "TRY,$line\n";
 			print "$line\n";
 			$| = 1;
 		}
@@ -60,6 +61,7 @@ sub outputStrat {
 	LEARNED_LOG->autoflush(1);
 	PERF_LOG->autoflush(1);
 	FEEDBACK_LOG->autoflush(1);
+	TESTING_LOG->autoflush(1);
 }
 
 #Decide if some perf score represents an attack
@@ -110,7 +112,7 @@ sub initSystem {
 
 
 	#Load Saved feedback info
-	$res = open PRE_FEEDBACK, "<", "feedback.txt";
+	$res = open PRE_FEEDBACK, "<", "$GatlingConfig::state_dir/feedback.txt";
 	if ($res) {
 		while ( my $line = <PRE_FEEDBACK> ) {
 			chomp($line);
@@ -130,7 +132,7 @@ sub initSystem {
 	}
 
 	#Load in process attacks
-	$res = open PRE_LEARNED, "<", $GatlingConfig::newlyLearned;
+	$res = open PRE_LEARNED, "<", "$GatlingConfig::state_dir/testing.txt";
 	if ($res) {
 		while ( my $line = <PRE_LEARNED> ) {
 			chomp($line);
@@ -151,14 +153,18 @@ sub initSystem {
 	#Open Perf Log
 	open PERF_LOG, "+>>", $GatlingConfig::perfMeasured
 	  or die "Can't create $GatlingConfig::perfMeasured $!";
-	print PERF_LOG "#Sequence,Performance,Strategy,Resources\n";
+	print PERF_LOG "#Strategy,Performance,Resources,Threshold\n";
 
 	#Open decision log
 	open LEARNED_LOG, "+>>", $GatlingConfig::newlyLearned
 	  or die "Can't create $GatlingConfig::newlyLearned $!";
+	
+	#Open testing log
+	open TESTING_LOG, "+>>", "$GatlingConfig::state_dir/testing.txt"
+	  or die "Can't create $GatlingConfig::state_dir/testing.txt $!";
 
 	#Open feedback log
-	open FEEDBACK_LOG, "+>>", "feedback.txt"
+	open FEEDBACK_LOG, "+>>", "$GatlingConfig::state_dir/feedback.txt"
 	  or die "Can't create feedback.txt $!";
 
 	return @curr;	
@@ -318,9 +324,16 @@ sub strategyCompose {
 
 			# coase lying actions
 			foreach my $field ( @{$fields} ) {
-				my $coarseStr = $coarseStrategyRef->{$field};
-				foreach my $str ( @{$coarseStr} ) {
-					push( @strat, "$prefix LIE $str $fieldIdx" );
+				if($msgBitfieldRef->{$msgType}[$fieldIdx] > 0){
+					my $coarseStr = $bitfieldStrategyRef->{$msgBitfieldRef->{$msgType}[$fieldIdx]};
+					foreach my $str ( @{$coarseStr} ){
+						push( @strat, "$prefix LIE $str $fieldIdx" );
+					}
+				}else{
+					my $coarseStr = $coarseStrategyRef->{$field};
+					foreach my $str ( @{$coarseStr} ) {
+						push( @strat, "$prefix LIE $str $fieldIdx" );
+					}
 				}
 				$fieldIdx++;
 			}
@@ -336,9 +349,11 @@ sub strategyCompose {
 
 			# coase lying actions
 			foreach my $field ( @{$fields} ) {
-				my $fineStr = $fineStrategyRef->{$field};
-				foreach my $str ( @{$fineStr} ) {
-					push( @strat, "$prefix LIE $str $fieldIdx" );
+				if($msgBitfieldRef->{$msgType}[$fieldIdx] == 0){
+					my $fineStr = $fineStrategyRef->{$field};
+					foreach my $str ( @{$fineStr} ) {
+						push( @strat, "$prefix LIE $str $fieldIdx" );
+					}
 				}
 				$fieldIdx++;
 			}
@@ -393,6 +408,7 @@ sub main{
 	close PERF_LOG;
 	close LEARNED_LOG;
 	close FEEDBACK_LOG;
+	close TESTING_LOG;
 }
 
 main();

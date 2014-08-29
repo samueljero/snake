@@ -190,14 +190,14 @@ void *turret_thread(void *args)
 
 	f = fdopen(sock, "r");
 	if(!f){
-		perror("fdopen failed!\n");
+		perror("fdopen failed!");
 		return NULL;
 	}
 
 	n = 1024;
 	buff = (char*)malloc(n);
 	if(!buff){
-		perror("malloc failed!\n");
+		perror("malloc failed!");
 		return NULL;
 	}
 
@@ -236,13 +236,13 @@ void *accept_thread(void *args)
 
 	listen_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if(listen_socket < 0){
-		perror("Failed to create socket!\n");
+		perror("Failed to create socket!");
 		quit = 1;
 		return NULL;
 	}
 	if(setsockopt(listen_socket , SOL_SOCKET, SO_REUSEADDR, &t, sizeof(t))<0){
 		close(listen_socket);
-		perror("Failed sockopt!\n");
+		perror("Failed sockopt!");
 		quit = 1;
 		return NULL;
 	}
@@ -253,13 +253,13 @@ void *accept_thread(void *args)
 	serv_addr.sin_port = htons(MAINGC_PORT);
 
 	if (bind(listen_socket, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
-		perror("Failed bind()!\n");
+		perror("Failed bind()!");
 		close(listen_socket);
 		quit = 1;
 		return NULL;
 	}
 	if(listen(listen_socket, 10)<0){
-		perror("Failed listen()!\n");
+		perror("Failed listen()!");
 		close(listen_socket);
 		quit = 1;
 		return NULL;
@@ -270,7 +270,7 @@ void *accept_thread(void *args)
 		sock = accept(listen_socket, (struct sockaddr*) &turret_addr, &sock_len);
 		if (sock <= 0) {
 			if(!quit)
-				perror("Failed accept()\n");
+				perror("Failed accept()");
 			continue;
 		}
 
@@ -279,7 +279,7 @@ void *accept_thread(void *args)
 		/*First read*/
 		len = read(sock, buff, 50);
 		if(len < 0){
-			perror("Read failed!\n");
+			perror("Read failed!");
 			close(sock);
 			continue;
 		}
@@ -321,12 +321,12 @@ void *accept_thread(void *args)
 		if(pthread_create(&new_thread, NULL, turret_thread, arg)<0){
 			free(arg);
 			close(sock);
-			perror("Failed to create thread!\n");
+			perror("Failed to create thread!");
 			continue;
 		}
 
 		if(pthread_detach(new_thread)<0){
-			perror("Failed to detach thread\n");
+			perror("Failed to detach thread");
 			continue;
 		}
 	}
@@ -349,21 +349,21 @@ void *strategies_thread(void *args)
 
 	f = fdopen(pipe_from_prog[PREAD], "r");
 	if(!f){
-		perror("fdopen failed!\n");
+		perror("fdopen failed!");
 		return NULL;
 	}
 
 	n = 1024;
 	buff = (char*)malloc(n);
 	if(!buff){
-		perror("malloc failed!\n");
+		perror("malloc failed!");
 		return NULL;
 	}
 
 	while(!quit){
 		len = getline(&buff,&n,f);
 		if(len < 0){
-			perror("getline failed!\n");
+			if(!feof(f)){ perror("getline failed!"); }
 			break;
 		}
 		tmp = string(buff,len);
@@ -417,10 +417,10 @@ void *reports_thread(void *args)
 int do_exec_setup()
 {
 	if (pipe(pipe_from_prog) != 0) {
-		perror("pipe from program fail\n");
+		perror("pipe from program failed");
 	}
 	if (pipe(pipe_to_prog) != 0) {
-		perror("pipe to program fail\n");
+		perror("pipe to program failed");
 	}
 
 	LOG(DEBUG)<< "Begin Fork";
@@ -429,12 +429,12 @@ int do_exec_setup()
 		if (dup2(pipe_to_prog[PREAD], STDIN_FILENO) != 0
 				|| close(pipe_to_prog[PREAD]) != 0
 				|| close(pipe_to_prog[PWRITE]) != 0) {
-			perror("dup STDIN failed\n");
+			perror("dup STDIN failed");
 		}
 		if (dup2(pipe_from_prog[PWRITE], STDOUT_FILENO) != 1
 				|| close(pipe_from_prog[PWRITE]) != 0
 				|| close(pipe_from_prog[PREAD]) != 0) {
-			perror("dup STDOUT failed\n");
+			perror("dup STDOUT failed");
 		}
 
 		int nres = execl(strategyComposeScript, strategyComposeScript, NULL);
@@ -492,8 +492,12 @@ int main(int argc, char **argv) {
 		sleep(1);
 	}
 
+	if(!global_strategies.empty()){
+		LOG(WARNING)<< "Exiting with strategies still in queue!";
+	}
+
 	/* Exit */
-	LOG(DEBUG)<< "Exiting";
+	LOG(INFO)<< "Exiting";
 	for(list<TurretInstance>::iterator it=global_turrets.begin(); it!=global_turrets.end(); it++){
 		it->sendMessage("STOP", 4);
 	}

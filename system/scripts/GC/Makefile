@@ -1,6 +1,6 @@
 SRC=gc.cc
 CPP=g++
-CPPFLAGS=$(CFLAGS) -std=c++0x -g
+CPPFLAGS=$(CFLAGS) -g
 
 .PHONY: clean
 
