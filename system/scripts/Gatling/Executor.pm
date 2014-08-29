@@ -36,6 +36,17 @@ sub ns3_thread {
 	exit();
 }
 
+sub tcpdump_thread {
+	my $strat = shift;
+	my $filename = Utils::make_file_name($strat);
+	my $timeout = $GatlingConfig::window_size + 10;
+	my $tap = 3 + $GatlingConfig::offset;
+	my $interface = "tap-vm$tap";
+	my $path = "$GatlingConfig::state_dir/pcap_$GatlingConfig::offset/$filename.dmp";
+	system("timeout $timeout $GatlingConfig::tcpdump_cmd -i $interface -s $GatlingConfig::packet_cap_len -w -  ip > $path");
+	exit();
+}
+
 # strategy listener -- get strategies from the generator
 my $quit :shared;
 
@@ -175,6 +186,11 @@ sub start {
             Utils::logTime("command $command");
             Utils::directTopology($command);
             Utils::directTopology("C Gatling Resume");
+
+	    if($GatlingConfig::capture_packets){
+            	my $pcap_thr = threads->create( 'tcpdump_thread', $strategy);
+		$pcap_thr->detach();
+	    }
 
             #Start clients
             print "Starting System\n";

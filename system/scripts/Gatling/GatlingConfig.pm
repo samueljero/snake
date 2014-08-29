@@ -34,6 +34,7 @@ $watch_ns3 = 1;
 $watch_turret = 1;
 $brokenPerf = 9999;
 $debug = 1;
+$capture_packets = 0;
 $start_attack = 1;
 $learning_threashold = 2;
 
@@ -56,9 +57,11 @@ push (@clientNumbers, 2);
 push (@serverNumbers, 3);
 push (@serverNumbers, 4);
 $baseIP = "10.1.1";
+$tcpdump_cmd = "tcpdump";
 print STDERR "hostname: $host\n";
 if ( $host =~ /^sound/ or $host =~ /^ocean1/ ) { #because we can only use 10.0.X.X... sigh
     $baseIP = "10.0.1";
+    $tcpdump_cmd = "sudo /usr/local/sbin/tcpdumpwrap"; #this doesn't work very well with timeout... sigh
 }
 $NS3_IP_base="10.1.2";
 $offset=0;
@@ -87,11 +90,13 @@ $malport = 5556;
 $defaultwindow=20000;
 
 #Logging Settings
+$state_dir = "$basedir/";
 $timeLog = "$basedir/../timing.txt";
 $alreadyLearned = "pre_learned.txt";
 $prePerf = "pre_perf.txt";
 $perfMeasured = "perfMeasured.txt";
 $newlyLearned = "new_learned.txt";
+$packet_cap_len = 64;
 
 sub changeServerCommand($@) {
 	$server_command = $_[0];
@@ -194,6 +199,7 @@ sub systemPrime()
   $alreadyLearned = "Prime/pre_learned.txt";
   $prePerf = "Prime/pre_perf.txt";
   $perfMeasured = "Prime/perf.txt";
+  $state_dir = "Prime/";
   $newlyLearned = "Prime/new_learned.txt";
   $systemname = "Prime";
 }
@@ -224,6 +230,7 @@ sub systemPrime_bug()
   $prePerf = "Prime_bug/pre_perf.txt";
   $perfMeasured = "Prime_bug/perf.txt";
   $newlyLearned = "Prime_bug/new_learned.txt";
+  $state_dir = "Prime_bug/";
   $systemname = "Prime_bug";
 }
 sub movePrevPerf()
@@ -258,6 +265,7 @@ sub systemSteward()
   $prePerf = "Steward/pre_perf.txt";
   $perfMeasured = "Steward/perf.txt";
   $newlyLearned = "Steward/new_learned.txt";
+  $state_dir = "Steward/";
   $num_vms = 13;
 }
 
@@ -283,6 +291,7 @@ sub systemTCP()
   $prePerf = "$basedir/../TCP/pre_perf.txt";
   $perfMeasured = "$basedir/../TCP/perf.txt";
   $newlyLearned = "$basedir/../TCP/new_learned.txt";
+  $state_dir = "$basedir/../TCP/";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/tcp.format";
@@ -293,6 +302,7 @@ sub systemTCP()
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
   $NumConnsCmd = "netstat --inet --inet6 -n";
+  $packet_cap_len = 64;
 
 
   $clientip = "10.1.2.2";
@@ -327,6 +337,7 @@ sub systemDCCP()
   $prePerf = "$basedir/../DCCP/pre_perf.txt";
   $perfMeasured = "$basedir/../DCCP/perf.txt";
   $newlyLearned = "$basedir/../DCCP/new_learned.txt";
+  $state_dir = "$basedir/../DCCP/";
   $num_vms = 4;
   $learning_threashold = 1;
   $formatFile = "$format_dir/dccp.format";
@@ -345,6 +356,7 @@ sub systemDCCP()
   $serverport= 5002;
   $malport = 5050;
   $defaultwindow=20000;
+  $packet_cap_len = 100;
 }
 
 sub formPsshStrings {

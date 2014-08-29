@@ -221,4 +221,16 @@ sub makeMetricDB
 	}
 	return %db;
 }
+
+sub make_file_name {
+	$strat = shift;
+	$strat =~ s/\*/_/g;
+	$strat =~ s/ /_/g;
+	$strat =~ s/\?/_/g;
+	$strat =~ s/,/_/g;
+	$strat =~ s/\n//g;
+	return $strat;
+}
+
+
 1;
