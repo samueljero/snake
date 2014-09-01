@@ -31,6 +31,7 @@ my $fineStrategyRef   = Strategy::getFineStrategyList();
 my @strategyList;
 my @FeedbackList1;
 my @FeedbackList2;
+my @RetryList;
 my $benign_calc_total;
 my $benign_calc_num;
 my $benign_val;
@@ -62,7 +63,25 @@ sub outputStrat {
 	PERF_LOG->autoflush(1);
 	FEEDBACK_LOG->autoflush(1);
 	TESTING_LOG->autoflush(1);
+	RETRY_LOG->autoflush(1);
 }
+
+sub outputStrat_nocheck {
+        my @arr = @_;
+        foreach my $line (@arr){
+		push(@strategyList, $line);
+		print TESTING_LOG "TRY,$line\n";
+		print "$line\n";
+		$| = 1;
+        }
+
+        LEARNED_LOG->autoflush(1);
+        PERF_LOG->autoflush(1);
+        FEEDBACK_LOG->autoflush(1);
+        TESTING_LOG->autoflush(1);
+        RETRY_LOG->autoflush(1);
+}
+
 
 #Decide if some perf score represents an attack
 sub isAttack {
@@ -131,7 +150,23 @@ sub initSystem {
 		close PRE_FEEDBACK;
 	}
 
-	#Load in process attacks
+        #Load Saved retry info
+        $res = open PRE_RETRY, "<", "$GatlingConfig::state_dir/retry.txt";
+        if ($res) {
+                while ( my $line = <PRE_RETRY> ) {
+                        chomp($line);
+                        my @token = split(',', $line );
+                        if ( $#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
+                                next;
+                        }
+                        my $strat    = $token[0];
+                        my $val     = $token[1];
+			push(@RetryList, $strat);
+                }
+                close PRE_RETRY;
+        }
+
+	#Load in progess attacks
 	$res = open PRE_LEARNED, "<", "$GatlingConfig::state_dir/testing.txt";
 	if ($res) {
 		while ( my $line = <PRE_LEARNED> ) {
@@ -166,6 +201,10 @@ sub initSystem {
 	#Open feedback log
 	open FEEDBACK_LOG, "+>>", "$GatlingConfig::state_dir/feedback.txt"
 	  or die "Can't create feedback.txt $!";
+
+        #Open retry log
+        open RETRY_LOG, "+>>", "$GatlingConfig::state_dir/retry.txt"
+          or die "Can't create retry.txt $!";
 
 	return @curr;	
 }
@@ -250,9 +289,22 @@ sub analyze {
 			#Save Perf Score
 			print PERF_LOG "$strategy,$perf,$res,$benign_val\n";
 
+			if ($perf == 0) {
+				push(@RetryList, $strategy);
+				print RETRY_LOG "$strategy,$perf,$res\n";
+				outputStrat_nocheck($strategy);
+				return @strat;
+			}
+
 			#Check for Attack
 			if ($benign_val > 0 and isAttack($score, $benign_val)) {
-				print LEARNED_LOG "FOUND,$strategy,$perf,$res,$benign_val\n";
+				if ($strategy ~~ @RetryList) {
+					print LEARNED_LOG "FOUND,$strategy,$perf,$res,$benign_val\n";
+				} else {
+					push(@RetryList, $strategy);
+					print RETRY_LOG "$strategy, $perf, $res\n";
+					outputStrat_nocheck($strategy);
+				}
 			}
 
 			if ($strategy =~ / NONE /) {

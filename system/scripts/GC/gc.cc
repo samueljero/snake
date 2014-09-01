@@ -71,15 +71,18 @@ void TurretInstance::sendMessage(const char *message, size_t message_len) {
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0){
 		perror("Error creating socket");
+		status = TurretInstance::error;
 	}
 	status = TurretInstance::sending;
 	LOG(DEBUG) << "sending to TurretInstance " << id << " addr: "
 			<< inet_ntoa(addr.sin_addr) << " port: " << ntohs(addr.sin_port);
 	if (connect(sockfd, (struct sockaddr*) &addr, sizeof(struct sockaddr_in)) < 0) {
 		perror("Error connecting Turret");
+		status = TurretInstance::error;
 	} else {
 		if(write(sockfd, message, message_len)<0){
 			perror("Write failed!");
+			status = TurretInstance::error;
 		}
 	}
 	close(sockfd);
@@ -169,6 +172,13 @@ void handleMessage(TurretInstance *ti, string msg, list<string> *rep) {
 		}
 	} else {
 		LOG(ERROR) << "received " << msg << " from Turret Instance " << *ti;
+		ti->status = TurretInstance::error;
+		if(ti->curStrategy.length() > 0){
+			//Retry this strategy
+			pthread_mutex_lock(&strategies_mutex);
+			global_strategies.push_front(ti->curStrategy);
+			pthread_mutex_unlock(&strategies_mutex);
+		}
 	}
 }
 
@@ -453,6 +463,7 @@ int main(int argc, char **argv) {
 	pthread_t accept_threadv;
 	pthread_t strategies_threadv;
 	pthread_t reports_threadv;
+	int done;
 	quit = 0;
 
 	pthread_cond_init(&reports_cond, NULL);
@@ -488,7 +499,24 @@ int main(int argc, char **argv) {
 
 	/* Sleep */
 	sleep(10);
-	while((!global_reports.empty() || !global_strategies.empty()) && !quit){
+	while(!quit){
+		if(global_reports.empty() && global_strategies.empty()){
+			pthread_mutex_lock(&turrets_mutex);
+			done = 1;
+			for (list<TurretInstance>::iterator it = global_turrets.begin(); 
+							it != global_turrets.end(); it++) {
+				if(it->status == TurretInstance::running 
+					|| it->status == TurretInstance::reporting 
+					|| it->status == TurretInstance::sending){
+					done = 0;
+					break;
+				}
+			}
+			pthread_mutex_unlock(&turrets_mutex);
+			if(done == 1){
+				quit = 1;
+			}
+		}
 		sleep(1);
 	}
 

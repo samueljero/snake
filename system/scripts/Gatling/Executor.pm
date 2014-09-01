@@ -122,6 +122,7 @@ sub strategyListener {
         chomp $line;
         push (@WaitingStrategyList, $line);
         if ($line =~ "STOP") {
+	    print "Received Request to STOP... stopping\n";
             $quit = 1;
             last;
         }

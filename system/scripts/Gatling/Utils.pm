@@ -23,12 +23,16 @@ BEGIN {
 
 sub openGC
 {
-my $sock = new IO::Socket::INET->new(
-	PeerAddr => $GatlingConfig::GlobalCollectorAddr,
-	PeerPort => $GatlingConfig::GlobalCollectorPort,
-	Proto => 'tcp');
-die "Could not create socket to GC: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
+my $sock;
+while(not $sock){
+	$sock = new IO::Socket::INET->new(
+		PeerAddr => $GatlingConfig::GlobalCollectorAddr,
+		PeerPort => $GatlingConfig::GlobalCollectorPort,
+		Proto => 'tcp');
+	print "Could not create socket to GC: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
+}
 print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort\n";
+$sock->autoflush(1);
 return $sock;
 }
 sub reportGC
@@ -37,6 +41,7 @@ sub reportGC
     my $msg = shift;
 
     print $sock "$msg\n";
+    $sock->autoflush(1);
     return;
 }
 
@@ -71,10 +76,13 @@ sub directTopology($)
 {
   my ($comm) = @_;
   my $topoPort = 8000 + $GatlingConfig::offset;
-  my $sock = new IO::Socket::INET->new( PeerAddr => '127.0.0.1',
-      PeerPort => $topoPort,
-      Proto => 'tcp');
-  die "Executor: Could not create socket to talk to NS3 ($topoPort): $!\n" unless $sock;
+  my $sock;
+  while(not $sock){
+	  $sock = new IO::Socket::INET->new( PeerAddr => '127.0.0.1',
+	      PeerPort => $topoPort,
+	      Proto => 'tcp');
+	  print "Executor: Could not create socket to talk to NS3 ($topoPort): $!\n" unless $sock;
+  }
   print $sock "$comm\n";
   my $tmp;
   $res="";
