@@ -39,7 +39,7 @@ sub ns3_thread {
 sub tcpdump_thread {
 	my $strat = shift;
 	my $filename = Utils::make_file_name($strat);
-	my $timeout = $GatlingConfig::window_size + 10;
+	my $timeout = $GatlingConfig::window_size + $GatlingConfig::start_attack + 10;
 	my $tap = 3 + $GatlingConfig::offset;
 	my $interface = "tap-vm$tap";
 	my $path = "$GatlingConfig::state_dir/pcap_$GatlingConfig::offset/$filename.dmp";
@@ -170,6 +170,11 @@ sub start {
             sleep(1);
             Utils::restoreVMs(-1);
 	    sleep(3);
+	    
+	    if($GatlingConfig::capture_packets){
+            	$pcap_thr = threads->create( 'tcpdump_thread', $strategy);
+	    }
+
             $GatlingConfig::watch_ns3=1;
             my $ns3_thr = threads->create( 'ns3_thread', $GatlingConfig::NS3_command);
             sleep ($GatlingConfig::start_attack);
@@ -188,10 +193,6 @@ sub start {
             Utils::logTime("command $command");
             Utils::directTopology($command);
             Utils::directTopology("C Gatling Resume");
-
-	    if($GatlingConfig::capture_packets){
-            	$pcap_thr = threads->create( 'tcpdump_thread', $strategy);
-	    }
 
             #Start clients
             print "Starting System\n";

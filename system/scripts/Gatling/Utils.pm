@@ -30,6 +30,7 @@ while(not $sock){
 		PeerPort => $GatlingConfig::GlobalCollectorPort,
 		Proto => 'tcp');
 	print "Could not create socket to GC: $GatlingConfig::GlobalCollectorPort $!\n" unless $sock;
+	sleep(1) unless $sock;
 }
 print $sock "$GatlingConfig::ListenAddr:$GatlingConfig::ListenPort\n";
 $sock->autoflush(1);
@@ -81,6 +82,7 @@ sub directTopology($)
 	  $sock = new IO::Socket::INET->new( PeerAddr => '127.0.0.1',
 	      PeerPort => $topoPort,
 	      Proto => 'tcp');
+	  sleep(1) unless $sock;
 	  print "Executor: Could not create socket to talk to NS3 ($topoPort): $!\n" unless $sock;
   }
   print $sock "$comm\n";
