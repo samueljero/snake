@@ -121,9 +121,9 @@ sub analyze {
 		if ($#token < 1 or $token[0] =~ /^\/\// or $token[0] =~ /^#/ ) {
 			#skip
 		} else {
-			my $perf     = $token[2];
-			my $strategy = $token[1];
-			my $res      = $token[3];
+			my $perf     = $token[1];
+			my $strategy = $token[0];
+			my $res      = $token[2];
 			my $score    = Utils::computeAttackScore( $perf, $res );
 
 			#Save Perf Score
@@ -133,6 +133,8 @@ sub analyze {
 			if ($benign_val > 0 and isAttack($score, $benign_val)) {
 				print LEARNED_LOG "FOUND $strategy,$perf,$res,$benign_val\n";
 			}
+			PERF_LOG->autoflush(1);
+			LEARNED_LOG->autoflush(1);
 
 			if ($strategy =~ / NONE /) {
 				$benign_calc_total += Utils::computeAttackScore( $perf, $res );

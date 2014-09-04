@@ -234,6 +234,9 @@ sub primeSystem {
 				elsif ( $msgType eq "Reset" ) {
 					$size = 7;
 				}
+				elsif ( $msgType eq "Response" ) {
+					$size = 7;
+				} 
 				else {
 					$size = 6;
 				}
