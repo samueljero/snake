@@ -356,7 +356,7 @@ sub systemDCCP()
   $serverport= 5002;
   $malport = 5050;
   $defaultwindow=20000;
-  $packet_cap_len = 100;
+  $packet_cap_len = 120;
 }
 
 sub formPsshStrings {

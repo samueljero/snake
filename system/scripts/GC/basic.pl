@@ -222,16 +222,16 @@ sub primeSystem {
 		else {
 			if ( $GatlingConfig::systemname == "DCCP" ) {
 				my $size = 0;
-				if ( $msgType == "BaseMessage" ) {
+				if ( $msgType eq "BaseMessage" ) {
 					$size = 3;
 				}
-				elsif ( $msgType == "Data" ) {
+				elsif ( $msgType eq "Data" ) {
 					$size = 4;
 				}
-				elsif ( $msgType == "Request" ) {
+				elsif ( $msgType eq "Request" ) {
 					$size = 5;
 				}
-				elsif ( $msgType == "Reset" ) {
+				elsif ( $msgType eq "Reset" ) {
 					$size = 7;
 				}
 				else {
