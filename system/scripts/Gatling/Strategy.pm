@@ -213,7 +213,7 @@ sub parseMessage {
     $typenamestr = "uint8_t";
     push(@{$coarseStrategyList{$typenamestr}}, "r");
     push(@{$coarseStrategyList{$typenamestr}}, "=0");
-    push(@{$coarseStrategyList{$typenamestr}}, "=257");
+    push(@{$coarseStrategyList{$typenamestr}}, "=255");
     # fine
     push(@{$fineStrategyList{$typenamestr}}, "+1");
     #push(@{$fineStrategyList{$typenamestr}}, "=128");
