@@ -50,6 +50,7 @@ address 10.1.2.$inner_ip
 netmask 255.255.255.0
 broadcast 10.1.2.255
 network 10.1.2.0
+mtu 1400
 # gateway 10.1.2.254
 # hwaddress ether $mac
 
