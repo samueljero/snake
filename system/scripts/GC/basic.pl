@@ -218,9 +218,8 @@ sub primeSystem {
 			push( @strat, "$prefix NONE 0" );
 			push( @strat, "$prefix NONE 1" );
 			push( @strat, "$prefix NONE 2" );
-		}
-		else {
-			if ( $GatlingConfig::systemname == "DCCP" ) {
+		} else {
+			if ( $GatlingConfig::systemname eq "DCCP" ) {
 				my $size = 0;
 				if ( $msgType eq "BaseMessage" ) {
 					$size = 3;
@@ -253,7 +252,7 @@ sub primeSystem {
 "$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1"
 				);
 			}
-			elsif ( $GatlingConfig::systemname == "TCP" ) {
+			elsif ( $GatlingConfig::systemname eq "TCP" ) {
 				push( @strat,
 "$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow"
 				);
@@ -268,6 +267,12 @@ sub primeSystem {
 				);
 			}
 		}
+
+	}
+	if ( $GatlingConfig::systemname eq "TCP" ) {
+		push( @strat,
+		"LISTEN?*?Syn REPLAY 1,LISTEN?*?Syn LIE =$GatlingConfig::serverport 0,LISTEN?*?Syn LIE =$GatlingConfig::clientport 1"
+		);
 	}
 	return @strat;
 }

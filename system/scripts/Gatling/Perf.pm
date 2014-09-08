@@ -70,11 +70,9 @@ sub Prime_bugPerf {
 
 sub TCP_Perf{
 	my $eachline = shift;
-    print STDERR "opening: $GatlingConfig::scoreFile\n";
 	open SCORE, "+>>$GatlingConfig::scoreFile" or die $!;
 	my $cnt= $eachline =~ tr/.//;
-    SCORE->printflush("$cnt\n");
-    #STDOUT->printflush("PERF: $cnt\n");
+        SCORE->printflush("$cnt\n");
 	close SCORE;
 }
 
