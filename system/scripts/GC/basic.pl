@@ -294,7 +294,7 @@ sub analyze {
 			#Save Perf Score
 			print PERF_LOG "$strategy,$perf,$res,$benign_val\n";
 
-			if ($perf == 0) {
+			if ($perf < 15) {
 				push(@RetryList, $strategy);
 				print RETRY_LOG "$strategy,$perf,$res\n";
 				outputStrat_nocheck($strategy);
