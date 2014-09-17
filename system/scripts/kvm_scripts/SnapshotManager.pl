@@ -84,26 +84,21 @@ sub load_and_start {
 	my $t;
 	my $p;
 	my $ip;
+	my $vm_num = (($i-1)%4) + 1;
 	do {
-		if($i==$specialVM) {
+		if ($vm_num == $specialVM) {
             # TODO - vm images might be better configured manually. e.g. read from another config file
             # especially if we're going to use various VM images
 
 			#system("qemu-system-x86_64 -hda $clonedir/debian3-clone.qcow2 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=pcnet,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=pcnet,macaddr=$mac2,vlan=1 -vnc :$vncport -M pc-0.12 -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
 			#system("qemu-system-x86_64 -hda $clonedir/fedora-clone.qcow2 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=pcnet,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=pcnet,macaddr=$mac2,vlan=1 -vnc :$vncport -M pc-0.12 -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			#system("qemu-system-x86_64 -hda $clonedir/ubuntu-1404-clone.qcow2 -m512 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=pcnet,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=pcnet,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			#print("qemu-system-x86_64 -hda $clonedir/windows-8.1-clone.qcow2 -m 2048 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=e1000,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=e1000,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"\n");
-			#system("qemu-system-x86_64 -hda $clonedir/windows-8.1-clone.qcow2 -m 2048 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=e1000,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=e1000,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
+			system("qemu-system-x86_64 -hda $clonedir/windows-8.1-clone$i.qcow2 -m 2048 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=e1000,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=e1000,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
 			#system("qemu-system-x86_64 -hda $clonedir/win95-clone.qcow2 -m 128 -M pc -vga std -no-kvm -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=ne2k_pci,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=ne2k_pci,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			system("qemu-system-x86_64 -hda $clonedir/ubuntu$i-base.qcow2 -m512 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=pcnet,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=pcnet,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			#system("qemu-system-x86_64 -hda $clonedir/ubuntu3.qcow2 -m512 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,model=pcnet,macaddr=$mac1 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -net nic,model=pcnet,macaddr=$mac2,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
 			$ip = sprintf("$ipbase.%d", $i);
                         $p = Net::Ping->new("tcp");
 			$p->port_number(80);
 		}else{
-			print("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"\n");
 			system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
-			#system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -shared-mode F -shared-sequence $seq -daemonize -incoming \"exec: cat $snapshot\"");
 			$ip = sprintf("$ipbase.%d", $i);
 			$p = Net::Ping->new("tcp");
 			$p->port_number(22);
@@ -118,23 +113,17 @@ my $command = $ARGV[0];
 my $end = $ARGV[1];
 my $start = 1;
 my $exec_command = $ARGV[2];
-if ($#ARGV == 2) {
+if ($#ARGV >= 2) {
   $start = $ARGV[1];
   $end = $ARGV[2];
 }
 
-if ($#ARGV == 3) {
-  $start = $ARGV[1];
-  $end = $ARGV[2];
+if ($#ARGV >= 3) {
   $exec_command = $ARGV[3];
 	$sn = $ARGV[3];
 }
 
-if($#ARGV == 4){
-	$start = $ARGV[1];
-	$end = $ARGV[2];
-	$exec_command = $ARGV[3];
-	$sn = $ARGV[3];
+if($#ARGV >= 4){
 	$seq = $ARGV[4];
 }
 

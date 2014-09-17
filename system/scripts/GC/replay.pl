@@ -110,8 +110,8 @@ sub initSystem {
 }
 
 sub analyze {
-	my $perfStr = shift;
-	my $feedback = @_;
+	my @feedback = @_;
+	my $perfStr = shift(@feedback);
 	my $strat;
 
 	# Analyze our perf score, if we got one
@@ -128,6 +128,13 @@ sub analyze {
 
 			#Save Perf Score
 			print PERF_LOG "$strategy,$perf,$res,$benign_val\n";
+
+
+			if ($perf < 15) {
+				print "$strategy\n";
+				$| = 1;
+				return;
+			}
 
 			#Check for Attack
 			if ($benign_val > 0 and isAttack($score, $benign_val)) {
@@ -174,6 +181,9 @@ sub main{
 			$line =~ s/info://g;
 			push(@feedback, $line);
 		}
+
+	      LEARNED_LOG->autoflush(1);
+	      PERF_LOG->autoflush(1);
 	}
 
 	close PERF_LOG;
