@@ -68,6 +68,7 @@ $offset=0;
 $s_parallel = 4;
 $c_parallel = 1;
 $num_vms = 4;
+$specialVMoption = "";
 $runTime = 2000000;
 $waitTime = 0;
 $watchPort = " ";
@@ -314,6 +315,7 @@ sub systemTCP()
   $malport = 5556;
   $defaultwindow=20000;
   $useGlobal=1;
+#  $specialVMoption = "-special 3";
 }
 
 sub systemDCCP()
