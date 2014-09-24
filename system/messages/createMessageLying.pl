@@ -781,7 +781,8 @@ END
 print DOTH "};\n#endif\n\n";
 
 my $numMsg = $#msgName+1;
-print DOTH "#define MSG $numMsg\n#define FIELD $maxField\n\n";
+my $mf = $maxField+1;
+print DOTH "#define MSG $numMsg\n#define FIELD $mf\n\n";
 
 
 close(DOTH);
