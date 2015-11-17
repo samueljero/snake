@@ -1,0 +1,21 @@
+DEFINE IS_UDP yes
+
+// BaseMessage is added
+// because of the demand of the script
+BaseMessage {
+  int32_t type = 0;
+}
+
+//
+// In Byzantine Paxos, the PaxosMessage has type equal to 0
+// So, we need to the type of PaxosMessage
+//
+PaxosMessage {
+  // temporary assignment of type
+  int32_t type = 1;
+  int32_t number;
+  int32_t round;
+  int32_t from;
+  int32_t paxosType;
+} 
+

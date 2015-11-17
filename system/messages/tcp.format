@@ -1,0 +1,565 @@
+BaseMessage {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 0;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+DEFINE CHECKSUM_FIELD chk
+DEFINE SEQUENCE_FIELD seq
+DEFINE ACKNOWLEDGEMENT_FIELD ack
+DEFINE TYPE_FIELD type
+DEFINE SIZE_FIELD size
+DEFINE SIZE_MULT  4
+DEFINE SOURCE_PORT_FIELD src
+DEFINE DEST_PORT_FIELD dest
+DEFINE SEQUENCE_FIELD_NUM 2
+DEFINE TYPE_FIELD_NUM 6
+DEFINE WINDOW_FIELD_NUM 10
+DEFINE IS_TRANSPORT yes
+DEFINE IP_PROTO_NUM 6
+
+//LITTLE ENDIAN ONLY!!!!!!!!!!!
+//#define FIN 1
+//#define SYN 2
+//#define RST 4
+//#define PSH 8
+//#define ACK 16
+
+Fin {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 1;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+Syn {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 2;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSyn {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 3;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+Rst {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 4;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinRst {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 5;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynRst {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 6;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynRst {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 7;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+Psh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 8;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 9;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 10;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 11;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+RstPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 12;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinRstPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 13;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynRstPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 14;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynRstPsh {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 15;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+Ack {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 16;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 17;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 18;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 19;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+RstAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 20;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinRstAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 21;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynRstAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 22;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynRstAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 23;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+PshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 24;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 25;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 26;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+
+FinSynPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 27;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+RstPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 28;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinRstPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 29;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+SynRstPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 30;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}
+
+FinSynRstPshAck {
+	uint16_t src;
+	uint16_t dest;
+	uint32_t seq;
+	uint32_t ack;
+	uint16_t res:4;
+	uint16_t size:4;
+	uint16_t type:5 = 31;
+	uint16_t urg:1;
+	uint16_t ece:1;
+	uint16_t cwr:1;
+	uint16_t window;
+	uint16_t chk;
+	uint16_t urgptr;
+	//char opts[size*4 - 5];
+}

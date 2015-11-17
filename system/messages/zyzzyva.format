@@ -1,0 +1,147 @@
+DEFINE IS_UDP yes
+
+BaseMessage {
+	short type = 0;
+	short extra;
+	int size;
+} 
+
+Request {
+	short type = 1;
+	short extra;
+	int size;
+} 
+
+Reply {
+	short type = 2;
+	short extra;
+	int size;
+	int64_t v;
+	uint64_t rid;
+	char digest[16];
+	int replica;
+	int reply_size;
+} 
+
+Order_request {
+	short type = 3;
+	short extra;
+	int size;
+	int64_t view;
+	int seqno;
+	char digest[16];
+	int rep_id;
+  int bsize;
+  int non_det_size;
+  int client_id;
+  uint64_t request_id;
+  char pdigest[16];
+} 
+
+
+Local_commit {
+	short type = 4;
+	short extra;
+	int size;
+	int64_t view;
+  int cid;
+  uint64_t request_id;
+  int seqno;
+	char digest[16];
+  int tsize;
+  int nelem;
+} 
+
+
+Committed_locally {
+	short type = 5;
+	short extra;
+	int size;
+	int64_t view;
+  uint64_t request_id;
+  char digest[16];
+  int replica;
+} 
+
+
+Checkpoint {
+	short type = 6;
+	short extra;
+	int size;
+	int64_t seqno;
+	char digest[16];
+	int id;
+	int padding;
+	//followed by a variable sized signature	
+} 
+
+
+Status {
+	short type = 7;
+	short extra;
+	int size;
+	int64_t view;
+	int64_t ls;
+  short ptype;
+  char digest[16];
+  int id;
+}
+
+struct Req_info {
+  char digest[16];
+  char rdigest[16];
+  int64_t seqno;
+  int64_t view;
+};
+
+ViewChange {
+	short type = 8;
+	short extra;
+	int size;
+	int64_t v;
+	int64_t ls;
+  int64_t lc;
+  int64_t le;
+  int id;
+  char digest[16];
+  char rdigest[16];
+  int64_t seqno;
+  int64_t view;
+  char pdigest[16];
+}
+
+
+NewView {
+	short type = 9;
+	short extra;
+	int size;
+	int64_t v;
+	int64_t min;
+	int64_t max;
+  int64_t committed;
+  int64_t complete;
+	//more stuff follows...
+
+}
+
+ViewChangeAck {
+  short type = 10;
+  short extra;
+  int size;
+}
+
+NewKey {
+  short type = 11;
+  short extra;
+  int size;
+}
+
+Hate_primary {
+  short type = 12;
+  short extra;
+  int size;
+  int64_t view;
+  int id;
+}
+
+

@@ -1,0 +1,135 @@
+DEFINE IS_UDP yes
+
+BaseMessage {
+	short type = 0;
+	short extra;
+	int size;
+} 
+
+Request {
+	short type = 1;
+	short extra;
+	int size;
+} 
+
+Reply {
+	short type = 2;
+	short extra;
+	int size;
+	int64_t v;
+	uint64_t rid;
+	char digest[16];
+	int replica;
+	int reply_size;
+} 
+
+
+PrePrepare {
+	short type = 3;
+	short extra;
+	int size;
+	int64_t view;
+	int64_t seqno;
+	char digest[16];
+	int rset_size;
+	short n_big_reqs;
+	short non_det_size;
+	char request[rset_size];
+	//char non_det[16][n_big_reqs];
+	//followed by a variable sized signature;
+	//	char leftover[size-8-...
+	
+} 
+
+
+Prepare {
+	short type = 4;
+	short extra;
+	int size;
+	int64_t view;
+	int64_t seqno;
+	char digest[16];
+	int id;
+	int padding;
+	//followed by a variable sized signature	
+} 
+
+
+Commit {
+	short type = 5;
+	short extra;
+	int size;
+	int64_t view;
+	int64_t seqno;
+	int id;
+	int padding;
+	//followed by a variable sized signature	
+} 
+
+
+Checkpoint {
+	short type = 6;
+	short extra;
+	int size;
+	int64_t seqno;
+	char digest[16];
+	int id;
+	int padding;
+	//followed by a variable sized signature	
+} 
+
+
+struct PP_info {
+  int64_t v;    
+  int n;        
+  int proof;    
+  int64_t breqs;
+};
+
+Status {
+	short type = 7;
+	short extra;
+	int size;
+	int64_t v;
+	int64_t ls;
+	int64_t le;
+	int id;
+	short sz;
+	short brsz;
+	int vcs_size;
+	//more stuff follows...
+	char vcs[vcs_size];
+	//struct PP_info pps[sz];
+}
+
+
+ViewChange {
+	short type = 8;
+	short extra;
+	int size;
+	int64_t v;
+	int64_t ls;
+	char ckpts[48];	
+	int id;
+	short n_ckpts;
+	short n_reqs;
+	int prepared_size;
+	unsigned int prepared[prepared_size];
+	char d[16];
+	//more stuff follows...
+
+}
+
+
+NewView {
+	short type = 9;
+	short extra;
+	int size;
+	int64_t v;
+	int64_t min;
+	int64_t max;
+	//more stuff follows...
+
+}
+
+

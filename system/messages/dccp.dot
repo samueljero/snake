@@ -1,0 +1,24 @@
+digraph DCCP {
+CLOSED -> LISTEN [rcvd="A_LISTEN", send="-"];
+LISTEN -> RESPOND [rcvd="M_Request", send="M_Response"];
+RESPOND -> OPEN [rcvd="M_Ack", send="-"];
+RESPOND -> OPEN [rcvd="M_DataAck", send="-"];
+CLOSED -> REQUEST [ rcvd="A_CONNECT", send="M_Request"];
+REQUEST -> PARTOPEN [ rcvd="M_Response", send="M_Ack"];
+PARTOPEN -> OPEN [rcvd="M_Ack", send="-"];
+PARTOPEN -> OPEN [rcvd="M_DataAck", send="-"];
+OPEN -> CLOSEREQ [rcvd="A_CLOSE", send="M_CloseReq"];
+CLOSEREQ -> CLOSED [rcvd="M_Close", send="M_Reset"];
+OPEN -> CLOSED [rcvd="M_Close", send="M_Reset"];
+OPEN -> CLOSING [rcvd="A_CLOSE", send="M_Close"];
+OPEN -> CLOSING [rcvd="M_CloseReq", send="M_Close"];
+CLOSING -> TIMEWAIT [rcvd="M_Reset", send="-"];
+TIMEWAIT -> CLOSED [rcvd="E_TIMEOUT",send="-"];
+LISTEN -> CLOSED [rcvd="A_CLOSE"];
+RESPOND -> CLOSED [rcvd="M_Reset"];
+OPEN -> CLOSED [rcvd="M_Reset"];
+REQUEST -> CLOSED [rcvd="M_Reset"];
+PARTOPEN -> CLOSED [rcvd="M_Reset"];
+CLOSEREQ -> CLOSED [rcvd="M_Reset"];
+TIMEWAIT -> CLOSED [rcvd="M_Reset"];
+}
