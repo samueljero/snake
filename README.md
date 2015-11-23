@@ -39,9 +39,9 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 
 * Configure VMs:
 
-		cd system/scripts/kvm_scripts/images/
+		cd system/scripts/kvm_scripts/
+		git clone https://github.com/samueljero/snake_vm.git images
 		for each vm:
-			Add VM as ubuntu-clone<num>.qcow2
 			ssh-copy-id root@10.0.1.<id>
 
 	For reference, the VM users are `root` and the password is `Gat11ng` in our default VMs
@@ -53,7 +53,7 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 
 * Configure and Build NS-3
 
-		cd ns-3dev
+		cd ns-3-dev
 		./waf configure --enable-examples
 		cd system/messages/
 		./switchToSystem.pl tcp
