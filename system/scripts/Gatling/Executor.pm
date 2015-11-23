@@ -71,14 +71,7 @@ sub perf_collection_thread {
 		$socket->recv($line, 1024);
 		my @lines = split /\n/, $line;
 		foreach my $eachline (@lines) {
-			if($GatlingConfig::systemname eq "Prime"){
-				Perf::Prime_bugPerf($eachline);
-				#Perf::PrimePerf($eachline);
-			}elsif($GatlingConfig::systemname eq "BFT"){
-				Perf::BFTPerf($eachline);
-			}elsif($GatlingConfig::systemname eq "Steward"){
-				Perf::StewardPerf($eachline);
-			}elsif($GatlingConfig::systemname eq "TCP"){
+			if($GatlingConfig::systemname eq "TCP"){
 				Perf::TCP_Perf($eachline);
 			}elsif($GatlingConfig::systemname eq "DCCP"){
 				Perf::DCCP_Perf($eachline);

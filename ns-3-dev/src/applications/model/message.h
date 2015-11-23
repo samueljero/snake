@@ -37,6 +37,16 @@ typedef struct {
 
 #define DEST_PORT_FIELD dest
 
+#define SEQUENCE_FIELD_NUM 2
+
+#define TYPE_FIELD_NUM 6
+
+#define WINDOW_FIELD_NUM 10
+
+#define IS_TRANSPORT yes
+
+#define IP_PROTO_NUM 6
+
 typedef struct {
 	uint16_t src;
 	uint16_t dest;
@@ -585,6 +595,7 @@ class Message {
 	void ChangeSynRstPshAck(int field, char* value);
 	void ChangeFinSynRstPshAck(int field, char* value);
 	void CreateMessage(int type, const char *spec);
+	static int GetMessageHeaderSize(int type);
 	uint16_t GetSourcePort();
 	uint16_t GetDestPort();
 	uint32_t GetSequenceNumber();
@@ -600,5 +611,5 @@ class Message {
 #endif
 
 #define MSG 32
-#define FIELD 12
+#define FIELD 13
 

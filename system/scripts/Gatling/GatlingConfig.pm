@@ -8,8 +8,7 @@ use Socket;
 package GatlingConfig;
 
 ## Global collector
-#$GlobalCollectorAddr = "ocean1.cs.purdue.edu";
-$GlobalCollectorAddr = "cloud15.cs.purdue.edu";
+$GlobalCollectorAddr = "localhost";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
 #$attackModule = "StateBasedAttack";
@@ -126,19 +125,6 @@ sub runClient()
 sub setSystem() 
 {
   print STDERR "System $systemname\n";
-  if ($systemname eq "BFT") {
-    systemBFT();
-  }
-  if ($systemname eq "Prime") {
-    systemPrime();
-  }
-  if ($systemname eq "Steward") {
-    systemSteward();
-  }
-  # Endadul
-  if ($systemname eq "Prime_bug") {
-    systemPrime_bug();
-  }
   if($systemname eq "TCP"){
 	systemTCP();
   }
@@ -149,125 +135,11 @@ sub setSystem()
   makeNS3Com();
 }
 
-sub systemBFT()
-{
-  $formatFile = "$format_dir/bft.format";
-  $server_command = "cd /root/BFT/bin; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
-  $client_command = "cd /root/BFT/bin; stdbuf -i 0 -o 0 ./run_client.sh | ~/perfcollector.pl ";
-  undef(@serverNumbers);
-  push (@serverNumbers, 1);
-  push (@serverNumbers, 2);
-  push (@serverNumbers, 3);
-  push (@serverNumbers, 4);
-  undef(@clientNumbers);
-  push (@clientNumbers, 5);
-  $s_parallel = 4;
-  $c_parallel = 1;
-  $num_vms = 5;
-  $runTime = 100000;
-  undef(@malNumbers);
-  push (@malNumbers, 0);
-  $watchPort = " -port 3669 ";
-  $alreadyLearned = "BFT/pre_learned.txt";
-  $prePerf = "BFT/pre_perf.txt";
-  $perfMeasured = "BFT/perf.txt";
-  $newlyLearned = "BFT/new_learned.txt";
-  $setupCommand = "mkdir BFT; cp pre*.txt BFT";
-  $systemname = "BFT";
-}
-
-sub systemPrime()
-{
-  $systemname = "Prime";
-  $formatFile = "$format_dir/prime.format";
-  $setupCommand = "mkdir Prime";
-  $server_command = "cd /root/Prime/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
-  $client_command = "cd /root/Prime/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  undef(@serverNumbers);
-  push (@serverNumbers, 1);
-  push (@serverNumbers, 2);
-  push (@serverNumbers, 3);
-  push (@serverNumbers, 4);
-  undef(@clientNumbers);
-  push (@clientNumbers, 5);
-  $s_parallel = 4;
-  $c_parallel = 1;
-  $runTime = 100;
-  #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
-  $watchPort = " -port 7200 -port 7250 -port 7300 ";
-  undef(@malNumbers);
-  push (@malNumbers, 1);
-  $alreadyLearned = "Prime/pre_learned.txt";
-  $prePerf = "Prime/pre_perf.txt";
-  $perfMeasured = "Prime/perf.txt";
-  $state_dir = "Prime/";
-  $newlyLearned = "Prime/new_learned.txt";
-  $systemname = "Prime";
-}
-
-# Endadul
-sub systemPrime_bug()
-{
-  # $systemname = "Prime_bug";
-  $formatFile = "../messages/prime.format";
-  $setupCommand = "mkdir Prime_bug; cp pre_learn* Prime_bug;";
-  $server_command = "cd /root/Prime_bug/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
-  $client_command = "cd /root/Prime_bug/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  undef(@serverNumbers);
-  push (@serverNumbers, 1);
-  push (@serverNumbers, 2);
-  push (@serverNumbers, 3);
-  push (@serverNumbers, 4);
-  undef(@clientNumbers);
-  push (@clientNumbers, 5);
-  $s_parallel = 4;
-  $c_parallel = 1;
-  $runTime = 100;
-  #$watchPort = "  -port 7100 -port 7101 -port 7102 -port 7200 -port 7250 -port 7300 -port 7350 -port 7400 -port 8900 -port 7401 -port 7402 -port 7403 -port 7301 -port 7302 -port 7303 -port 7201 -port 7103 -port 7251 -port 7252 -port 7203 -port 7253 -port 7204 -port 7254 -port 7202 ";
-  $watchPort = " -port 7200 -port 7250 -port 7300 ";
-  undef(@malNumbers);
-  push (@malNumbers, 0);
-  $alreadyLearned = "Prime_bug/pre_learned.txt";
-  $prePerf = "Prime_bug/pre_perf.txt";
-  $perfMeasured = "Prime_bug/perf.txt";
-  $newlyLearned = "Prime_bug/new_learned.txt";
-  $state_dir = "Prime_bug/";
-  $systemname = "Prime_bug";
-}
 sub movePrevPerf()
 {
   print STDERR ("cat $perfMeasured >> $prePerf\n");
   system ("cat $perfMeasured >> $prePerf\n");
   system ("cat $newlyLearned >> $alreadyLearned\n");
-}
-
-sub systemSteward()
-{
-  $formatFile = "../messages/steward.format";
-  $setupCommand = "mkdir Steward";
-  $server_command = "cd /root/Steward/bin/; stdbuf -i 0 -o 0 ./run.sh | ~/logcollector.pl";
-  $client_command = "cd /root/Steward/bin/; stdbuf -i 0 -o 0 ./run_client.sh |  ~/perfcollector.pl";
-  undef(@serverNumbers);
-  push (@serverNumbers, 1);
-  push (@serverNumbers, 2);
-  push (@serverNumbers, 3);
-  push (@serverNumbers, 4);
-  undef(@clientNumbers);
-  push (@clientNumbers, 5);
-  $s_parallel = 12;
-  $c_parallel = 1;
-  $runTime = 100;
-  $watchPort = " -port 100 ";
-  undef(@malNumbers);
-  push (@malNumbers, 1);
-  push (@malNumbers, 5);
-  push (@malNumbers, 9);
-  $alreadyLearned = "Steward/pre_learned.txt";
-  $prePerf = "Steward/pre_perf.txt";
-  $perfMeasured = "Steward/perf.txt";
-  $newlyLearned = "Steward/new_learned.txt";
-  $state_dir = "Steward/";
-  $num_vms = 13;
 }
 
 sub systemTCP()
@@ -315,7 +187,7 @@ sub systemTCP()
   $malport = 5556;
   $defaultwindow=20000;
   $useGlobal=1;
-#  $specialVMoption = "-special 3";
+  $specialVMoption = "";
 }
 
 sub systemDCCP()

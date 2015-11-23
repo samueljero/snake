@@ -20,9 +20,9 @@ int Message::FindMsgType() {
 
 int Message::FindMsgSize() {
 #ifdef SIZE_MULT
-	return ((BaseMessage*)msg)->size*SIZE_MULT + 0;
+	return ((BaseMessage*)msg)->SIZE_FIELD*SIZE_MULT + 0;
 #else
-	return ((BaseMessage*)msg)->size + 0;
+	return ((BaseMessage*)msg)->SIZE_FIELD + 0;
 #endif
 }
 
@@ -7558,6 +7558,79 @@ void Message::CreateMessage(int type, const char *spec){
 		spec+=len;
 	};
 	//std::cout<< "Exiting CreateMessage"<<std::endl;
+};
+
+int Message::GetMessageHeaderSize(int type){
+	//std::cout<< "Entering GetMessageHeaderSize"<<std::endl;
+	switch(type){
+	case BASEMESSAGE:
+		return sizeof(BaseMessage);
+	case FIN:
+		return sizeof(Fin);
+	case SYN:
+		return sizeof(Syn);
+	case FINSYN:
+		return sizeof(FinSyn);
+	case RST:
+		return sizeof(Rst);
+	case FINRST:
+		return sizeof(FinRst);
+	case SYNRST:
+		return sizeof(SynRst);
+	case FINSYNRST:
+		return sizeof(FinSynRst);
+	case PSH:
+		return sizeof(Psh);
+	case FINPSH:
+		return sizeof(FinPsh);
+	case SYNPSH:
+		return sizeof(SynPsh);
+	case FINSYNPSH:
+		return sizeof(FinSynPsh);
+	case RSTPSH:
+		return sizeof(RstPsh);
+	case FINRSTPSH:
+		return sizeof(FinRstPsh);
+	case SYNRSTPSH:
+		return sizeof(SynRstPsh);
+	case FINSYNRSTPSH:
+		return sizeof(FinSynRstPsh);
+	case ACK:
+		return sizeof(Ack);
+	case FINACK:
+		return sizeof(FinAck);
+	case SYNACK:
+		return sizeof(SynAck);
+	case FINSYNACK:
+		return sizeof(FinSynAck);
+	case RSTACK:
+		return sizeof(RstAck);
+	case FINRSTACK:
+		return sizeof(FinRstAck);
+	case SYNRSTACK:
+		return sizeof(SynRstAck);
+	case FINSYNRSTACK:
+		return sizeof(FinSynRstAck);
+	case PSHACK:
+		return sizeof(PshAck);
+	case FINPSHACK:
+		return sizeof(FinPshAck);
+	case SYNPSHACK:
+		return sizeof(SynPshAck);
+	case FINSYNPSHACK:
+		return sizeof(FinSynPshAck);
+	case RSTPSHACK:
+		return sizeof(RstPshAck);
+	case FINRSTPSHACK:
+		return sizeof(FinRstPshAck);
+	case SYNRSTPSHACK:
+		return sizeof(SynRstPshAck);
+	case FINSYNRSTPSHACK:
+		return sizeof(FinSynRstPshAck);
+	default:
+		return 0;
+	}
+	//std::cout<< "Exiting GetMessageHeaderSize"<<std::endl;
 };
 
 

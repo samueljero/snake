@@ -148,10 +148,7 @@ sub getPerfScore()
     print STDERR "open scorefile: $GatlingConfig::scoreFile\n";
   open SCORE, "$GatlingConfig::scoreFile" or return $GatlingConfig::brokenPerf;
   my $score = `cat $GatlingConfig::scoreFile | wc -l`;
-  if ($GatlingConfig::systemname eq "BFT" || $GatlingConfig::systemname eq "Prime_bug") {
-    my $lines = `cat $GatlingConfig::scoreFile | wc -l`;
-    $score = $GatlingConfig::brokenPerf - $lines;
-  } elsif ($GatlingConfig::systemname eq "TCP" or $GatlingConfig::systemname eq "DCCP") {
+  if ($GatlingConfig::systemname eq "TCP" or $GatlingConfig::systemname eq "DCCP") {
 	  my $sum = 0;
 	  while (my $line = <SCORE>) {
 		  $sum = $sum+$line;
