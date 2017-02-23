@@ -814,6 +814,9 @@ int MalProxy::MalTransportProtocol(Ptr<Packet> packet, lowerLayers ll, maloption
 	res->action = NONE;
 
 	m = new Message(packet->PeekDataForMal());
+	if (packet->GetSize() < m->size) {
+		return NONE;
+	}
 
 	/*Check ports*/
 #if (defined SOURCE_PORT_FIELD) && (defined DEST_PORT_FIELD)

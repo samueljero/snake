@@ -164,24 +164,33 @@ class MessageFormatParser:
             s = self.structs[k]
             writer.write("struct %s {\n" % (s['name']))
             for f in s['fields']:
-                self._print_field(f,writer)
+                self._print_field(f,writer,0)
             writer.write("};\n\n")
                 
 
         for k in self.pkts:
             p = self.pkts[k]
             writer.write("typedef struct {\n")
+            i = 0
             for f in p['fields']:
-                self._print_field(f,writer)
+                i = self._print_field(f,writer,i)
+            if i > self.max_fields:
+                self.max_fields = i
             writer.write("} %s;\n\n" % (p['name']))
 
+        writer.write("enum MessageType {\n")
         if self.type_field is not None:
-            writer.write("enum MessageType {\n")
             for k in self.pkts:
                 p = self.pkts[k]
                 if 'type' in p:
                     writer.write("%s=%s,\n" % (k.upper(),p['type']))
-            writer.write("};\n\n")
+        else:
+            i = 0
+            for k in self.pkts:
+                p = self.pkts[k]
+                writer.write("%s=%s,\n" % (k.upper(),i))
+                i += 1
+        writer.write("};\n\n")
 
         header = """class Message {
     public:
@@ -202,10 +211,9 @@ class MessageFormatParser:
     void ChangeValue(int field, char* value);
 """
         writer.write(header)
-        if self.type_field is not None:
-            for k in self.pkts:
-                p = self.pkts[k]
-                writer.write("\tvoid Change%s(int field, char* value);\n" %(p['name']))
+        for k in self.pkts:
+            p = self.pkts[k]
+            writer.write("\tvoid Change%s(int field, char* value);\n" %(p['name']))
         writer.write("\tvoid CreateMessage(int type, const char *spec);\n")
         writer.write("\tstatic int GetMessageHeaderSize(int type);\n")
         header = """
@@ -276,8 +284,6 @@ int Message::FindMsgSize() {
             i = 0
             for f in p['fields']:
                 i = self._print_field_processing(f,writer,i)
-            if i > self.max_fields:
-                self.max_fields = i
 
             writer.write("\t//std::cout << \"Exiting Change%s\" << std::endl;\n" % (p['name']))
             writer.write("}\n\n")
@@ -289,9 +295,9 @@ int Message::FindMsgSize() {
         writer.write(header)
         for k in self.pkts:
             p = self.pkts[k]
-            writer.write("case %s:\n" % (p['name'].upper()))
-            writer.write("\t\tChange%s(field,value);\n" % (p['name']))
-            writer.write("\t\tbreak;\n")
+            writer.write("\t\tcase %s:\n" % (p['name'].upper()))
+            writer.write("\t\t\tChange%s(field,value);\n" % (p['name']))
+            writer.write("\t\t\tbreak;\n")
         writer.write("\t}\n")
         writer.write("\t//std::cout << \"Exiting ChangeValue\" << std::endl;\n")
         writer.write("}\n\n")
@@ -608,29 +614,32 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
         
         
 
-    def _print_field(self, field,writer): 
+    def _print_field(self, field,writer, num): 
         post = ""
+        if 'variable' in field:
+            return num
+        if field['length'] == "BaseMessage":
+            return num
         if 'bitfield' in field:
             post = field['bitfield']
         if 'index' in field:
             post = "[" + field['index'] + "]"
-        if 'variable' in field:
-            return
-        if field['length'] == "BaseMessage":
-            return
         if 'struct' in field:
             #Struct field
             try:
                 s = self.structs[field['length']]
             except Exception as e:
-                return
+                return num
             if s is None:
-                return
+                return num
             for f in s['fields']:
-                self._print_field(f,writer)
+                num = self._print_field(f,writer, num)
+            return num
         else:
             #Normal field
             writer.write("\t%s %s%s;\n" % (field['length'],field['name'],post))
+            num += 1
+            return num
 
     def outputStrategies(self, writer):
         writer.write("BaseMessage NONE 0\n")
