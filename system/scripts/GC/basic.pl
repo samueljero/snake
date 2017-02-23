@@ -212,13 +212,21 @@ sub initSystem {
 #Initial Strategies to start with
 sub primeSystem {
 	my @strat;
+
+	#Prime with Benign strategies
 	foreach my $msgType (@$msgNameRef) {
 		my $prefix = "*?*?$msgType";
 		if ( $msgType eq "BaseMessage" ) {
 			push( @strat, "$prefix NONE 0" );
 			push( @strat, "$prefix NONE 1" );
 			push( @strat, "$prefix NONE 2" );
-		} else {
+		}
+	}
+
+	#Prime with other strategies
+	foreach my $msgType (@$msgNameRef) {
+		my $prefix = "*?*?$msgType";
+		if ( $msgType ne "BaseMessage" ) {
 			if ( $GatlingConfig::systemname eq "DCCP" ) {
 				my $size = 0;
 				if ( $msgType eq "BaseMessage" ) {
@@ -269,11 +277,11 @@ sub primeSystem {
 		}
 
 	}
-	if ( $GatlingConfig::systemname eq "TCP" ) {
-		push( @strat,
-		"LISTEN?*?Syn REPLAY 1,LISTEN?*?Syn LIE =$GatlingConfig::serverport 0,LISTEN?*?Syn LIE =$GatlingConfig::clientport 1"
-		);
-	}
+	#if ( $GatlingConfig::systemname eq "TCP" ) {
+	#	push( @strat,
+	#	"LISTEN?*?Syn REPLAY 1,LISTEN?*?Syn LIE =$GatlingConfig::serverport 0,LISTEN?*?Syn LIE =$GatlingConfig::clientport 1"
+	#	);
+	#}
 	return @strat;
 }
 

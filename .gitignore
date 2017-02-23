@@ -1,0 +1,15 @@
+*.o
+*.pyc
+
+
+#Generated files
+*.strategy
+system/messages/strategy
+system/messages/message.h
+system/messages/message.cc
+system/scripts/GC/gc
+system/scripts/timing.txt
+ns-3-dev/build/
+ns-3-dev/.*
+ns-3-dev/src/applications/model/message.h
+ns-3-dev/src/applications/model/message.cc
