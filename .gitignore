@@ -9,6 +9,11 @@ system/messages/message.h
 system/messages/message.cc
 system/scripts/GC/gc
 system/scripts/timing.txt
+system/scripts/kvm_scripts/sn*
+system/scripts/kvm_scripts/images/
+system/scripts/Gatling/score*
+system/scripts/TCP
+system/scripts/DCCP
 ns-3-dev/build/
 ns-3-dev/.*
 ns-3-dev/src/applications/model/message.h

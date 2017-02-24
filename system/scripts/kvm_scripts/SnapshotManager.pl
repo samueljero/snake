@@ -61,12 +61,19 @@ sub tellKVM {
       PeerPort => $telnetport,
       Proto => 'tcp',
       ) or return;
+  $line = "asdf";
+  while ($line !~ /\(/ && length($line) >  0) {
+	$socket->recv($line, 1024,0);
+  }
   print $socket "$command\n";
   my $ret=1;
-  while ($quit==0 && $ret > 0) {
-    $socket->recv($line, 1024, 0);
-    $ret = length($line);
+  $line = "asdf";
+  while ($line !~ /\(/ && length($line) > 0) {
+	$socket->recv($line, 1024,0);
   }
+  #if ($quit==1) {
+  #	sleep 10;
+  #}
   close $socket;
 }
 
@@ -100,7 +107,7 @@ sub load_and_start {
                         $p = Net::Ping->new("tcp");
 			$p->port_number(80);
 		}else{
-			system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
+			system("qemu-system-x86_64 -hda $clonedir/ubuntu-clone$i.qcow2 -m 128 -enable-kvm -k \"en-us\" -net nic,model=virtio,macaddr=$mac1 -net tap,ifname=tap-h$i,downscript=no,script=no -net nic,vlan=1,model=virtio,macaddr=$mac2 -net tap,ifname=tap-vm$i,downscript=no,script=no,vlan=1 -vnc :$vncport -monitor telnet:127.0.0.1:$telnetport,server,nowait -daemonize -incoming \"exec: cat $snapshot\"");
 			$ip = sprintf("$ipbase.%d", $i);
 			$p = Net::Ping->new("tcp");
 			$p->port_number(22);
