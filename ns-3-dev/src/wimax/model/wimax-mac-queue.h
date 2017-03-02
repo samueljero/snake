@@ -117,7 +117,6 @@ public:
   void SetFragmentation (MacHeaderType::HeaderType packetType);
   void SetFragmentNumber (MacHeaderType::HeaderType packetType);
   void SetFragmentOffset (MacHeaderType::HeaderType packetType, uint32_t offset);
-private:
   struct QueueElement
   {
     QueueElement (void);
@@ -146,6 +145,7 @@ private:
     void SetFragmentOffset (uint32_t offset);
   };
 
+private:
   /*
    In the case of non-UGS service flows at the SS side the queue will store both data packets
    and bandwidth request packets. The two are distinguished by their headers. The below two functions

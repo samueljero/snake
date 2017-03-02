@@ -818,16 +818,21 @@ my @msgType;
         writer.write("sub build{\n")
         writer.write("\n")
 
+        i = 0
         for k in self.pkts:
             p = self.pkts[k]
+            tf = i
+            if self.type_field is not None:
+                tf = p['type']
             writer.write("\tpush(@msgName,\"%s\");\n" % (p['name']))
-            writer.write("\tpush(@msgType,%s);\n" % (p['type']))
-            writer.write("\t$msgTypeList{\"%s\"}=%s;\n" % (p['name'],p['type']))
+            writer.write("\tpush(@msgType,%s);\n" % (tf))
+            writer.write("\t$msgTypeList{\"%s\"}=%s;\n" % (p['name'],tf))
             fnum = 0
-            pnum = int(p['type'])
+            pnum = int(tf)
             for f in p['fields']:
                 fnum = self._perl_recurse_fields(f,p,fnum,pnum,writer)
             writer.write("\n")
+            i += 1
         strats = """
 
     my @tmp;
