@@ -11,7 +11,6 @@ package GatlingConfig;
 $GlobalCollectorAddr = "localhost";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
-$attackModule = "Executor";
 $host = Sys::Hostname::hostname();
 my $ip=gethostbyname($host);
 $ListenAddr = Socket::inet_ntoa($ip);
@@ -165,7 +164,6 @@ sub systemTCP()
   $state_dir = "$basedir/../TCP/";
   $num_vms = 4;
   $learning_threashold = 1;
-  $formatFile = "$format_dir/tcp.format";
   $start_attack = 1;
   $brokenPerf = 99999999;
   $s_parallel = 2;
@@ -212,7 +210,6 @@ sub systemDCCP()
   $state_dir = "$basedir/../DCCP/";
   $num_vms = 4;
   $learning_threashold = 1;
-  $formatFile = "$format_dir/dccp.format";
   $start_attack = 1;
   $brokenPerf = 99999999;
   $s_parallel = 2;

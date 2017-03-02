@@ -50,8 +50,6 @@ system("./startNclean.sh offset $GatlingConfig::offset pssh \"$GatlingConfig::al
 #Initialize Turret system
 GatlingConfig::prepare();
 
-if ($GatlingConfig::attackModule eq  "Executor") {
-    require Executor;
-    Executor::start();
-}
+require Executor;
+Executor::start();
 exit;
