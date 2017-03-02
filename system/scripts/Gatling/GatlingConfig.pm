@@ -11,7 +11,6 @@ package GatlingConfig;
 $GlobalCollectorAddr = "localhost";
 $GlobalCollectorPort = 9991;
 $useGlobal = 0;
-#$attackModule = "StateBasedAttack";
 $attackModule = "Executor";
 $host = Sys::Hostname::hostname();
 my $ip=gethostbyname($host);
@@ -21,7 +20,6 @@ $ListenPort = 9992;
 ## VM Configurations
 #pick VM env
 $VM = "KVM";
-#$VM = "XEN";
 $basedir = Cwd::abs_path(File::Basename::dirname(__FILE__));
 
 ## Implementation Settings

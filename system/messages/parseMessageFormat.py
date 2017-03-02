@@ -795,6 +795,423 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
                 print "Warning: Not generating strategies for field \"%s\": unknown type\n" % (field['name'])
         num +=1
         return num
+
+    def outputPerlStrategy(self,writer):
+        header = """#!/usr/bin/env perl
+package Strategy;
+
+my %coarseStrategyList;
+my %coarseStrategyCount;
+my %fineStrategyList;
+my %fineStrategyCount;
+my %FlenList;
+my %FlenNumList;
+
+my %msgTypeList;
+my %fieldsPerMsg;
+my %msgFlenList;
+my @msgName;
+my @msgType;
+
+"""
+        writer.write(header)
+        writer.write("sub build{\n")
+        writer.write("\n")
+
+        for k in self.pkts:
+            p = self.pkts[k]
+            writer.write("\tpush(@msgName,\"%s\");\n" % (p['name']))
+            writer.write("\tpush(@msgType,%s);\n" % (p['type']))
+            writer.write("\t$msgTypeList{\"%s\"}=%s;\n" % (p['name'],p['type']))
+            fnum = 0
+            pnum = int(p['type'])
+            for f in p['fields']:
+                fnum = self._perl_recurse_fields(f,p,fnum,pnum,writer)
+            writer.write("\n")
+        strats = """
+
+    my @tmp;
+    my $typenamestr = "int8_t";
+
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-128");
+    push(@{$coarseStrategyList{$typenamestr}}, "=128");
+    # fine
+    #push(@{$fineStrategyList{$typenamestr}}, "=-32");
+    #push(@{$fineStrategyList{$typenamestr}}, "=32");
+    push(@{$fineStrategyList{$typenamestr}}, "=16");
+    push(@{$fineStrategyList{$typenamestr}}, "=-16");
+    push(@{$fineStrategyList{$typenamestr}}, "+1");
+    push(@{$fineStrategyList{$typenamestr}}, "+10");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr = "uint8_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=255");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "+1");
+    push(@{$fineStrategyList{$typenamestr}}, "=64");
+    push(@{$fineStrategyList{$typenamestr}}, "=16");
+    push(@{$fineStrategyList{$typenamestr}}, "=8");
+    push(@{$fineStrategyList{$typenamestr}}, "+10");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "int16_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-128");
+    push(@{$coarseStrategyList{$typenamestr}}, "=128");
+    #fine
+    push(@{$fineStrategyList{$typenamestr}}, "=-32767");
+    push(@{$fineStrategyList{$typenamestr}}, "=32767");
+    push(@{$fineStrategyList{$typenamestr}}, "=-1024");
+    push(@{$fineStrategyList{$typenamestr}}, "=1024");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "short";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-32767");
+    push(@{$coarseStrategyList{$typenamestr}}, "=32767");
+    #fine
+    push(@{$fineStrategyList{$typenamestr}}, "=-1024");
+    push(@{$fineStrategyList{$typenamestr}}, "=1024");
+    push(@{$fineStrategyList{$typenamestr}}, "=-128");
+    push(@{$fineStrategyList{$typenamestr}}, "=128");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "uint16_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=65535");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=16384");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    push(@{$fineStrategyList{$typenamestr}}, "+1");
+    push(@{$fineStrategyList{$typenamestr}}, "-1");
+    push(@{$fineStrategyList{$typenamestr}}, "=1024");
+    push(@{$fineStrategyList{$typenamestr}}, "=256");
+    push(@{$fineStrategyList{$typenamestr}}, "=64");
+    push(@{$fineStrategyList{$typenamestr}}, "+1000");
+    push(@{$fineStrategyList{$typenamestr}}, "+10");
+    push(@{$fineStrategyList{$typenamestr}}, "-1000");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "int32_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-2147483647");
+    push(@{$coarseStrategyList{$typenamestr}}, "=2147483647");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=-131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=-4096");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "int";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-2147483647");
+    push(@{$coarseStrategyList{$typenamestr}}, "=2147483647");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=-131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=-4096");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "uint32_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=4294967295");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=134217728");
+    push(@{$fineStrategyList{$typenamestr}}, "=4194304");
+    push(@{$fineStrategyList{$typenamestr}}, "=131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    push(@{$fineStrategyList{$typenamestr}}, "=128");
+    push(@{$fineStrategyList{$typenamestr}}, "+1");
+    push(@{$fineStrategyList{$typenamestr}}, "+10");
+    push(@{$fineStrategyList{$typenamestr}}, "+1000");
+    push(@{$fineStrategyList{$typenamestr}}, "+10000");
+    push(@{$fineStrategyList{$typenamestr}}, "-1");
+    push(@{$fineStrategyList{$typenamestr}}, "-1000");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "unsigned";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=128");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=4294967295");
+    push(@{$fineStrategyList{$typenamestr}}, "=134217728");
+    push(@{$fineStrategyList{$typenamestr}}, "=4194304");
+    push(@{$fineStrategyList{$typenamestr}}, "=131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "unsigned int";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=4294967295");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=134217728");
+    push(@{$fineStrategyList{$typenamestr}}, "=4194304");
+    push(@{$fineStrategyList{$typenamestr}}, "=131072");
+    push(@{$fineStrategyList{$typenamestr}}, "=4096");
+    push(@{$fineStrategyList{$typenamestr}}, "=128");
+    @tmp = $coarseScoarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "int64_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-16777216");
+    push(@{$coarseStrategyList{$typenamestr}}, "=16777216");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=-9223372036854775807LL");
+    push(@{$fineStrategyList{$typenamestr}}, "=9223372036854775807LL");
+    push(@{$fineStrategyList{$typenamestr}}, "=-17179869184");
+    push(@{$fineStrategyList{$typenamestr}}, "=17179869184");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "uint64_t";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=16777216");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=4294967295");
+    push(@{$fineStrategyList{$typenamestr}}, "=134217728");
+    push(@{$fineStrategyList{$typenamestr}}, "=4194304");
+    push(@{$fineStrategyList{$typenamestr}}, "=9223372036854775807LL");
+    push(@{$fineStrategyList{$typenamestr}}, "=17179869184");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "double";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-1E+37");
+    push(@{$coarseStrategyList{$typenamestr}}, "=1E+37");
+    # fine 
+    push(@{$fineStrategyList{$typenamestr}}, "=1000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=-1000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=1000000000000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=-1000000000000000000");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "float";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=-1E+37");
+    push(@{$coarseStrategyList{$typenamestr}}, "=1E+37");
+    # fine
+    push(@{$fineStrategyList{$typenamestr}}, "=1000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=-1000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=1000000000000000000");
+    push(@{$fineStrategyList{$typenamestr}}, "=-1000000000000000000");
+    @tmp = $fineSoarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+    @tmp = $fineStrategyList{$typenamestr};
+    $fineStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    $typenamestr= "bool";
+    push(@{$coarseStrategyList{$typenamestr}}, "r");
+    push(@{$coarseStrategyList{$typenamestr}}, "=0");
+    push(@{$coarseStrategyList{$typenamestr}}, "=1");
+    @tmp = $coarseStrategyList{$typenamestr};
+    $coarseStrategyCount{$typenamestr} = $#{$tmp[0]};
+
+    #CHAR TYPE: we do not lie about
+    $coarseStrategyCount{"char"} = 0;
+    $fineStrategyCount{"char"} = 0;
+
+    # BIT FIELDS
+    $typenamestr="1";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=1");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+
+    $typenamestr="2";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=1");
+    push(@{$FlenList{$typenamestr}}, "=3");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+
+    $typenamestr="3";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=2");
+    push(@{$FlenList{$typenamestr}}, "=3");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+    push(@{$FlenList{$typenamestr}}, "=7");
+
+    $typenamestr="4";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=2");
+    push(@{$FlenList{$typenamestr}}, "=4");
+    push(@{$FlenList{$typenamestr}}, "=8");
+    push(@{$FlenList{$typenamestr}}, "=15");
+    push(@{$FlenList{$typenamestr}}, "+1");
+    push(@{$FlenList{$typenamestr}}, "-1");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+
+    $typenamestr="5";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=2");
+    push(@{$FlenList{$typenamestr}}, "=4");
+    push(@{$FlenList{$typenamestr}}, "=8");
+    push(@{$FlenList{$typenamestr}}, "=16");
+    push(@{$FlenList{$typenamestr}}, "=9");
+    push(@{$FlenList{$typenamestr}}, "=31");
+    push(@{$FlenList{$typenamestr}}, "+1");
+    push(@{$FlenList{$typenamestr}}, "-1");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+
+    $typenamestr="6";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=2");
+    push(@{$FlenList{$typenamestr}}, "=4");
+    push(@{$FlenList{$typenamestr}}, "=16");
+    push(@{$FlenList{$typenamestr}}, "=63");
+    push(@{$FlenList{$typenamestr}}, "-1");
+    push(@{$FlenList{$typenamestr}}, "+1");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+
+    $typenamestr="7";
+    push(@{$FlenList{$typenamestr}}, "=0");
+    push(@{$FlenList{$typenamestr}}, "=3");
+    push(@{$FlenList{$typenamestr}}, "=4");
+    push(@{$FlenList{$typenamestr}}, "=8");
+    push(@{$FlenList{$typenamestr}}, "=19");
+    push(@{$FlenList{$typenamestr}}, "=64");
+    push(@{$FlenList{$typenamestr}}, "=127");
+    push(@{$FlenList{$typenamestr}}, "-1");
+    push(@{$FlenList{$typenamestr}}, "+1");
+    @tmp = $FlenList{$typenamestr};
+    $FlenNumList{$typenamestr}=$#{$tmp[0]};
+"""
+        writer.write(strats)
+        writer.write("}\n")
+        footer = """
+sub getMsgNames{
+    return \@msgName;
+}
+
+sub getMsgNameCount{
+    return $#msgName;
+}
+
+sub getMsgTypes{
+    return \@msgType;
+}
+
+sub getMsgTypeMap{
+    return \%msgTypeList;
+}
+
+sub getFieldsPerMsg{
+    return \%fieldsPerMsg;
+}
+
+sub getMsgFlenList{
+    return \%msgFlenList;
+}
+
+sub getCoarseStrategyList{
+    return \%coarseStrategyList;
+}
+
+sub getCoarseStrategyCount{
+    return \%coarseStrategyCount;
+}
+
+sub getFineStrategyList{
+    return \%fineStrategyList;
+}
+
+sub getFineStrategyCount{
+    return \%fineStrategyCount;
+}
+
+sub getFlenList{
+    return \%FlenList;
+}
+
+sub getFlenNumList{
+    return \%FlenNumList;
+}
+
+1;
+"""
+        writer.write(footer)
+
+    def _perl_recurse_fields(self,field,pkt,fnum,pnum,writer):
+        if 'variable' in field:
+            return fnum
+        if 'struct' in field:
+            try:
+                s = self.structs[field['length']]
+            except Exception as e:
+                return fnum
+            if s is None:
+                return fnum
+            for f in s['fields']:
+                fnum = self._perl_recurse_fields(f,pkt,fnum,pnum,writer)
+            return fnum
+
+        if 'bitfield' in field:
+            writer.write("\tpush(@{$msgFlenList{%d}},%s);\n" % (pnum,field['bitfield'].replace(":","")))
+        else:
+            writer.write("\tpush(@{$msgFlenList{%d}},0);\n" % (pnum))
+        writer.write("\tpush(@{$fieldsPerMsg{%d}},\"%s\");\n" % (pnum,field['length']))
+        fnum += 1
+        return fnum
             
 
 def main(args):
@@ -820,9 +1237,15 @@ def main(args):
         print "Failed to Open CC File %s:%s" % ("message.cc",e)
         return
     try:
-        strategy_file = open("strategy","w")
+        strategy_file = open("strategy.txt","w")
     except Exception as e:
         print "Failed to Open Strategy File %s:%s" % ("strategy",e)
+        return
+    
+    try:
+        strategypm_file = open("Strategy.pm","w")
+    except Exception as e:
+        print "Failed to Open Strategy Perl File %s:%s" % ("strategy",e)
         return
 
     lines = format_file.readlines()
@@ -836,6 +1259,8 @@ def main(args):
     cc_file.close()
     hfp.outputStrategies(strategy_file)
     strategy_file.close()
+    hfp.outputPerlStrategy(strategypm_file)
+    strategypm_file.close()
 
 
 if __name__ == "__main__":

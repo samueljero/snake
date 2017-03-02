@@ -21,9 +21,10 @@ $GatlingConfig::systemname = $system;
 GatlingConfig::setSystem();
 
 # Load Message Info
-my $fieldsPerMsgRef   = Strategy::parseMessage();
-my $msgTypeRef        = Strategy::getMsgTypeRef();
-my $msgNameRef        = Strategy::getMsgNameRes();
+Strategy::build();
+my $fieldsPerMsgRef   = Strategy::getFieldsPerMsg();
+my $msgTypeRef        = Strategy::getMsgTypeMap();
+my $msgNameRef        = Strategy::getMsgNames();
 my $msgBitfieldRef    = Strategy::getMsgFlenList();
 my $bitfieldStrategyRef = Strategy::getFlenList();
 my $coarseStrategyRef = Strategy::getCoarseStrategyList();
