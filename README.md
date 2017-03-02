@@ -8,6 +8,7 @@ Details described in:
 Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Information for Automated Attack Discovery in Transport Protocol Implementations. 45th IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), June 2015, pp 1-12.
 
 ###Preqs
+	* Python 2.7
 	* Perl 5.10
 	* Qemu (Tested with 1.7.0 / 2.3.0)
 	* Limited sudo access. In particular, the ability to run the following commands:
@@ -57,7 +58,7 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 		cd ns-3-dev
 		./waf configure --enable-examples
 		cd system/messages/
-		./switchToSystem.pl tcp
+		./switchToSystem.sh tcp
 
 * In one terminal, run the global controller
 
@@ -70,5 +71,5 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 		./gatling.pl
 
 
-Samuel Jero <sjero@purdue.edu>
-11-23-2015
+Samuel Jero <sjero@purdue.edu>  
+3-2-2017
