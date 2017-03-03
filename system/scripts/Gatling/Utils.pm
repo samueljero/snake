@@ -12,13 +12,8 @@ $tmstr = `date --rfc-3339=ns`;
 $lostTime = 0;
 BEGIN {
   open TIMING, "+>$GatlingConfig::timeLog" or die $!;
-  if ($GatlingConfig::VM eq 'KVM') {
-    require KVMUtils;
-    import KVMUtils;
-  } else {
-    require XenUtils;
-    import XenUtils;
-  }
+  require KVMUtils;
+  import KVMUtils;
 }
 
 sub openGC
@@ -51,18 +46,6 @@ sub closeGC
 	my $sock = shift;
 	$sock->close();
 	return;
-}
-
-sub useXEN()
-{
-  require XenUtils;
-  import XenUtils;
-}
-
-sub useKVM()
-{
-  require KVMUtils;
-  import KVMUtils;
 }
 
 sub logTime

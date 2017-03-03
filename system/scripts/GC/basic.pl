@@ -227,57 +227,43 @@ sub primeSystem {
 	#Prime with other strategies
 	foreach my $msgType (@$msgNameRef) {
 		my $prefix = "*?*?$msgType";
-		if ( $msgType ne "BaseMessage" ) {
-			if ( $GatlingConfig::systemname eq "DCCP" ) {
-				my $size = 0;
-				if ( $msgType eq "BaseMessage" ) {
-					$size = 3;
-				}
-				elsif ( $msgType eq "Data" ) {
-					$size = 4;
-				}
-				elsif ( $msgType eq "Request" ) {
-					$size = 5;
-				}
-				elsif ( $msgType eq "Reset" ) {
-					$size = 7;
-				}
-				elsif ( $msgType eq "Response" ) {
-					$size = 7;
-				} 
-				else {
-					$size = 6;
-				}
-				push( @strat,
-"$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1 11=111"
-				);
-				push( @strat,
-"$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1 11=111"
-				);
-				push( @strat,
-"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1"
-				);
-				push( @strat,
-"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1"
-				);
+		if ( $GatlingConfig::systemname eq "DCCP" ) {
+			my $size = 0;
+			if ( $msgType eq "BaseMessage" ) {
+				$size = 3;
 			}
-			elsif ( $GatlingConfig::systemname eq "TCP" ) {
-				push( @strat,
-"$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow"
-				);
-				push( @strat,
-"$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=111 5=5 10=$GatlingConfig::defaultwindow"
-				);
-				push( @strat,
-"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 5=5"
-				);
-				push( @strat,
-"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 5=5"
-				);
+			elsif ( $msgType eq "Data" ) {
+				$size = 4;
 			}
+			elsif ( $msgType eq "Request" ) {
+				$size = 5;
+			}
+			elsif ( $msgType eq "Reset" ) {
+				$size = 7;
+			}
+			elsif ( $msgType eq "Response" ) {
+				$size = 7;
+			} 
+			else {
+				$size = 6;
+			}
+			push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1 11=111");
+			push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1 11=111");
+			push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=$size 6=1");
+			push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=$size 6=1");
 		}
-
+		elsif ( $GatlingConfig::systemname eq "TCP" ) {
+			push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 2=111 5=5 10=$GatlingConfig::defaultwindow");
+			push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 2=111 5=5 10=$GatlingConfig::defaultwindow");
+			push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip $GatlingConfig::serverip 0=$GatlingConfig::clientport 1=$GatlingConfig::serverport 5=5");
+			push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip $GatlingConfig::clientip 0=$GatlingConfig::serverport 1=$GatlingConfig::clientport 5=5");
+			#push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::clientip $GatlingConfig::serverip");
+			#push( @strat,"$prefix INJECT t=10 0 $GatlingConfig::serverip  $GatlingConfig::clientip");
+			#push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::clientip");
+			#push( @strat,"$prefix WINDOW w=$GatlingConfig::defaultwindow t=10 $GatlingConfig::serverip");
+		}
 	}
+
 	#if ( $GatlingConfig::systemname eq "TCP" ) {
 	#	push( @strat,
 	#	"LISTEN?*?Syn REPLAY 1,LISTEN?*?Syn LIE =$GatlingConfig::serverport 0,LISTEN?*?Syn LIE =$GatlingConfig::clientport 1"

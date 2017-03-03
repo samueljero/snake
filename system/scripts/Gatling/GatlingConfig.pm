@@ -17,8 +17,6 @@ $ListenAddr = Socket::inet_ntoa($ip);
 $ListenPort = 9992;
 
 ## VM Configurations
-#pick VM env
-$VM = "KVM";
 $basedir = Cwd::abs_path(File::Basename::dirname(__FILE__));
 
 ## Implementation Settings
@@ -38,7 +36,6 @@ $learning_threashold = 2;
 $formatFile = "";
 $scoreFile = "$basedir/score.client";
 $resourcesFile = "$basedir/resources.client";
-$format_dir = "$basedir/../../messages";
 $statediagramFile = "diagram.dot";
 
 ##Testing Settings
@@ -85,6 +82,7 @@ $clientport= 5555;
 $serverport= 80;
 $malport = 5556;
 $defaultwindow=20000;
+$format_dir = "$basedir/../../messages";
 
 #Logging Settings
 $state_dir = "$basedir/";
@@ -161,6 +159,7 @@ sub systemTCP()
   $prePerf = "$basedir/../TCP/pre_perf.txt";
   $perfMeasured = "$basedir/../TCP/perf.txt";
   $newlyLearned = "$basedir/../TCP/new_learned.txt";
+  $timeLog = "$basedir/../TCP/timing.txt";
   $state_dir = "$basedir/../TCP/";
   $num_vms = 4;
   $learning_threashold = 1;
@@ -168,6 +167,7 @@ sub systemTCP()
   $brokenPerf = 99999999;
   $s_parallel = 2;
   $c_parallel = 2;
+  $format_dir = "$basedir/../../messages";
   $statediagramFile = "$format_dir/tcp.dot";
   $serverhavessh=1;
   $NumConnsCmd = "netstat --inet --inet6 -n";
@@ -207,6 +207,7 @@ sub systemDCCP()
   $prePerf = "$basedir/../DCCP/pre_perf.txt";
   $perfMeasured = "$basedir/../DCCP/perf.txt";
   $newlyLearned = "$basedir/../DCCP/new_learned.txt";
+  $timeLog = "$basedir/../DCCP/timing.txt";
   $state_dir = "$basedir/../DCCP/";
   $num_vms = 4;
   $learning_threashold = 1;
@@ -214,6 +215,7 @@ sub systemDCCP()
   $brokenPerf = 99999999;
   $s_parallel = 2;
   $c_parallel = 2;
+  $format_dir = "$basedir/../../messages";
   $statediagramFile = "$format_dir/dccp.dot";
   $NumConnsCmd = "echo t;echo t; ss -d";
   $serverhavessh=1;

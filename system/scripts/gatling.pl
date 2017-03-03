@@ -18,6 +18,7 @@ use lib ("./Gatling/");
 
 require Utils;
 require GatlingConfig;
+require Executor;
 
 no warnings 'once';
 
@@ -39,7 +40,6 @@ for (my $i = 0; $i < $#ARGV; $i++) {
 
 print "Target system name: $GatlingConfig::systemname offset: $GatlingConfig::offset\n";
 
-Utils::useKVM();
 GatlingConfig::setSystem();
 share($GatlingConfig::watch_ns3);
 share($GatlingConfig::watch_turret);
@@ -50,6 +50,5 @@ system("./startNclean.sh offset $GatlingConfig::offset pssh \"$GatlingConfig::al
 #Initialize Turret system
 GatlingConfig::prepare();
 
-require Executor;
 Executor::start();
 exit;
