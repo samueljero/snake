@@ -11,6 +11,9 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 	* Python 2.7
 	* Perl 5.10
 	* Qemu (Tested with 1.7.0 / 2.3.0)
+	* pssh
+	* bridge-utils (for brctl)
+	* uml-utilities (for tunctl)
 	* Limited sudo access. In particular, the ability to run the following commands:
 
 			/usr/bin/tunctl -u [a-z]* -t tap*

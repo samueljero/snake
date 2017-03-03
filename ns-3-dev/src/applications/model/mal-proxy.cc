@@ -1068,8 +1068,8 @@ void MalProxy::Burst(int type, int dir)
 //w=window t=time ip_src ip_dest port_src port_dest size
 void MalProxy::Window(int type, const char* spec)
 {
-	int window;
-	double sec;
+	int window = 1;
+	double sec = 10.0;
 	int len;
 	unsigned int seq;
 	unsigned int itter;
@@ -1079,10 +1079,15 @@ void MalProxy::Window(int type, const char* spec)
 	char p_dest[100];
 	char pspec[1000];
 	double inc=0.0001;
-	int strlen;
+	int strlength;
 
-	sscanf(spec, "w=%i t=%lf %99s %99s%n", &window, &sec, ip_src, ip_dest, &strlen);
-	spec +=strlen;
+	len = strlen(spec);
+	sscanf(spec, "w=%i t=%lf %99s %99s%n", &window, &sec, ip_src, ip_dest, &strlength);
+	spec +=strlength;
+	if (strlength >= len) {
+		spec = "";
+	}
+	std::cout << "Parse 1 complete" << std::endl;
 
 	itter = (0xFFFFFFFF) / window;
 
