@@ -402,16 +402,16 @@ sub strategyCompose {
 			my $fields   = $fieldsPerMsgRef->{$msgType};
 			my $fieldIdx = 0;
 
-			# coase lying actions
-			foreach my $field ( @{$fields} ) {
-				if($msgBitfieldRef->{$msgType}[$fieldIdx] == 0){
-					my $fineStr = $fineStrategyRef->{$field};
-					foreach my $str ( @{$fineStr} ) {
-						push( @strat, "$prefix LIE $str $fieldIdx" );
-					}
-				}
-				$fieldIdx++;
-			}
+			# fine lying actions
+			#foreach my $field ( @{$fields} ) {
+			#	if($msgBitfieldRef->{$msgType}[$fieldIdx] == 0){
+			#		my $fineStr = $fineStrategyRef->{$field};
+			#		foreach my $str ( @{$fineStr} ) {
+			#			push( @strat, "$prefix LIE $str $fieldIdx" );
+			#		}
+			#	}
+			#	$fieldIdx++;
+			#}
 		}
 
 		# default
