@@ -1,0 +1,3 @@
+digraph BLANK {
+CLOSED -> LISTEN [rcvd="A_LISTEN", send="-"];
+}
