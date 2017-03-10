@@ -12,12 +12,13 @@ from types import NoneType
 class MessageFormatParser:
     def __init__(self):
         self.structs = dict()
+        self.pkts_orig = dict()
         self.pkts = dict()
         self.tags = []
         self.type_field = None
         self.max_fields = 0
 
-    def addFormatLines(self, lines):
+    def  load_format(self, lines):
         struct = None
         ptype = None
 
@@ -28,6 +29,7 @@ class MessageFormatParser:
             if l.find("//") >= 0:
                 continue
             if struct is not None:
+                #Struct continued
                 if l.find("}") >=0:
                     if 'name' not in struct:
                         print "Warning: struct with no name %s" % (struct)
@@ -38,10 +40,11 @@ class MessageFormatParser:
                     if f is not None:
                         struct['fields'].append(f)
             elif ptype is not None:
+                #Packet format continued
                 if l.find("}") >=0:
                     if 'name' not in ptype:
                         print "Warning: packet with no name %s" % (ptype)
-                    self.pkts[ptype['name']] = ptype
+                    self.pkts_orig[ptype['name']] = ptype
                     ptype = None
                 else:
                     f = self._find_field(l)
@@ -65,7 +68,7 @@ class MessageFormatParser:
                 name = parts[1]
                 struct = {'name':name,'fields':[]}
             elif l.find("{") >= 0:
-                #Type
+                #Packet format
                 parts = l.split()
                 if len(parts) != 2:
                     print "Warning: invalid Type: %s" % (l.strip())
@@ -73,6 +76,17 @@ class MessageFormatParser:
                 ptype = {'name':name,'fields':[]}
             else:
                 print "Error: Unknown line \"%s\"" % (l.strip())
+
+
+        #Merge structs and packets into a monolithic packet
+        for k in self.pkts_orig:
+            p = dict(self.pkts_orig[k])
+            new_fields = []
+            for f in p['fields']:
+                new_fields = self._merge_fields(f,new_fields)
+            p['fields'] = new_fields
+            self.pkts[k] = p
+        
 
         #Check Packet types
         if self.type_field is None:
@@ -93,7 +107,13 @@ class MessageFormatParser:
                 if not found:
                     print "Warning: No type field in packet %s" % (p['name'])
 
-                        
+        #Determine maximum number of fields
+        for k in self.pkts:
+            p = self.pkts[k]
+            if len(p['fields']) > self.max_fields:
+                self._max_fields = len(p['fields'])
+        return
+
 
     def _find_field(self, l):
         parts = l.split()
@@ -146,7 +166,35 @@ class MessageFormatParser:
             f['struct'] = True
         return f
 
-    def outputHeader(self,writer):
+
+    def _merge_fields(self,field,field_list):
+        if 'variable' in field:
+            #TODO
+            print "Warning: Variable length fields are not supported: %s" % (str(field))
+            return field_list
+        if field['length'] == "BaseMessage":
+            #TODO
+            print "Warning: Don't support embedded messages: %s" % (str(field))
+            return field_list
+        if 'struct' in field:
+            try:
+                s = self.structs[field['length']]
+            except Exception as e:
+                return field_list
+            if s is None:
+                return field_list
+            for f in s['fields']:
+                field_list = self._merge_fields(f,field_list)
+            return field_list
+        if 'index' in field and field['length'] != "char":
+            #TODO
+            print "Warning: non-characer arrays are not supported: %s" % (str(field))
+            return field_list
+        field_list.append(field)
+        return field_list
+
+
+    def output_proxy_header(self,writer):
         header = """#include "ns3/uinteger.h"
 #include <string.h>
 #include <arpa/inet.h>
@@ -156,28 +204,29 @@ class MessageFormatParser:
 #define MESSAGE_H
 """
         writer.write(header)
+
+        #Write Defines
         for t in self.tags:
             writer.write("#define %s %s\n" % (t['name'],t['value']))
         writer.write("\n")
 
+        #Write Structs
         for k in self.structs:
             s = self.structs[k]
             writer.write("struct %s {\n" % (s['name']))
             for f in s['fields']:
-                self._print_field(f,writer,0)
+                self._header_print_field(f,writer)
             writer.write("};\n\n")
-                
 
+        #Write Packet formats
         for k in self.pkts:
             p = self.pkts[k]
             writer.write("typedef struct {\n")
-            i = 0
             for f in p['fields']:
-                i = self._print_field(f,writer,i)
-            if i > self.max_fields:
-                self.max_fields = i
+                self._header_print_field(f,writer)
             writer.write("} %s;\n\n" % (p['name']))
 
+        #Write Message type Enum
         writer.write("enum MessageType {\n")
         if self.type_field is not None:
             for k in self.pkts:
@@ -211,6 +260,8 @@ class MessageFormatParser:
     void ChangeValue(int field, char* value);
 """
         writer.write(header)
+
+        #Write function declarations
         for k in self.pkts:
             p = self.pkts[k]
             writer.write("\tvoid Change%s(int field, char* value);\n" %(p['name']))
@@ -233,12 +284,24 @@ class MessageFormatParser:
 
 """
         writer.write(header)
+
+        #Write number of messages and fields
         writer.write("#define MSG %s\n" % (len(self.pkts)))
         writer.write("#define FIELD %s\n" % (str(self.max_fields)))
+        return
 
+    
+    def _header_print_field(self,field,writer):
+        post = ""
+        if 'bitfield' in field:
+            post = field['bitfield']
+        if 'index' in field:
+            post = "[" + field['index'] + "]"
+        writer.write("\t%s %s%s;\n" % (field['length'],field['name'],post))
+        return
                 
 
-    def outputBody(self,writer):
+    def output_proxy_code(self,writer):
         header = """#include "message.h"
 
 Message::Message(uint8_t* m) {
@@ -276,6 +339,8 @@ int Message::FindMsgSize() {
 }
 """
         writer.write(header)
+
+        #Write functions to change messages
         for k in self.pkts:
             p = self.pkts[k]
             writer.write("void Message::Change%s(int field, char* value) {\n" % (p['name']))
@@ -283,16 +348,18 @@ int Message::FindMsgSize() {
             writer.write("\t%s *ptr = (%s*)msg;\n\n" % (p['name'],p['name']))
             i = 0
             for f in p['fields']:
-                i = self._print_field_processing(f,writer,i)
-
+                writer.write("\tif (field == %d) {\n" % (i))
+                extract = "ptr->%s" % (f['name'])
+                self._code_print_field_changer(f,extract,writer)
+                writer.write("\t}\n\n")
+                i += 1
             writer.write("\t//std::cout << \"Exiting Change%s\" << std::endl;\n" % (p['name']))
             writer.write("}\n\n")
 
-        header = """void Message::ChangeValue(int field, char* value) {
-        //std::cout << "Entering ChangeValue " << type << " " << field << " " << value << std::endl;
-        switch (type) {
-"""
-        writer.write(header)
+        #Write function to select specific change function based on message type
+        writer.write("void Message::ChangeValue(int field, char* value) {\n")
+        writer.write("\t//std::cout << \"Entering ChangeValue \" << type << \" \" << field << \" \" << value << std::endl;\n")
+        writer.write("\tswitch (type) {\n")
         for k in self.pkts:
             p = self.pkts[k]
             writer.write("\t\tcase %s:\n" % (p['name'].upper()))
@@ -302,6 +369,7 @@ int Message::FindMsgSize() {
         writer.write("\t//std::cout << \"Exiting ChangeValue\" << std::endl;\n")
         writer.write("}\n\n")
 
+        #Write string to message type function
         writer.write("int Message::StrToType(const char *str) {\n")
         writer.write("\t//std::cout << \"Entering StrToType\" << std::endl;\n")
         for k in self.pkts:
@@ -313,6 +381,7 @@ int Message::FindMsgSize() {
         writer.write("\treturn -1;\n")
         writer.write("}\n\n")
 
+        #Write message type to string function
         writer.write("std::string Message::TypeToStr(int type){\n")
         writer.write("\t//std::cout << \"Entering TypeToStr\" << std::endl;\n")
         for k in self.pkts:
@@ -324,6 +393,7 @@ int Message::FindMsgSize() {
         writer.write("\treturn \"Invalid\";\n")
         writer.write("}\n\n")
 
+        #Write function to handle encapsulated messages (does nothing)
         writer.write("uint8_t* Message::EncMsgOffset() {\n")
         writer.write("\t//std::cout << \"Entering EncMsgOffset\" << std::endl;\n")
         for k in self.pkts:
@@ -338,6 +408,7 @@ int Message::FindMsgSize() {
         writer.write("\t//std::cout << \"Exiting EncMsgOffset\" << std::endl;\n")
         writer.write("}\n")
 
+        #More code
         header = """
 void Message::CreateMessage(int type, const char *spec){
         //std::cout<< "Entering CreateMessage"<<std::endl;
@@ -363,7 +434,8 @@ void Message::CreateMessage(int type, const char *spec){
 
 """
         writer.write(header)
-        
+
+        #Write function to compute header size
         writer.write("int Message::GetMessageHeaderSize(int type){\n")
         writer.write("\t//std::cout<< \"Entering GetMessageHeaderSize\"<<std::endl;\n")
         writer.write("\tswitch(type) {\n")
@@ -377,6 +449,7 @@ void Message::CreateMessage(int type, const char *spec){
         writer.write("\t//std::cout<< \"Exiting GetMessageHeaderSize\"<<std::endl;\n")
         writer.write("}\n\n")
 
+        #More code
         header = """uint16_t Message::GetSourcePort()
 {
 #ifdef SOURCE_PORT_FIELD
@@ -486,36 +559,10 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
 }
 """
         writer.write(header)
+        return
 
 
-
-    def _print_field_processing(self,field,writer,num):
-        if 'variable' in field:
-            #TODO
-            print "Warning: Variable length fields are not supported: %s" % (str(field))
-            return num
-        if 'struct' in field:
-            try:
-                s = self.structs[field['length']]
-            except Exception as e:
-                return num
-            if s is None:
-                return num
-            for f in s['fields']:
-                num = self._print_field_processing(f,writer,num)
-            return num
-        writer.write("\tif (field == %d) {\n" % (num))
-        if 'index' in field and field['length'] != "char":
-            #TODO
-            print "Warning: non-characer arrays are not supported: %s" % (str(field))
-        else:
-            extract = "ptr->%s" % (field['name'])
-            self._print_field_changes(field,extract,writer)
-        writer.write("\t}\n\n")
-        num += 1
-        return num
-
-    def _print_field_changes(self,field,extract,writer):
+    def _code_print_field_changer(self,field,extract,writer):
         le_types = ['int8_t', 'uint8_t', 'int64_t','int32_t','int16_t']
         if field['length'] == "char":
             if 'index' in field:
@@ -611,37 +658,10 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
             writer.write("\t\t}\n")
         else:
             print "Warning: Unknown field length: %s " % (str(field))
-        
-        
+        return 
 
-    def _print_field(self, field,writer, num): 
-        post = ""
-        if 'variable' in field:
-            return num
-        if field['length'] == "BaseMessage":
-            return num
-        if 'bitfield' in field:
-            post = field['bitfield']
-        if 'index' in field:
-            post = "[" + field['index'] + "]"
-        if 'struct' in field:
-            #Struct field
-            try:
-                s = self.structs[field['length']]
-            except Exception as e:
-                return num
-            if s is None:
-                return num
-            for f in s['fields']:
-                num = self._print_field(f,writer, num)
-            return num
-        else:
-            #Normal field
-            writer.write("\t%s %s%s;\n" % (field['length'],field['name'],post))
-            num += 1
-            return num
 
-    def outputStrategies(self, writer):
+    def strategy_file(self, writer):
         writer.write("BaseMessage NONE 0\n")
         writer.write("BaseMessage NONE 0\n")
 
@@ -654,149 +674,143 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
             writer.write("%s REPLAY 0 %s DIVERT 0\n" % (p['name'],p['name']))
             i = 0
             for f in p['fields']:
-                i = self._print_field_strats(f,p,writer,i)
+                self._strategy_file_print_field_strats(f,i,p,writer)
+                i += 1
 
-    def _print_field_strats(self,field,pkt,writer,num):
-        if 'variable' in field:
-            return num
-        if field['length'] == "BaseMessage":
-            return num
-        if 'struct' in field:
-            #Struct field
+    def _strategy_file_print_field_strats(self,field,num,pkt,writer):
+        if 'bitfield' in field:
+            l = 0
             try:
-                s = self.structs[field['length']]
+                l = int(field['bitfield'].replace(":",""))
             except Exception as e:
-                return
-            if s is None:
-                return
-            for f in s['fields']:
-                num = self._print_field_strats(f,pkt,writer,num)
-            return num
-        else:
-            #Normal field
-            if 'bitfield' in field:
-                l = 0
-                try:
-                    l = int(field['bitfield'].replace(":",""))
-                except Exception as e:
-                    print "Warning: Bad bitfield: %s" % (str(field))
-                    return num + 1
-                if l == 1:
-                    writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
-                elif l == 2:
-                    writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =3 %d\n" % (pkt['name'],num))
-                elif l == 4:
-                    writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =3 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
-                elif l == 5:
-                    writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =31 %d\n" % (pkt['name'],num))
-                elif l == 6:
-                    writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =10 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =30 %d\n" % (pkt['name'],num))
-                    writer.write("%s LIE =63 %d\n" % (pkt['name'],num))
-                else:
-                    print "Warning: Not generating stratgies for field \"%s\": bitfield length unknown" % (field['name'])
-            elif field['length'] == "int8_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-128 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-32 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =32 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-16 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
-            elif field['length'] == "uint8_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =255 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =64 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =32 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
-            elif field['length'] == "int16_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-32765 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =32765 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-1024 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1024 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-128\n" % (pkt['name'],num))
-                writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
-            elif field['length'] == "uint16_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =65535 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =16384 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1024 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =256 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =64 %d\n" % (pkt['name'],num))
-            elif field['length'] == "int32_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-2147483647 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =2147483647 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-4096 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
-            elif field['length'] == "uint32_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =4294967295 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =131072 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
-            elif field['length'] == "int64_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-9223372036854775807LL %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-17179869184 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =16777216 %d\n" % (pkt['name'],num))
-            elif field['length'] == "uint64_t":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =134217728 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =9223372036854775807LL %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =17179869184 %d\n" % (pkt['name'],num))
-            elif field['length'] == "double":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-1E+37 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1E+37 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1000000000 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-1000000000 %d\n" % (pkt['name'],num))
-            elif field['length'] == "float":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-1E+37 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1E+37 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =1000000000 %d\n" % (pkt['name'],num))
-                writer.write("%s LIE =-1000000000 %d\n" % (pkt['name'],num))
-            elif field['length'] == "bool":
-                writer.write("%s LIE r %d\n" % (pkt['name'],num))
+                print "Warning: Bad bitfield: %s" % (str(field))
+                return num + 1
+            if l == 1:
                 writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
                 writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
+            elif l == 2:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+            elif l == 3:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =3 %d\n" % (pkt['name'],num))
+            elif l == 4:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =3 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
+            elif l == 5:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =31 %d\n" % (pkt['name'],num))
+            elif l == 6:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =4 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =10 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =30 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =63 %d\n" % (pkt['name'],num))
+            elif l == 7:
+                writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =2 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =10 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =30 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =70 %d\n" % (pkt['name'],num))
+                writer.write("%s LIE =100 %d\n" % (pkt['name'],num))
             else:
-                print "Warning: Not generating strategies for field \"%s\": unknown type\n" % (field['name'])
-        num +=1
-        return num
+                print "Warning: Not generating stratgies for field \"%s\": bitfield length unknown" % (field['name'])
+        elif field['length'] == "int8_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-128 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-32 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =32 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-16 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
+        elif field['length'] == "uint8_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =255 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =64 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =32 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =16 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =8 %d\n" % (pkt['name'],num))
+        elif field['length'] == "int16_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-32765 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =32765 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-1024 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1024 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-128\n" % (pkt['name'],num))
+            writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
+        elif field['length'] == "uint16_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =65535 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =16384 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1024 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =256 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =64 %d\n" % (pkt['name'],num))
+        elif field['length'] == "int32_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-2147483647 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =2147483647 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-4096 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
+        elif field['length'] == "uint32_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =4294967295 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =131072 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =4096 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =128 %d\n" % (pkt['name'],num))
+        elif field['length'] == "int64_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-9223372036854775807LL %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-17179869184 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =16777216 %d\n" % (pkt['name'],num))
+        elif field['length'] == "uint64_t":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =134217728 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =9223372036854775807LL %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =17179869184 %d\n" % (pkt['name'],num))
+        elif field['length'] == "double":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-1E+37 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1E+37 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1000000000 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-1000000000 %d\n" % (pkt['name'],num))
+        elif field['length'] == "float":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-1E+37 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1E+37 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1000000000 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =-1000000000 %d\n" % (pkt['name'],num))
+        elif field['length'] == "bool":
+            writer.write("%s LIE r %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
+            writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
+        else:
+            print "Warning: Not generating strategies for field \"%s\": unknown type\n" % (field['name'])
+        return
 
-    def outputPerlStrategy(self,writer):
+    def perl_strategy_module(self,writer):
         header = """#!/usr/bin/env perl
 package Strategy;
 
@@ -815,9 +829,12 @@ my @msgType;
 
 """
         writer.write(header)
+
+        #Write one big function to add all the right members to the arrays and dicts
         writer.write("sub build{\n")
         writer.write("\n")
 
+        #Add Message types and fields
         i = 0
         for k in self.pkts:
             p = self.pkts[k]
@@ -827,12 +844,17 @@ my @msgType;
             writer.write("\tpush(@msgName,\"%s\");\n" % (p['name']))
             writer.write("\tpush(@msgType,%s);\n" % (tf))
             writer.write("\t$msgTypeList{\"%s\"}=%s;\n" % (p['name'],tf))
-            fnum = 0
-            pnum = int(tf)
+            try:
+                pnum = int(tf)
+            except Exception as e:
+                print "Error: Non-numeric packet number!"
+                continue
             for f in p['fields']:
-                fnum = self._perl_recurse_fields(f,p,fnum,pnum,writer)
+                self._perl_print_field(f,p,pnum,writer)
             writer.write("\n")
             i += 1
+
+        #Add strategies, per field length
         strats = """
 
     my @tmp;
@@ -1143,6 +1165,8 @@ my @msgType;
 """
         writer.write(strats)
         writer.write("}\n")
+
+        #Add access functions
         footer = """
 sub getMsgNames{
     return \@msgName;
@@ -1195,28 +1219,15 @@ sub getFlenNumList{
 1;
 """
         writer.write(footer)
+        return
 
-    def _perl_recurse_fields(self,field,pkt,fnum,pnum,writer):
-        if 'variable' in field:
-            return fnum
-        if 'struct' in field:
-            try:
-                s = self.structs[field['length']]
-            except Exception as e:
-                return fnum
-            if s is None:
-                return fnum
-            for f in s['fields']:
-                fnum = self._perl_recurse_fields(f,pkt,fnum,pnum,writer)
-            return fnum
-
+    def _perl_print_field(self,field,pkt,pnum,writer):
         if 'bitfield' in field:
             writer.write("\tpush(@{$msgFlenList{%d}},%s);\n" % (pnum,field['bitfield'].replace(":","")))
         else:
             writer.write("\tpush(@{$msgFlenList{%d}},0);\n" % (pnum))
         writer.write("\tpush(@{$fieldsPerMsg{%d}},\"%s\");\n" % (pnum,field['length']))
-        fnum += 1
-        return fnum
+        return
             
 
 def main(args):
@@ -1257,14 +1268,14 @@ def main(args):
     format_file.close()
 
     hfp = MessageFormatParser()
-    hfp.addFormatLines(lines)
-    hfp.outputHeader(header_file)
+    hfp.load_format(lines)
+    hfp.output_proxy_header(header_file)
     header_file.close()
-    hfp.outputBody(cc_file)
+    hfp.output_proxy_code(cc_file)
     cc_file.close()
-    hfp.outputStrategies(strategy_file)
+    hfp.strategy_file(strategy_file)
     strategy_file.close()
-    hfp.outputPerlStrategy(strategypm_file)
+    hfp.perl_strategy_module(strategypm_file)
     strategypm_file.close()
 
 
