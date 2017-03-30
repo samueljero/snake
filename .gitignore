@@ -4,6 +4,7 @@
 
 #Generated files
 *.strategy
+system/messages/fields.py
 system/messages/Strategy.pm
 system/messages/message.h
 system/messages/message.cc
@@ -12,6 +13,7 @@ system/scripts/GC/gc
 system/scripts/timing.txt
 system/scripts/kvm_scripts/sn*
 system/scripts/kvm_scripts/images/
+system/scripts/coordinator/fields.py
 system/scripts/Gatling/Strategy.pm
 system/scripts/Gatling/score*
 system/scripts/TCP

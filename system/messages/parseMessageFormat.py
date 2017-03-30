@@ -7,6 +7,7 @@ import sys
 import argparse
 import re
 from types import NoneType
+import pprint
 
 
 class MessageFormatParser:
@@ -17,6 +18,9 @@ class MessageFormatParser:
         self.tags = []
         self.type_field = None
         self.max_fields = 0
+
+    def get_pkts(self):
+        return self.pkts
 
     def  load_format(self, lines):
         struct = None
@@ -100,7 +104,11 @@ class MessageFormatParser:
                         p['encap'] = True
                     if f['name'] == self.type_field:
                         if 'value' in f:
-                            p['type'] = f['value']
+                            try:
+                                p['type'] = int(f['value'])
+                            except Exception as e:
+                                print "Error: Type value is non-numeric! \"%s\"" % (f['value'])
+                                continue
                             if found:
                                 print "Warning: Multiple type fields in packet %s. Using most recent." % (p['name'])
                             found = True
@@ -134,7 +142,11 @@ class MessageFormatParser:
         if fname.find(":") >= 0:
             p = fname.split(":")
             fname = p[0]
-            bitfield = ":" + p[1]
+            try:
+                bitfield = int(p[1])
+            except Exception as e:
+                print "Error: Invalid Bitfield! %s: %s" % (fname,str(e))
+                return None
         if fname.find("[") >= 0:
             p = fname.split("[")
             fname = p[0]
@@ -294,7 +306,7 @@ class MessageFormatParser:
     def _header_print_field(self,field,writer):
         post = ""
         if 'bitfield' in field:
-            post = field['bitfield']
+            post = ":" + str(field['bitfield'])
         if 'index' in field:
             post = "[" + field['index'] + "]"
         writer.write("\t%s %s%s;\n" % (field['length'],field['name'],post))
@@ -679,12 +691,7 @@ void Message::DoChecksum(int len, ns3::Ipv4Address src, ns3::Ipv4Address dest, i
 
     def _strategy_file_print_field_strats(self,field,num,pkt,writer):
         if 'bitfield' in field:
-            l = 0
-            try:
-                l = int(field['bitfield'].replace(":",""))
-            except Exception as e:
-                print "Warning: Bad bitfield: %s" % (str(field))
-                return num + 1
+            l = field['bitfield']
             if l == 1:
                 writer.write("%s LIE =0 %d\n" % (pkt['name'],num))
                 writer.write("%s LIE =1 %d\n" % (pkt['name'],num))
@@ -1223,10 +1230,17 @@ sub getFlenNumList{
 
     def _perl_print_field(self,field,pkt,pnum,writer):
         if 'bitfield' in field:
-            writer.write("\tpush(@{$msgFlenList{%d}},%s);\n" % (pnum,field['bitfield'].replace(":","")))
+            writer.write("\tpush(@{$msgFlenList{%d}},%d);\n" % (pnum,field['bitfield']))
         else:
             writer.write("\tpush(@{$msgFlenList{%d}},0);\n" % (pnum))
         writer.write("\tpush(@{$fieldsPerMsg{%d}},\"%s\");\n" % (pnum,field['length']))
+        return
+
+    def python_module(self,writer):
+        pp = pprint.PrettyPrinter()
+        writer.write("#Automatically Generated. Do Not Edit.\n")
+        writer.write("packet_format = ")
+        writer.write(pp.pformat(self.pkts))
         return
             
 
@@ -1255,13 +1269,17 @@ def main(args):
     try:
         strategy_file = open("strategy.txt","w")
     except Exception as e:
-        print "Failed to Open Strategy File %s:%s" % ("strategy",e)
+        print "Failed to Open Strategy File %s:%s" % ("strategy.txt",e)
         return
-    
     try:
         strategypm_file = open("Strategy.pm","w")
     except Exception as e:
-        print "Failed to Open Strategy Perl File %s:%s" % ("strategy",e)
+        print "Failed to Open Strategy Perl File %s:%s" % ("Strategy.pm",e)
+        return
+    try:
+        python_file = open("fields.py","w")
+    except Exception as e:
+        print "Failed to Open Python File %s:%s" % ("fields.py",e)
         return
 
     lines = format_file.readlines()
@@ -1277,6 +1295,8 @@ def main(args):
     strategy_file.close()
     hfp.perl_strategy_module(strategypm_file)
     strategypm_file.close()
+    hfp.python_module(python_file)
+    python_file.close()
 
 
 if __name__ == "__main__":

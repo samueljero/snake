@@ -65,8 +65,8 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 
 * In one terminal, run the global controller
 
-		cd system/scripts/GC
-		./gc
+		cd system/scripts/coordinator
+		./coordinator.py
 
 * In annother terminal, run an executor:
 
