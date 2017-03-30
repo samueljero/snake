@@ -202,9 +202,9 @@ class StrategyGenerator:
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
                 strat = "{msg} INJECT t=10 0 {sip} {cip} 0={sp} 1={cp} 2=111 5=5 10={win}".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
-                strat = "{msg} WINDOW w={win} t=10 0 {cip} {sip} 0={cp} 1={sp} 5=5".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window)
+                strat = "{msg} WINDOW w={win} t=10 {cip} {sip} 0={cp} 1={sp} 5=5".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
-                strat = "{msg} WINDOW w={win} t=10 0 {sip} {cip} 0={sp} 1={cp} 5=5".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window)
+                strat = "{msg} WINDOW w={win} t=10 {sip} {cip} 0={sp} 1={cp} 5=5".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
             elif config.protocol == "DCCP":
                 size = 0
@@ -224,9 +224,9 @@ class StrategyGenerator:
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
                 strat = "{msg} INJECT t=10 0 {sip} {cip} 0={sp} 1={cp} 2={sz} 6=1 11=111".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window,sz=size)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
-                strat = "{msg} WINDOW w={win} t=10 0 {cip} {sip} 0={cp} 1={sp} 2={sz} 6=1".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window,sz=size)
+                strat = "{msg} WINDOW w={win} t=10 {cip} {sip} 0={cp} 1={sp} 2={sz} 6=1".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window,sz=size)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
-                strat = "{msg} WINDOW w={win} t=10 0 {sip} {cip} 0={sp} 1={cp} 2={sz} 6=1".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window,sz=size)
+                strat = "{msg} WINDOW w={win} t=10 {sip} {cip} 0={sp} 1={cp} 2={sz} 6=1".format(msg=p['name'],cip=config.client_ip,sip=config.server_ip,cp=config.client_port,sp=config.server_port,win=config.default_window,sz=size)
                 self.pkt_actions[p['name']]['inject_list'].append(strat)
             else:
                 print "Warning: Unknown protocol, no Injection strategies generated!"

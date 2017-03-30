@@ -992,6 +992,7 @@ void MalProxy::InjectPacket(int type, const char *spec)
 	src = Ipv4Address(ssrc);
 	dest = Ipv4Address(sdest);
 	spec += len;
+	//std::cout<< "spec: " << spec<<std::endl;
 	size = Message::GetMessageHeaderSize(type);
 	uint8_t *buf=(uint8_t*)malloc(size);
 	if(!buf){
@@ -1087,7 +1088,7 @@ void MalProxy::Window(int type, const char* spec)
 	if (strlength >= len) {
 		spec = "";
 	}
-	std::cout << "Parse 1 complete" << std::endl;
+	std::cout << "Parse 1 complete: " << spec << std::endl;
 
 	itter = (0xFFFFFFFF) / window;
 
