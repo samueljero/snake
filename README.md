@@ -51,11 +51,6 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 
 	For reference, the VM users are `root` and the password is `Gat11ng` in our default VMs
 
-* Build Global Controller
-
-		cd system/scripts/GC
-		make
-
 * Configure and Build NS-3
 
 		cd ns-3-dev
@@ -75,4 +70,4 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 
 
 Samuel Jero <sjero@purdue.edu>  
-3-2-2017
+3-30-2017
