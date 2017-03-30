@@ -14,7 +14,7 @@ import socket
 from strategies import StrategyGenerator
 
 system_home = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
-log_path = os.path.abspath(os.path.join(system_home, 'TCP'))
+import config
 
 # Threaded Server Class
 class ThreadingTCPServer(ss.ThreadingMixIn, ss.TCPServer):
@@ -155,8 +155,8 @@ def main(args):
     global lg, res_lg, strat_gen
     # Parse Args
     argp = argparse.ArgumentParser(description='Testing Coordinator')
-    argp.add_argument('-p', '--port', type=int, default=9991)
-    argp.add_argument('-c', '--checkpoint', default=log_path + "/checkpoint.ck")
+    argp.add_argument('-p', '--port', type=int, default=config.coord_port)
+    argp.add_argument('-c', '--checkpoint', default=config.checkpoint)
     argp.add_argument('-r', '--restore', action='store_true')
     argp.add_argument('-l', '--load', default="")
     args = vars(argp.parse_args(args[1:]))
@@ -167,12 +167,12 @@ def main(args):
     print "Starting Coordinator..."
 
     # Open Log file
-    lg = open(log_path + "/coordinator.log", mode)
+    lg = open(config.coord_log, mode)
     lg.write("[%s] Starting Coordinator\n" % (str(datetime.today())))
     lg.flush()
 
     # Open Results File
-    res_lg = open(log_path + "/results.log", mode)
+    res_lg = open(config.results_log, mode)
     res_lg.write("#Started %s\n" % (str(datetime.today())))
     res_lg.flush()
 
