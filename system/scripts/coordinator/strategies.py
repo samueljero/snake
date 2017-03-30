@@ -25,6 +25,7 @@ class StrategyGenerator:
             self.pkt_actions = dict()
             self.strat_list = []
             self.tested_list = []
+            self.unique_tested = 0
             self.bw_threshold = None
             self.connection_threshold = None
             self.bw_collection = []
@@ -32,10 +33,11 @@ class StrategyGenerator:
 
         def next_strategy(self):
             if len(self.strat_list) == 0:
+                self.checkpoint()
                 return None
             if len(self.strat_list) % 10 == 0:
-                print "Strategies: %d" % (len(self.strat_list))
-                self.lg.write("[%s] Strategies: %d" % (str(datetime.today()),len(self.strat_list)))
+                print "Strategies Left: %d" % (len(self.strat_list))
+                self.lg.write("[%s] Strategies Left: %d" % (str(datetime.today()),len(self.strat_list)))
             if len(self.strat_list) % 100 == 0: 
                 self.checkpoint()
             return self.strat_list.pop(0)
@@ -84,8 +86,10 @@ class StrategyGenerator:
                     self.lg.write("[%s] Strategy \"%s\" Failed! RECORDING\n" % (str(datetime.today()),strat))
                     self.lg.flush()
                     print "[%s] Strategy \"%s\" Failed! RECORDING\n" % (str(datetime.today()),strat)
+                    self.unique_tested += 1
             else:
                 d['result'] = "PASSED"
+                self.unique_tested += 1
 
             #Add to strategy list
             self.tested_list.append(d)
@@ -134,8 +138,8 @@ class StrategyGenerator:
                                     adding = True
 
             if adding:
-                print "Strategies: %d" % (len(self.strat_list))
-                self.lg.write("[%s] Strategies: %d" % (str(datetime.today()),len(self.strat_list)))
+                print "Strategies: %d" % (len(self.strat_list) + self.unique_tested)
+                self.lg.write("[%s] Strategies: %d" % (str(datetime.today()),len(self.strat_list)+self.unique_tested))
                 self.checkpoint()
             return
 
@@ -244,6 +248,7 @@ class StrategyGenerator:
                 bkup['pkt_actions'] = self.pkt_actions
                 bkup['strat_list'] = self.strat_list
                 bkup['tested_list'] = self.tested_list
+                bkup['unique_tested'] = self.unique_tested
                 bkup['bw_threshold'] = self.bw_threshold
                 bkup['connection_threshold'] = self.connection_threshold
                 bkup['bw_collection'] = self.bw_collection
@@ -284,6 +289,7 @@ class StrategyGenerator:
             self.pkt_actions = bkup['pkt_actions']
             self.strat_list = bkup['strat_list']
             self.tested_list = bkup['tested_list']
+            self.unique_tested = bkup['unique_tested']
             self.bw_threshold = bkup['bw_threshold']
             self.connection_threshold = bkup['connection_threshold']
             self.bw_collection = bkup['bw_collection']
