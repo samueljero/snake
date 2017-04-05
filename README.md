@@ -8,30 +8,30 @@ Details described in:
 Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Information for Automated Attack Discovery in Transport Protocol Implementations. 45th IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), June 2015, pp 1-12.
 
 ###Preqs
-	* Python 2.7
-	* Perl 5.10
-	* Qemu (Tested with 1.7.0 / 2.3.0)
-	* pssh
-	* bridge-utils (for brctl)
-	* uml-utilities (for tunctl)
-	* Limited sudo access. In particular, the ability to run the following commands:
+* Python 2.7
+* Perl 5.10
+* Qemu (Tested with 1.7.0 / 2.3.0)
+* pssh
+* bridge-utils (for brctl)
+* uml-utilities (for tunctl)
+* Limited sudo access. In particular, the ability to run the following commands:
 
-			/usr/bin/tunctl -u [a-z]* -t tap*
-			/usr/bin/tunctl -d tap*
-			/bin/ifconfig tap* hw ether 00:00:00:*:*:*
-			/bin/ifconfig tap* up
-			/bin/ifconfig tap* 0.0.0.0 up
-			/bin/ifconfig tap* 10.0.*.* netmask 255.255.*.* up
-			/bin/ifconfig tap* down
-			/bin/ifconfig br* up
-			/bin/ifconfig br* 10.0.*.* netmask 255.255.*.* up
-			/bin/ifconfig br* down
-			/sbin/brctl addbr br*
-			/sbin/brctl delbr br*
-			/sbin/brctl addif br* tap*
-			/sbin/brctl delif br* tap*
-			/usr/local/sbin/restart-dhcpd
-			/bin/ifconfig tap*
+		/usr/bin/tunctl -u [a-z]* -t tap*
+		/usr/bin/tunctl -d tap*
+		/bin/ifconfig tap* hw ether 00:00:00:*:*:*
+		/bin/ifconfig tap* up
+		/bin/ifconfig tap* 0.0.0.0 up
+		/bin/ifconfig tap* 10.0.*.* netmask 255.255.*.* up
+		/bin/ifconfig tap* down
+		/bin/ifconfig br* up
+		/bin/ifconfig br* 10.0.*.* netmask 255.255.*.* up
+		/bin/ifconfig br* down
+		/sbin/brctl addbr br*
+		/sbin/brctl delbr br*
+		/sbin/brctl addif br* tap*
+		/sbin/brctl delif br* tap*
+		/usr/local/sbin/restart-dhcpd
+		/bin/ifconfig tap*
 
 ###Usage
 * Configure Network:
