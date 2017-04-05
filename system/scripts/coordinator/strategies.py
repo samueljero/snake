@@ -121,19 +121,19 @@ class StrategyGenerator:
                     if metric.find("r_pkt_cnt_") >= 0:
                         pkt = metric.replace("r_pkt_cnt_","")
                         if pkt in self.pkt_actions:
-                            if not self.pkt_actions[pkt]['fw_manip_testing']:
-                                self.pkt_actions[pkt]['fw_manip_testing'] = True
+                            if state not in self.pkt_actions[pkt]['fw_manip_testing']:
+                                self.pkt_actions[pkt]['fw_manip_testing'].append(state)
                                 for s in self.pkt_actions[pkt]['manip_list']:
-                                    strategy = "{st}?{d}?{act}".format(st=state,d="0",act=s)
+                                    strategy = "{st}?{d}?{act}".format(st=state,d="1",act=s)
                                     self.strat_list.append(strategy)
                                     adding = True
                     if metric.find("s_pkt_cnt_") >= 0:
                         pkt = metric.replace("s_pkt_cnt_","")
                         if pkt in self.pkt_actions:
-                            if not self.pkt_actions[pkt]['rv_manip_testing']:
-                                self.pkt_actions[pkt]['rv_manip_testing'] = True
+                            if state not in self.pkt_actions[pkt]['rv_manip_testing']:
+                                self.pkt_actions[pkt]['rv_manip_testing'].append(state)
                                 for s in self.pkt_actions[pkt]['manip_list']:
-                                    strategy = "{st}?{d}?{act}".format(st=state,d="1",act=s)
+                                    strategy = "{st}?{d}?{act}".format(st=state,d="0",act=s)
                                     self.strat_list.append(strategy)
                                     adding = True
 
@@ -168,8 +168,8 @@ class StrategyGenerator:
                 p = fields.packet_format[k]
                 if p['name'] not in self.pkt_actions:
                     self.pkt_actions[p['name']] = dict()
-                    self.pkt_actions[p['name']]['fw_manip_testing'] = False
-                    self.pkt_actions[p['name']]['rv_manip_testing'] = False
+                    self.pkt_actions[p['name']]['fw_manip_testing'] = []
+                    self.pkt_actions[p['name']]['rv_manip_testing'] = []
                     self.pkt_actions[p['name']]['manip_list'] = []
                     self.pkt_actions[p['name']]['inject_list'] = []
                 self._build_inject_strats(p)
