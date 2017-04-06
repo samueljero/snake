@@ -28,3 +28,11 @@ field_manipulations = {
     "double":["r","=0","=-1E+37","=1E+37"],
     "float":["r","=0","=-1E+37","=1E+37"],
 }
+
+delivery_manipulations = {
+    "DROP 50",
+    "DROP 100",
+    "DELAY 1.0",
+    "BURST 1.0",
+    "DUP 10",
+}

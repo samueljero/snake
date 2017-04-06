@@ -114,10 +114,14 @@ class StrategyGenerator:
         def _process_feedback(self,strat,fb):
             adding = False
             fb = self._build_fb_dict(fb)
+
+            #Proxy only considers server state
             if 'server' not in fb:
                 return
+
             for state in fb['server']:
                 for metric in fb['server'][state]:
+                    #Packets received by server
                     if metric.find("r_pkt_cnt_") >= 0:
                         pkt = metric.replace("r_pkt_cnt_","")
                         if pkt in self.pkt_actions:
@@ -127,6 +131,7 @@ class StrategyGenerator:
                                     strategy = "{st}?{d}?{act}".format(st=state,d="1",act=s)
                                     self.strat_list.append(strategy)
                                     adding = True
+                    #Packets sent by server
                     if metric.find("s_pkt_cnt_") >= 0:
                         pkt = metric.replace("s_pkt_cnt_","")
                         if pkt in self.pkt_actions:
@@ -166,26 +171,36 @@ class StrategyGenerator:
             #Generate Packet Actions
             for k in fields.packet_format:
                 p = fields.packet_format[k]
+
+                #Init
                 if p['name'] not in self.pkt_actions:
                     self.pkt_actions[p['name']] = dict()
                     self.pkt_actions[p['name']]['fw_manip_testing'] = []
                     self.pkt_actions[p['name']]['rv_manip_testing'] = []
                     self.pkt_actions[p['name']]['manip_list'] = []
                     self.pkt_actions[p['name']]['inject_list'] = []
+
+                #Inject Strategies
                 self._build_inject_strats(p)
+                
+                #Delivery Strategies
+                for a in manipulations.delivery_manipulations:
+                    self.pkt_actions[p['name']]['manip_list'].append("{msg} {act}".format(msg=p['name'],act=a))
+
+                #Modification Strategies
                 i = 0
                 for f in p['fields']:
                     if 'bitfield' in f:
                         for s in manipulations.bit_field_manipulations[f['bitfield']]:
-                            strat = "{msg} {act} {field}".format(msg=p['name'],act=s,field=i)
+                            strat = "{msg} LIE {act} {field}".format(msg=p['name'],act=s,field=i)
                             self.pkt_actions[p['name']]['manip_list'].append(strat)
                     else:
                         for s in manipulations.field_manipulations[f['length']]:
-                            strat = "{msg} {act} {field}".format(msg=p['name'],act=s,field=i)
+                            strat = "{msg} LIE {act} {field}".format(msg=p['name'],act=s,field=i)
                             self.pkt_actions[p['name']]['manip_list'].append(strat)
                     i +=1
             
-            #Prime Strategies
+            #Prime Strategy List
             self.strat_list.append("*?*?BaseMessage NONE 0")
             self.strat_list.append("*?*?BaseMessage NONE 1")
             self.strat_list.append("*?*?BaseMessage NONE 2")
