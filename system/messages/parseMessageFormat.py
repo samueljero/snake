@@ -119,7 +119,7 @@ class MessageFormatParser:
         for k in self.pkts:
             p = self.pkts[k]
             if len(p['fields']) > self.max_fields:
-                self._max_fields = len(p['fields'])
+                self.max_fields = len(p['fields'])
         return
 
 
