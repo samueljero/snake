@@ -44,7 +44,8 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 * Configure VMs:
 
 		cd system/scripts/kvm_scripts/
-		wget http://cs.purdue.edu/~sjero/snake_vm.tar.gz
+		wget http://www.cs.purdue.edu/~sjero/snake_vm.tar.gz
+		(or http://sjero.net/ds2/snake_vm.tar.gz)
 		tar xf snake_vm.tar.gz
 		for each vm:
 			ssh-copy-id root@10.0.1.<id>
