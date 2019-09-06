@@ -7,7 +7,7 @@ Details described in:
 
 Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Information for Automated Attack Discovery in Transport Protocol Implementations. 45th IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), June 2015, pp 1-12.
 
-###Preqs
+### Preqs
 * Python 2.7
 * Perl 5.10
 * Qemu (Tested with 1.7.0 / 2.3.0)
@@ -33,7 +33,7 @@ Samuel Jero, Hyojeong Lee, and Cristina Nita-Rotaru. Leveraging State Informatio
 		/usr/local/sbin/restart-dhcpd
 		/bin/ifconfig tap*
 
-###Usage
+### Usage
 * Configure Network:
 
 		cd system/scripts/kvm_scripts/
